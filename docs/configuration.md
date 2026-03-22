@@ -7,7 +7,7 @@ flouz supports a three-tier configuration system. Settings are resolved in prior
 | 1 (highest) | `--db` CLI flag | Single command invocation |
 | 2 | `DB_PATH` environment variable | Shell session or `.env` file |
 | 3 | Config file (`~/.config/flouz/config.json`) | Persistent, user-wide |
-| 4 (lowest) | Built-in default (`./flouz.db`) | Fallback |
+| 4 (lowest) | Built-in default (`~/.config/flouz/flouz.db`) | Fallback |
 
 ## Config File
 
@@ -29,7 +29,7 @@ The file is created automatically on the first `flouz config set` call. You neve
 
 ```json
 {
-  "dbPath": "./flouz.db"
+  "dbPath": "~/.config/flouz/flouz.db"
 }
 ```
 

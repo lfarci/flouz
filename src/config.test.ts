@@ -97,10 +97,10 @@ describe('resolveDbPath', () => {
     await rm(TMP, { recursive: true, force: true })
   })
 
-  it('returns ./flouz.db when no env var and no config', async () => {
+  it('returns ~/.config/flouz/flouz.db when no env var and no config', async () => {
     const { resolveDbPath } = await freshModule()
     const path = await resolveDbPath()
-    expect(path).toBe('./flouz.db')
+    expect(path).toBe(`${TMP}/flouz/flouz.db`)
   })
 
   it('returns DB_PATH env var when set, ignoring config', async () => {

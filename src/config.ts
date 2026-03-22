@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises'
 
 const CONFIG_DIR = `${Bun.env.XDG_CONFIG_HOME ?? `${Bun.env.HOME}/.config`}/flouz`
 const CONFIG_FILE = `${CONFIG_DIR}/config.json`
+const DEFAULT_DB_PATH = `${CONFIG_DIR}/flouz.db`
 
 const ConfigSchema = z.object({
   dbPath: z.string().optional(),
@@ -32,5 +33,5 @@ export async function writeConfig(updates: Partial<Config>): Promise<void> {
 export async function resolveDbPath(): Promise<string> {
   if (Bun.env.DB_PATH) return Bun.env.DB_PATH
   const config = await readConfig()
-  return config.dbPath ?? './flouz.db'
+  return config.dbPath ?? DEFAULT_DB_PATH
 }

@@ -97,7 +97,7 @@ Always use prepared statements — never string-interpolate user data into queri
 ```ts
 import { Database } from "bun:sqlite";
 
-const db = new Database("flouz.db");
+const db = new Database(`${process.env.HOME}/.config/flouz/flouz.db`);
 
 const insert = db.prepare(
   "INSERT OR IGNORE INTO transactions (date, amount, counterparty) VALUES (?, ?, ?)"
