@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/lfarci/flouz/compare/v1.7.0...v1.7.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* **import:** restore progress bar for batch imports ([bc42292](https://github.com/lfarci/flouz/commit/bc422920fed1a4d777efc6c4054807d99e733c8c))
+
 ## [1.7.0](https://github.com/lfarci/flouz/compare/v1.6.0...v1.7.0) (2026-03-22)
 
 
