@@ -4,13 +4,13 @@ import { Database } from 'bun:sqlite'
 import { resolve } from 'node:path'
 import { initDb, seedCategories } from '@/db/schema'
 import { insertTransaction } from '@/db/queries'
-import { parseBankCsv } from '@/parsers/bank'
+import { parseCsv } from '@/parsers/csv'
 import { resolveDbPath } from '@/config'
 
 export async function createImportCommand(): Promise<Command> {
   const defaultDb = await resolveDbPath()
   return new Command('import')
-    .description('Import transactions from a bank CSV file')
+    .description('Import transactions from a flouz CSV file')
     .argument('<file>', 'path to CSV file')
     .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(async (file: string, options: { db: string }) => {
@@ -38,7 +38,7 @@ export async function createImportCommand(): Promise<Command> {
       initDb(db)
       seedCategories(db)
 
-      const transactions = parseBankCsv(content, file)
+      const transactions = parseCsv(content, file)
       let imported = 0
       let skipped = 0
       for (const tx of transactions) {

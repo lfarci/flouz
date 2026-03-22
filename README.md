@@ -41,6 +41,31 @@ No need to re-run `bun link` after updates.
 bun run src/index.ts import <file.csv>
 ```
 
+flouz expects a **generic CSV format** — not tied to any specific bank. Convert your bank export to this format before importing.
+
+#### CSV format
+
+```
+date,amount,counterparty,counterparty_iban,currency,account,note
+```
+
+| Column | Required | Format |
+|---|---|---|
+| `date` | ✅ | ISO 8601: `YYYY-MM-DD` |
+| `amount` | ✅ | Dot-decimal; negative = expense, positive = income |
+| `counterparty` | ✅ | Free text (merchant or sender name) |
+| `counterparty_iban` | ❌ | IBAN of the other party |
+| `currency` | ❌ | 3-letter code, defaults to `EUR` |
+| `account` | ❌ | Your own account where the transaction took place |
+| `note` | ❌ | Free text memo |
+
+Example:
+```csv
+date,amount,counterparty,counterparty_iban,currency,account,note
+2026-01-15,-42.50,ACME Shop,BE00 0000 0000 0000,EUR,BE11 1111 1111 1111,Invoice 42
+2026-01-16,1200.00,Employer,,EUR,,January salary
+```
+
 Options:
 - `-d, --db <path>` — SQLite database path (default: `./flouz.db`, or `$DB_PATH`)
 
