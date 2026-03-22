@@ -4,8 +4,10 @@ import { resolve } from 'path'
 import { initDb, seedCategories } from '@/db/schema'
 import { getTransactions, getUncategorized, getCategories } from '@/db/queries'
 import type { TransactionFilters } from '@/types'
+import { resolveDbPath } from '@/config'
 
-export function createListCommand(): Command {
+export async function createListCommand(): Promise<Command> {
+  const defaultDb = await resolveDbPath()
   return new Command('list')
     .description('List transactions')
     .option('-f, --from <date>', 'filter from date (yyyy-MM-dd)')
@@ -13,9 +15,14 @@ export function createListCommand(): Command {
     .option('-c, --category <slug>', 'filter by category slug')
     .option('-s, --search <text>', 'search counterparty')
     .option('-l, --limit <n>', 'max results', '50')
-    .option('-d, --db <path>', 'SQLite database path', process.env.DB_PATH ?? './flouz.db')
+    .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(async (options) => {
-      const db = new Database(resolve(options.db))
+      const dbPath = resolve(options.db)
+      if (!(await Bun.file(dbPath).exists())) {
+        console.error(`No database found at ${dbPath}. Run \`flouz import\` first or check your configuration with \`flouz config get\`.`)
+        process.exit(1)
+      }
+      const db = new Database(dbPath)
       initDb(db)
       seedCategories(db)
 

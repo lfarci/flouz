@@ -4,14 +4,21 @@ import { resolve } from 'path'
 import { writeFileSync } from 'fs'
 import { initDb, seedCategories } from '@/db/schema'
 import { getTransactions, getCategories } from '@/db/queries'
+import { resolveDbPath } from '@/config'
 
-export function createExportCommand(): Command {
+export async function createExportCommand(): Promise<Command> {
+  const defaultDb = await resolveDbPath()
   return new Command('export')
     .description('Export transactions to CSV')
     .option('-o, --output <file>', 'output file path (default: stdout)')
-    .option('-d, --db <path>', 'SQLite database path', process.env.DB_PATH ?? './flouz.db')
+    .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(async (options) => {
-      const db = new Database(resolve(options.db))
+      const dbPath = resolve(options.db)
+      if (!(await Bun.file(dbPath).exists())) {
+        console.error(`No database found at ${dbPath}. Run \`flouz import\` first or check your configuration with \`flouz config get\`.`)
+        process.exit(1)
+      }
+      const db = new Database(dbPath)
       initDb(db)
       seedCategories(db)
 

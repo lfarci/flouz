@@ -1,15 +1,18 @@
 import { Command } from 'commander'
 import { intro, outro, spinner, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
+import { resolve } from 'node:path'
 import { initDb, seedCategories } from '@/db/schema'
 import { insertTransaction } from '@/db/queries'
 import { parseBankCsv } from '@/parsers/bank'
+import { resolveDbPath } from '@/config'
 
-export function createImportCommand(): Command {
+export async function createImportCommand(): Promise<Command> {
+  const defaultDb = await resolveDbPath()
   return new Command('import')
     .description('Import transactions from a bank CSV file')
     .argument('<file>', 'path to CSV file')
-    .option('-d, --db <path>', 'SQLite database path', Bun.env.DB_PATH ?? './flouz.db')
+    .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(async (file: string, options: { db: string }) => {
       intro('flouz import')
 
@@ -25,7 +28,13 @@ export function createImportCommand(): Command {
         process.exit(1)
       }
 
-      const db = new Database(options.db)
+      const dbPath = resolve(options.db)
+      const isNewDb = !(await Bun.file(dbPath).exists())
+      if (isNewDb) {
+        log.info(`Creating new database at ${dbPath}`)
+      }
+
+      const db = new Database(dbPath)
       initDb(db)
       seedCategories(db)
 
