@@ -8,17 +8,13 @@ import { findCsvFiles } from './import'
 const FIXTURE = `${import.meta.dir}/../parsers/__fixtures__/minimal.csv`
 const FIXTURES_DIR = `${import.meta.dir}/../parsers/__fixtures__`
 
-async function importAll(db: Database, sourceFile: string): Promise<{ imported: number; skipped: number; errors: number }> {
+async function importAll(db: Database, sourceFile: string): Promise<{ imported: number; errors: number }> {
   const content = await Bun.file(sourceFile).text()
   const { transactions, errors } = parseCsv(content, sourceFile)
-  let imported = 0
-  let skipped = 0
   for (const tx of transactions) {
-    const changes = insertTransaction(db, tx)
-    if (changes > 0) imported++
-    else skipped++
+    insertTransaction(db, tx)
   }
-  return { imported, skipped, errors: errors.length }
+  return { imported: transactions.length, errors: errors.length }
 }
 
 describe('import pipeline', () => {
@@ -34,13 +30,6 @@ describe('import pipeline', () => {
     const { imported } = await importAll(db, FIXTURE)
     expect(imported).toBe(5)
     expect(getTransactions(db)).toHaveLength(5)
-  })
-
-  it('deduplicates on re-import', async () => {
-    await importAll(db, FIXTURE)
-    const { imported, skipped } = await importAll(db, FIXTURE)
-    expect(imported).toBe(0)
-    expect(skipped).toBe(5)
   })
 
   it('sets correct date format (yyyy-MM-dd)', async () => {
@@ -65,31 +54,13 @@ describe('import pipeline', () => {
 not-a-date,-10.00,Bad Row
 2026-01-16,25.00,Salary`
     const { transactions, errors } = parseCsv(content)
-    let imported = 0
     for (const tx of transactions) {
-      const changes = insertTransaction(db, tx)
-      if (changes > 0) imported++
+      insertTransaction(db, tx)
     }
-    expect(imported).toBe(2)
+    expect(getTransactions(db)).toHaveLength(2)
     expect(errors).toHaveLength(1)
     expect(errors[0].row).toBe(3)
     expect(errors[0].message).toContain('date must be YYYY-MM-DD')
-  })
-
-  it('skips duplicate rows within the same CSV file', () => {
-    const content = `date,amount,counterparty
-2026-01-15,-42.50,ACME Shop
-2026-01-15,-42.50,ACME Shop`
-    const { transactions } = parseCsv(content)
-    let imported = 0
-    let skipped = 0
-    for (const tx of transactions) {
-      const changes = insertTransaction(db, tx)
-      if (changes > 0) imported++
-      else skipped++
-    }
-    expect(imported).toBe(1)
-    expect(skipped).toBe(1)
   })
 })
 

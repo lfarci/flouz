@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { intro, outro, spinner, log } from '@clack/prompts'
+import { intro, outro, progress, log, type ProgressResult } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
@@ -17,7 +17,6 @@ export async function findCsvFiles(dirPath: string): Promise<string[]> {
 
 type FileResult = {
   imported: number
-  skipped: number
   parseErrors: Array<ParseError & { file: string }>
 }
 
@@ -29,18 +28,13 @@ async function processFile(
   const content = await Bun.file(filePath).text()
   const { transactions, errors } = parseCsv(content, filePath)
 
-  let imported = 0
-  let skipped = 0
   for (let i = 0; i < transactions.length; i++) {
-    const changes = insertTransaction(db, transactions[i])
-    if (changes > 0) imported++
-    else skipped++
+    insertTransaction(db, transactions[i])
     onProgress?.(i + 1, transactions.length)
   }
 
   return {
-    imported,
-    skipped,
+    imported: transactions.length,
     parseErrors: errors.map(e => ({ ...e, file: filePath })),
   }
 }
@@ -54,12 +48,8 @@ export async function createImportCommand(): Promise<Command> {
     .action(async (path: string, options: { db: string }) => {
       intro('flouz import')
 
-      const s = spinner()
-      s.start('Importing…')
-
       const info = await stat(path).catch(() => null)
       if (!info) {
-        s.stop('Failed')
         log.error(`Cannot access path: ${path}`)
         process.exit(1)
       }
@@ -68,7 +58,6 @@ export async function createImportCommand(): Promise<Command> {
       if (info.isDirectory()) {
         files = await findCsvFiles(path)
         if (files.length === 0) {
-          s.stop('No CSV files found')
           log.warn(`No CSV files found in: ${path}`)
           process.exit(0)
         }
@@ -87,25 +76,26 @@ export async function createImportCommand(): Promise<Command> {
       seedCategories(db)
 
       let totalImported = 0
-      let totalSkipped = 0
       const allParseErrors: Array<ParseError & { file: string }> = []
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
         const name = basename(file)
-        const prefix = files.length > 1 ? `[${i + 1}/${files.length}] ` : ''
+        const label = files.length > 1 ? `[${i + 1}/${files.length}] ${name}` : name
+        let p: ProgressResult | undefined
         try {
-          const { imported, skipped, parseErrors } = await processFile(db, file, (current, total) => {
-            s.message(`${prefix}${name} — ${current}/${total} rows`)
+          const { imported, parseErrors } = await processFile(db, file, (current, total) => {
+            if (!p) {
+              p = progress({ max: total, style: 'heavy' })
+              p.start(label)
+            }
+            p.advance(1, `${current} / ${total} rows`)
           })
+          p ? p.stop(`${label}: ${imported} imported`) : log.step(`${label}: 0 rows`)
           totalImported += imported
-          totalSkipped += skipped
           allParseErrors.push(...parseErrors)
-          if (files.length > 1) {
-            log.step(`${name}: ${imported} imported, ${skipped} duplicate(s)`)
-          }
         } catch (error) {
-          s.stop('Failed')
+          p ? p.error('Failed') : log.error('Failed')
           log.error(`Error in ${file}: ${error instanceof Error ? error.message : String(error)}`)
           db.close()
           process.exit(1)
@@ -113,13 +103,12 @@ export async function createImportCommand(): Promise<Command> {
       }
 
       db.close()
-      s.stop('Done')
 
       for (const { file, row, message } of allParseErrors) {
         log.warn(`${file} line ${row}: ${message}`)
       }
 
       const errorSuffix = allParseErrors.length > 0 ? `, ${allParseErrors.length} invalid row(s) skipped` : ''
-      outro(`✓ ${totalImported} imported, ${totalSkipped} skipped (duplicates)${errorSuffix}`)
+      outro(`✓ ${totalImported} imported${errorSuffix}`)
     })
 }
