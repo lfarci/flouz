@@ -24,8 +24,18 @@ export async function createImportCommand(): Promise<Command> {
     .action(async (path: string, options: { db: string }) => {
       intro('flouz import')
 
+      // Register SIGINT handler immediately — covers all phases including gaps between spinner/progress
+      let db: Database | undefined
+      const onCancel = () => {
+        db?.close()
+        cancel('Import cancelled.')
+        process.exit(1)
+      }
+      process.once('SIGINT', onCancel)
+
       const info = await stat(path).catch(() => null)
       if (!info) {
+        process.removeListener('SIGINT', onCancel)
         log.error(`Cannot access path: ${path}`)
         process.exit(1)
       }
@@ -34,6 +44,7 @@ export async function createImportCommand(): Promise<Command> {
       if (info.isDirectory()) {
         files = await findCsvFiles(path)
         if (files.length === 0) {
+          process.removeListener('SIGINT', onCancel)
           log.warn(`No CSV files found in: ${path}`)
           process.exit(0)
         }
@@ -47,18 +58,12 @@ export async function createImportCommand(): Promise<Command> {
         log.info(`Creating new database at ${dbPath}`)
       }
 
-      const db = new Database(dbPath)
+      db = new Database(dbPath)
       initDb(db)
       seedCategories(db)
 
-      const onCancel = () => {
-        db.close()
-        cancel('Import cancelled.')
-        process.exit(1)
-      }
-
       // Phase 1: parse all files (spinner — gives feedback while reading disk)
-      const s = spinner({ onCancel })
+      const s = spinner()
       s.start(files.length === 1 ? `Reading ${basename(files[0])}` : `Reading ${files.length} files`)
       const parsed: Array<{ file: string; transactions: ReturnType<typeof parseCsv>['transactions']; errors: ParseError[] }> = []
       for (const file of files) {
@@ -71,7 +76,7 @@ export async function createImportCommand(): Promise<Command> {
       s.stop(`${files.length === 1 ? basename(files[0]) : `${files.length} files`} — ${totalRows} rows`)
 
       // Phase 2: insert with a single progress bar (total is now known)
-      const p = progress({ max: Math.max(1, totalRows), style: 'heavy', onCancel })
+      const p = progress({ max: Math.max(1, totalRows), style: 'heavy' })
       p.start('Importing')
 
       let totalImported = 0
@@ -87,12 +92,14 @@ export async function createImportCommand(): Promise<Command> {
           allParseErrors.push(...errors.map(e => ({ ...e, file })))
         }
       } catch (error) {
+        process.removeListener('SIGINT', onCancel)
         p.error('Failed')
         log.error(error instanceof Error ? error.message : String(error))
         db.close()
         process.exit(1)
       }
 
+      process.removeListener('SIGINT', onCancel)
       db.close()
       p.stop(`${totalImported} rows imported`)
 
