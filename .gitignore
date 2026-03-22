@@ -3,3 +3,4 @@ dist/
 .env
 *.db
 *.csv
+!src/**/__fixtures__/*.csv
