@@ -79,7 +79,7 @@ export async function createImportCommand(): Promise<Command> {
       // Phase 2: insert with a single progress bar (total is now known)
       // Inserts are synchronous (bun:sqlite), so we yield every YIELD_EVERY
       // rows to let the progress animation render and SIGINT handlers fire.
-      const YIELD_EVERY = 50
+      const YIELD_EVERY = 25
       const p = progress({ max: Math.max(1, totalRows), style: 'heavy' })
       p.start(`0 / ${totalRows}`)
 
