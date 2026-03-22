@@ -27,8 +27,7 @@ export function initDb(db: Database): void {
       ai_reasoning       TEXT,
       note               TEXT,
       source_file        TEXT,
-      imported_at        TEXT NOT NULL,
-      UNIQUE(date, amount, counterparty)
+      imported_at        TEXT NOT NULL
     )
   `)
 }

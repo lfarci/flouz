@@ -31,12 +31,6 @@ describe('insertTransaction', () => {
     const changes = insertTransaction(db, fakeTx)
     expect(changes).toBe(1)
   })
-
-  it('returns 0 on duplicate (same date+amount+counterparty)', () => {
-    insertTransaction(db, fakeTx)
-    const changes = insertTransaction(db, fakeTx)
-    expect(changes).toBe(0)
-  })
 })
 
 describe('getTransactions', () => {

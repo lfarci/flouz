@@ -4,7 +4,7 @@ import type { Transaction, TransactionFilters, Category } from '@/types'
 
 export function insertTransaction(db: Database, tx: Omit<Transaction, 'id'>): number {
   const stmt = db.prepare(`
-    INSERT OR IGNORE INTO transactions
+    INSERT INTO transactions
       (date, amount, counterparty, counterparty_iban, currency, account, source_ref,
        category_id, ai_category_id, ai_confidence, ai_reasoning, note, source_file, imported_at)
     VALUES
