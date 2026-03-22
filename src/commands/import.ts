@@ -78,42 +78,23 @@ export async function createImportCommand(): Promise<Command> {
       let totalImported = 0
       const allParseErrors: Array<ParseError & { file: string }> = []
 
-      if (files.length === 1) {
-        const [file] = files
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const label = files.length > 1 ? `[${i + 1}/${files.length}] ${basename(file)}` : basename(file)
         let p: ReturnType<typeof progress> | undefined
         try {
           const { imported, parseErrors } = await processFile(db, file, (current, total) => {
             if (!p) {
               p = progress({ max: total, style: 'heavy' })
-              p.start(basename(file))
+              p.start(label)
             }
             p.advance(1, `${current} / ${total} rows`)
           })
-          p ? p.stop(`${imported} rows imported`) : log.step(`${basename(file)}: 0 rows`)
-          totalImported = imported
+          p ? p.stop(`${imported} rows imported`) : log.step(`${label}: 0 rows`)
+          totalImported += imported
           allParseErrors.push(...parseErrors)
         } catch (error) {
           p ? p.error('Failed') : log.error('Failed')
-          log.error(error instanceof Error ? error.message : String(error))
-          db.close()
-          process.exit(1)
-        }
-      } else {
-        try {
-          await tasks(
-            files.map((file, i) => ({
-              title: `[${i + 1}/${files.length}] ${basename(file)}`,
-              task: async (message) => {
-                const { imported, parseErrors } = await processFile(db, file, (current, total) => {
-                  message(`${current} / ${total} rows`)
-                })
-                allParseErrors.push(...parseErrors)
-                totalImported += imported
-                return `${imported} rows imported`
-              },
-            }))
-          )
-        } catch (error) {
           log.error(error instanceof Error ? error.message : String(error))
           db.close()
           process.exit(1)
