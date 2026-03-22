@@ -8,6 +8,17 @@ a local SQLite database and uses AI to auto-categorize transactions and surface 
 **New GitHub repository must be created** before scaffolding: `finance-cli` (public or private).
 Initialize with a README, then clone locally to `~/Documents/finance-cli/`.
 
+## ⚠️ Data Privacy
+
+**Never commit personal or financial data to this repository.**
+See `.github/instructions/data-privacy.instructions.md` for full rules.
+
+Key rules at a glance:
+- No real IBANs, account numbers, or transaction amounts anywhere in the repo
+- No `.csv`, `.db`, or `.env` files — they are gitignored
+- Test fixtures must use invented data only (e.g. `BE00 0000 0000 0000`, `ACME Shop`)
+- No API keys or tokens in source code
+
 ## Stack
 
 | Concern | Choice |
