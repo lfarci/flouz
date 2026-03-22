@@ -76,6 +76,9 @@ export async function createImportCommand(): Promise<Command> {
       s.stop(`${files.length === 1 ? basename(files[0]) : `${files.length} files`} — ${totalRows} rows`)
 
       // Phase 2: insert with a single progress bar (total is now known)
+      // Inserts are synchronous (bun:sqlite), so we yield every YIELD_EVERY
+      // rows to let the progress animation render and SIGINT handlers fire.
+      const YIELD_EVERY = 100
       const p = progress({ max: Math.max(1, totalRows), style: 'heavy' })
       p.start('Importing')
 
@@ -88,6 +91,7 @@ export async function createImportCommand(): Promise<Command> {
             insertTransaction(db, tx)
             totalImported++
             p.advance(1, `${basename(file)} — ${totalImported} / ${totalRows}`)
+            if (totalImported % YIELD_EVERY === 0) await Bun.sleep(0)
           }
           allParseErrors.push(...errors.map(e => ({ ...e, file })))
         }
