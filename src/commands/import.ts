@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { intro, outro, progress, log } from '@clack/prompts'
+import { intro, outro, progress, spinner, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
@@ -51,18 +51,22 @@ export async function createImportCommand(): Promise<Command> {
       initDb(db)
       seedCategories(db)
 
-      // Parse all files upfront to know the total row count before starting the bar
+      // Phase 1: parse all files (spinner — gives feedback while reading disk)
+      const s = spinner()
+      s.start(files.length === 1 ? `Reading ${basename(files[0])}` : `Reading ${files.length} files`)
       const parsed: Array<{ file: string; transactions: ReturnType<typeof parseCsv>['transactions']; errors: ParseError[] }> = []
       for (const file of files) {
+        if (files.length > 1) s.message(`Reading ${basename(file)}`)
         const content = await Bun.file(file).text()
         const { transactions, errors } = parseCsv(content, file)
         parsed.push({ file, transactions, errors })
       }
-
       const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
-      const label = files.length === 1 ? basename(files[0]) : `${files.length} files`
+      s.stop(`${files.length === 1 ? basename(files[0]) : `${files.length} files`} — ${totalRows} rows`)
+
+      // Phase 2: insert with a single progress bar (total is now known)
       const p = progress({ max: Math.max(1, totalRows), style: 'heavy' })
-      p.start(label)
+      p.start('Importing')
 
       let totalImported = 0
       const allParseErrors: Array<ParseError & { file: string }> = []
