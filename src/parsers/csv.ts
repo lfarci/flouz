@@ -12,7 +12,7 @@ const rowSchema = z.object({
     .string()
     .refine(v => !isNaN(parseFloat(v)), { message: 'amount must be a decimal number' })
     .transform(v => parseFloat(v)),
-  counterparty: z.string().min(1, 'counterparty must not be empty'),
+  counterparty: z.string().optional().default(''),
   counterparty_iban: z.string().optional().default(''),
   currency: z.string().optional().transform(v => v || 'EUR'),
   account: z.string().optional().default(''),
@@ -29,10 +29,15 @@ function parseRow(row: RawRow, sourceFile?: string): Transaction {
   }
 
   const data = result.data
+  const counterparty = data.counterparty || data.note
+  if (!counterparty) {
+    throw new Error('counterparty and note are both empty — cannot identify transaction')
+  }
+
   return {
     date: data.date,
     amount: data.amount,
-    counterparty: data.counterparty,
+    counterparty,
     counterpartyIban: data.counterparty_iban || undefined,
     currency: data.currency,
     account: data.account || undefined,

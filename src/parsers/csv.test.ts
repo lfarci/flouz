@@ -65,6 +65,21 @@ describe('parseCsv', () => {
       expect(parseCsv('date,amount,counterparty')).toEqual({ transactions: [], errors: [] })
     })
 
+    it('uses note as counterparty when counterparty column is empty', () => {
+      const content = 'date,amount,counterparty,note\n2026-01-15,-20.00,,RETRAIT ESPECES ATM BRUSSELS'
+      const { transactions, errors } = parseCsv(content)
+      expect(errors).toHaveLength(0)
+      expect(transactions).toHaveLength(1)
+      expect(transactions[0].counterparty).toBe('RETRAIT ESPECES ATM BRUSSELS')
+    })
+
+    it('preserves note field when note is used as counterparty fallback', () => {
+      const content = 'date,amount,counterparty,note\n2026-01-15,-20.00,,PAIEMENT MAESTRO DELHAIZE'
+      const { transactions: [tx] } = parseCsv(content)
+      expect(tx.counterparty).toBe('PAIEMENT MAESTRO DELHAIZE')
+      expect(tx.note).toBe('PAIEMENT MAESTRO DELHAIZE')
+    })
+
     it('ignores blank lines between data rows', () => {
       const content = `date,amount,counterparty
 2026-01-15,-42.50,ACME Shop
@@ -109,12 +124,12 @@ describe('parseCsv', () => {
       expect(errors[0].message).toContain('amount must be a decimal number')
     })
 
-    it('collects empty counterparty in errors', () => {
-      const content = 'date,amount,counterparty\n2026-01-15,-10.00,'
+    it('collects error when counterparty and note are both empty', () => {
+      const content = 'date,amount,counterparty,note\n2026-01-15,-10.00,,'
       const { transactions, errors } = parseCsv(content)
       expect(transactions).toHaveLength(0)
       expect(errors).toHaveLength(1)
-      expect(errors[0].message).toContain('counterparty must not be empty')
+      expect(errors[0].message).toContain('counterparty and note are both empty')
     })
 
     it('collects row with all fields empty in errors', () => {

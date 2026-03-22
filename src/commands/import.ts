@@ -1,7 +1,7 @@
 import { Command } from 'commander'
 import { intro, outro, spinner, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
-import { resolve, extname, join } from 'node:path'
+import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
 import { initDb, seedCategories } from '@/db/schema'
 import { insertTransaction } from '@/db/queries'
@@ -21,16 +21,21 @@ type FileResult = {
   parseErrors: Array<ParseError & { file: string }>
 }
 
-async function processFile(db: Database, filePath: string): Promise<FileResult> {
+async function processFile(
+  db: Database,
+  filePath: string,
+  onProgress?: (current: number, total: number) => void,
+): Promise<FileResult> {
   const content = await Bun.file(filePath).text()
   const { transactions, errors } = parseCsv(content, filePath)
 
   let imported = 0
   let skipped = 0
-  for (const tx of transactions) {
-    const changes = insertTransaction(db, tx)
+  for (let i = 0; i < transactions.length; i++) {
+    const changes = insertTransaction(db, transactions[i])
     if (changes > 0) imported++
     else skipped++
+    onProgress?.(i + 1, transactions.length)
   }
 
   return {
@@ -85,12 +90,20 @@ export async function createImportCommand(): Promise<Command> {
       let totalSkipped = 0
       const allParseErrors: Array<ParseError & { file: string }> = []
 
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const name = basename(file)
+        const prefix = files.length > 1 ? `[${i + 1}/${files.length}] ` : ''
         try {
-          const { imported, skipped, parseErrors } = await processFile(db, file)
+          const { imported, skipped, parseErrors } = await processFile(db, file, (current, total) => {
+            s.message(`${prefix}${name} — ${current}/${total} rows`)
+          })
           totalImported += imported
           totalSkipped += skipped
           allParseErrors.push(...parseErrors)
+          if (files.length > 1) {
+            log.step(`${name}: ${imported} imported, ${skipped} duplicate(s)`)
+          }
         } catch (error) {
           s.stop('Failed')
           log.error(`Error in ${file}: ${error instanceof Error ? error.message : String(error)}`)
