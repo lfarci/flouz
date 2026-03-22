@@ -604,4 +604,8 @@ GitHub Actions is a powerful and flexible platform for automating your software 
 
 ---
 
+## Formatting
+
+- **Blank lines between steps:** Always add a blank line between each step in `steps:` lists for readability.
+
 <!-- End of GitHub Actions CI/CD Best Practices Instructions --> 
