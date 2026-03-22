@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.8.0](https://github.com/lfarci/flouz/compare/v1.7.1...v1.8.0) (2026-03-22)
+
+
+### Features
+
+* **import:** close db and exit cleanly on Ctrl+C ([32996ec](https://github.com/lfarci/flouz/commit/32996ec59ec544cbcc89177b1aebac9bce2291d0))
+
+
+### Bug Fixes
+
+* **import:** add spinner during file reading phase ([f6ff18d](https://github.com/lfarci/flouz/commit/f6ff18d318a45e9cde535f5d750de58bea6b6e63))
+* **import:** deduplicate log messages and yield every 50 rows ([1986801](https://github.com/lfarci/flouz/commit/198680174e03055b210e0d600d5d79aeedffd9d7))
+* **import:** handle Ctrl+C at any point in the action ([e150f2f](https://github.com/lfarci/flouz/commit/e150f2ff8b273ecec7f415069be853dd29419f15))
+* **import:** reduce yield interval to 25 rows for smoother progress ([2578c6d](https://github.com/lfarci/flouz/commit/2578c6d6990cf04a8b8fe0287c1bfd573b0fd898))
+* **import:** single progress bar across all files ([d32fab8](https://github.com/lfarci/flouz/commit/d32fab878471b53df38ddfcf26012c9abc5d5e33))
+* **import:** yield to event loop during inserts for progress and SIGINT ([219dfc8](https://github.com/lfarci/flouz/commit/219dfc8422cb257fd0e46eb348090b53c1e2bf95))
+
 ## [1.7.1](https://github.com/lfarci/flouz/compare/v1.7.0...v1.7.1) (2026-03-22)
 
 
