@@ -52,7 +52,7 @@ function rowToTransaction(row: Record<string, unknown>): Transaction {
 
 export function getTransactions(db: Database, filters: TransactionFilters = {}): Transaction[] {
   const conditions: string[] = []
-  const params: unknown[] = []
+  const params: SQLQueryBindings[] = []
 
   if (filters.from !== undefined) {
     conditions.push('date >= ?')
@@ -76,7 +76,7 @@ export function getTransactions(db: Database, filters: TransactionFilters = {}):
   if (filters.limit !== undefined) params.push(filters.limit)
 
   const sql = `SELECT * FROM transactions ${where} ORDER BY date DESC ${limit}`.trim()
-  const rows = db.prepare(sql).all(...(params as Parameters<typeof db.prepare>)) as Record<string, unknown>[]
+  const rows = db.prepare(sql).all(...params) as Record<string, unknown>[]
   return rows.map(rowToTransaction)
 }
 
