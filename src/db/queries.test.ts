@@ -8,7 +8,7 @@ import {
   getCategories,
   getUncategorized,
 } from './queries'
-import type { Transaction } from '../types'
+import type { Transaction } from '@/types'
 
 const fakeTx: Omit<Transaction, 'id'> = {
   date: '2026-01-15',

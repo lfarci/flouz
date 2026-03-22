@@ -1,6 +1,6 @@
 import { Database } from 'bun:sqlite'
 import type { SQLQueryBindings } from 'bun:sqlite'
-import type { Transaction, TransactionFilters, Category } from '../types'
+import type { Transaction, TransactionFilters, Category } from '@/types'
 
 export function insertTransaction(db: Database, tx: Omit<Transaction, 'id'>): number {
   const stmt = db.prepare(`

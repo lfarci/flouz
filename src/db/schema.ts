@@ -1,5 +1,5 @@
 import { Database } from 'bun:sqlite'
-import { CATEGORIES } from '../data/categories'
+import { CATEGORIES } from '@/data/categories'
 
 export function initDb(db: Database): void {
   db.run(`

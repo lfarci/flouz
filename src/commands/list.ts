@@ -1,9 +1,9 @@
 import { Command } from 'commander'
 import { Database } from 'bun:sqlite'
 import { resolve } from 'path'
-import { initDb, seedCategories } from '../db/schema'
-import { getTransactions, getUncategorized, getCategories } from '../db/queries'
-import type { TransactionFilters } from '../types'
+import { initDb, seedCategories } from '@/db/schema'
+import { getTransactions, getUncategorized, getCategories } from '@/db/queries'
+import type { TransactionFilters } from '@/types'
 
 export function createListCommand(): Command {
   return new Command('list')

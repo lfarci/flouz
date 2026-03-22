@@ -1,5 +1,5 @@
 import { parseBankCsv } from './bank'
-import type { Transaction } from '../types'
+import type { Transaction } from '@/types'
 
 export type ParserFormat = 'bank'
 

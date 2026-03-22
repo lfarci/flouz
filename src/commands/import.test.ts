@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { join } from 'path'
 import { readFileSync } from 'fs'
-import { initDb, seedCategories } from '../db/schema'
-import { insertTransaction, getTransactions } from '../db/queries'
-import { parseBankCsv } from '../parsers/bank'
+import { initDb, seedCategories } from '@/db/schema'
+import { insertTransaction, getTransactions } from '@/db/queries'
+import { parseBankCsv } from '@/parsers/bank'
 
 const FIXTURE = join(import.meta.dir, '../parsers/__fixtures__/minimal.bank.csv')
 

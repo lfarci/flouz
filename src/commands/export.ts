@@ -2,8 +2,8 @@ import { Command } from 'commander'
 import { Database } from 'bun:sqlite'
 import { resolve } from 'path'
 import { writeFileSync } from 'fs'
-import { initDb, seedCategories } from '../db/schema'
-import { getTransactions, getCategories } from '../db/queries'
+import { initDb, seedCategories } from '@/db/schema'
+import { getTransactions, getCategories } from '@/db/queries'
 
 export function createExportCommand(): Command {
   return new Command('export')

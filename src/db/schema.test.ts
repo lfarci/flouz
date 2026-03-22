@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { initDb, seedCategories } from './schema'
-import { CATEGORIES } from '../data/categories'
+import { CATEGORIES } from '@/data/categories'
 
 describe('initDb', () => {
   it('creates categories table', () => {

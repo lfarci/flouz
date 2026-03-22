@@ -42,6 +42,7 @@ Key rules at a glance:
 - No default exports — use named exports everywhere
 - No barrel `index.ts` re-exports unless the directory has 4+ modules
 - Avoid `enum` — use `const` objects with `as const` instead
+- **Always use `@/` path aliases, never relative parent paths** — e.g. `import { initDb } from '@/db/schema'` not `'../db/schema'`. The alias `@/*` maps to `src/*` via `tsconfig.json`.
 
 ### Bun
 - File I/O: use `Bun.file()` and `Bun.write()`, never `fs.readFileSync`

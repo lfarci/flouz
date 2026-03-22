@@ -3,9 +3,9 @@ import { intro, outro, spinner, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
-import { initDb, seedCategories } from '../db/schema'
-import { insertTransaction } from '../db/queries'
-import { parse, detectFormat } from '../parsers/registry'
+import { initDb, seedCategories } from '@/db/schema'
+import { insertTransaction } from '@/db/queries'
+import { parse, detectFormat } from '@/parsers/registry'
 
 export function createImportCommand(): Command {
   return new Command('import')
