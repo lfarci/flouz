@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/lfarci/flouz/compare/v1.1.0...v1.2.0) (2026-03-22)
+
+
+### Features
+
+* add -v/--version flag reading version from package.json ([1fabc80](https://github.com/lfarci/flouz/commit/1fabc80089ae429d77f52f2b78a75a4df47b9435))
+
 ## [1.1.0](https://github.com/lfarci/flouz/compare/v1.0.0...v1.1.0) (2026-03-22)
 
 
