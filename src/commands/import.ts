@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { intro, outro, progress, log, type ProgressResult } from '@clack/prompts'
+import { intro, outro, progress, tasks, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
@@ -78,25 +78,43 @@ export async function createImportCommand(): Promise<Command> {
       let totalImported = 0
       const allParseErrors: Array<ParseError & { file: string }> = []
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const name = basename(file)
-        const label = files.length > 1 ? `[${i + 1}/${files.length}] ${name}` : name
-        let p: ProgressResult | undefined
+      if (files.length === 1) {
+        const [file] = files
+        let p: ReturnType<typeof progress> | undefined
         try {
           const { imported, parseErrors } = await processFile(db, file, (current, total) => {
             if (!p) {
               p = progress({ max: total, style: 'heavy' })
-              p.start(label)
+              p.start(basename(file))
             }
             p.advance(1, `${current} / ${total} rows`)
           })
-          p ? p.stop(`${label}: ${imported} imported`) : log.step(`${label}: 0 rows`)
-          totalImported += imported
+          p ? p.stop(`${imported} rows imported`) : log.step(`${basename(file)}: 0 rows`)
+          totalImported = imported
           allParseErrors.push(...parseErrors)
         } catch (error) {
           p ? p.error('Failed') : log.error('Failed')
-          log.error(`Error in ${file}: ${error instanceof Error ? error.message : String(error)}`)
+          log.error(error instanceof Error ? error.message : String(error))
+          db.close()
+          process.exit(1)
+        }
+      } else {
+        try {
+          await tasks(
+            files.map((file, i) => ({
+              title: `[${i + 1}/${files.length}] ${basename(file)}`,
+              task: async (message) => {
+                const { imported, parseErrors } = await processFile(db, file, (current, total) => {
+                  message(`${current} / ${total} rows`)
+                })
+                allParseErrors.push(...parseErrors)
+                totalImported += imported
+                return `${imported} rows imported`
+              },
+            }))
+          )
+        } catch (error) {
+          log.error(error instanceof Error ? error.message : String(error))
           db.close()
           process.exit(1)
         }
