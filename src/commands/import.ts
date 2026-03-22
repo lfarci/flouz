@@ -73,14 +73,15 @@ export async function createImportCommand(): Promise<Command> {
         parsed.push({ file, transactions, errors })
       }
       const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
-      s.stop(`${files.length === 1 ? basename(files[0]) : `${files.length} files`} — ${totalRows} rows`)
+      const fileLabel = files.length === 1 ? basename(files[0]) : `${files.length} files`
+      s.stop(`Importing ${fileLabel} (${totalRows} rows)`)
 
       // Phase 2: insert with a single progress bar (total is now known)
       // Inserts are synchronous (bun:sqlite), so we yield every YIELD_EVERY
       // rows to let the progress animation render and SIGINT handlers fire.
-      const YIELD_EVERY = 100
+      const YIELD_EVERY = 50
       const p = progress({ max: Math.max(1, totalRows), style: 'heavy' })
-      p.start('Importing')
+      p.start(`0 / ${totalRows}`)
 
       let totalImported = 0
       const allParseErrors: Array<ParseError & { file: string }> = []
@@ -105,7 +106,7 @@ export async function createImportCommand(): Promise<Command> {
 
       process.removeListener('SIGINT', onCancel)
       db.close()
-      p.stop(`${totalImported} rows imported`)
+      p.stop(`${totalImported} / ${totalRows}`)
 
       for (const { file, row, message } of allParseErrors) {
         log.warn(`${file} line ${row}: ${message}`)
