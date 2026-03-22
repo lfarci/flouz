@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { intro, outro, progress, tasks, log } from '@clack/prompts'
+import { intro, outro, progress, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
@@ -13,30 +13,6 @@ export async function findCsvFiles(dirPath: string): Promise<string[]> {
   return entries
     .filter(e => e.isFile() && extname(e.name).toLowerCase() === '.csv')
     .map(e => join(dirPath, e.name))
-}
-
-type FileResult = {
-  imported: number
-  parseErrors: Array<ParseError & { file: string }>
-}
-
-async function processFile(
-  db: Database,
-  filePath: string,
-  onProgress?: (current: number, total: number) => void,
-): Promise<FileResult> {
-  const content = await Bun.file(filePath).text()
-  const { transactions, errors } = parseCsv(content, filePath)
-
-  for (let i = 0; i < transactions.length; i++) {
-    insertTransaction(db, transactions[i])
-    onProgress?.(i + 1, transactions.length)
-  }
-
-  return {
-    imported: transactions.length,
-    parseErrors: errors.map(e => ({ ...e, file: filePath })),
-  }
 }
 
 export async function createImportCommand(): Promise<Command> {
@@ -75,33 +51,40 @@ export async function createImportCommand(): Promise<Command> {
       initDb(db)
       seedCategories(db)
 
+      // Parse all files upfront to know the total row count before starting the bar
+      const parsed: Array<{ file: string; transactions: ReturnType<typeof parseCsv>['transactions']; errors: ParseError[] }> = []
+      for (const file of files) {
+        const content = await Bun.file(file).text()
+        const { transactions, errors } = parseCsv(content, file)
+        parsed.push({ file, transactions, errors })
+      }
+
+      const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
+      const label = files.length === 1 ? basename(files[0]) : `${files.length} files`
+      const p = progress({ max: Math.max(1, totalRows), style: 'heavy' })
+      p.start(label)
+
       let totalImported = 0
       const allParseErrors: Array<ParseError & { file: string }> = []
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const label = files.length > 1 ? `[${i + 1}/${files.length}] ${basename(file)}` : basename(file)
-        let p: ReturnType<typeof progress> | undefined
-        try {
-          const { imported, parseErrors } = await processFile(db, file, (current, total) => {
-            if (!p) {
-              p = progress({ max: total, style: 'heavy' })
-              p.start(label)
-            }
-            p.advance(1, `${current} / ${total} rows`)
-          })
-          p ? p.stop(`${imported} rows imported`) : log.step(`${label}: 0 rows`)
-          totalImported += imported
-          allParseErrors.push(...parseErrors)
-        } catch (error) {
-          p ? p.error('Failed') : log.error('Failed')
-          log.error(error instanceof Error ? error.message : String(error))
-          db.close()
-          process.exit(1)
+      try {
+        for (const { file, transactions, errors } of parsed) {
+          for (const tx of transactions) {
+            insertTransaction(db, tx)
+            totalImported++
+            p.advance(1, `${basename(file)} — ${totalImported} / ${totalRows}`)
+          }
+          allParseErrors.push(...errors.map(e => ({ ...e, file })))
         }
+      } catch (error) {
+        p.error('Failed')
+        log.error(error instanceof Error ? error.message : String(error))
+        db.close()
+        process.exit(1)
       }
 
       db.close()
+      p.stop(`${totalImported} rows imported`)
 
       for (const { file, row, message } of allParseErrors) {
         log.warn(`${file} line ${row}: ${message}`)
