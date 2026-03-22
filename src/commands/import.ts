@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { intro, outro, progress, spinner, log } from '@clack/prompts'
+import { intro, outro, progress, spinner, cancel, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
@@ -51,8 +51,14 @@ export async function createImportCommand(): Promise<Command> {
       initDb(db)
       seedCategories(db)
 
+      const onCancel = () => {
+        db.close()
+        cancel('Import cancelled.')
+        process.exit(1)
+      }
+
       // Phase 1: parse all files (spinner — gives feedback while reading disk)
-      const s = spinner()
+      const s = spinner({ onCancel })
       s.start(files.length === 1 ? `Reading ${basename(files[0])}` : `Reading ${files.length} files`)
       const parsed: Array<{ file: string; transactions: ReturnType<typeof parseCsv>['transactions']; errors: ParseError[] }> = []
       for (const file of files) {
@@ -65,7 +71,7 @@ export async function createImportCommand(): Promise<Command> {
       s.stop(`${files.length === 1 ? basename(files[0]) : `${files.length} files`} — ${totalRows} rows`)
 
       // Phase 2: insert with a single progress bar (total is now known)
-      const p = progress({ max: Math.max(1, totalRows), style: 'heavy' })
+      const p = progress({ max: Math.max(1, totalRows), style: 'heavy', onCancel })
       p.start('Importing')
 
       let totalImported = 0
