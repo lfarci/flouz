@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/lfarci/flouz/compare/v1.0.0...v1.1.0) (2026-03-22)
+
+
+### Features
+
+* add global install support via bun link ([9fbee53](https://github.com/lfarci/flouz/commit/9fbee53f25444a5152c4d2c3264641757a3c40f0))
+* **config:** add persistent CLI configuration with db-path support ([111bf88](https://github.com/lfarci/flouz/commit/111bf88e4dcbf638a23b993093917e09ea5ed644))
+
 ## 1.0.0 (2026-03-22)
 
 
