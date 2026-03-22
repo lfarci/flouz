@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/lfarci/flouz/compare/v1.4.0...v1.5.0) (2026-03-22)
+
+
+### Features
+
+* **import:** support directory import and report invalid rows ([9079cff](https://github.com/lfarci/flouz/commit/9079cff447ce83589de1a06cb23a3d3d51612cf5))
+
 ## [1.4.0](https://github.com/lfarci/flouz/compare/v1.3.0...v1.4.0) (2026-03-22)
 
 
