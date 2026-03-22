@@ -36,19 +36,7 @@ Key rules at a glance:
 
 ## Code Rules
 
-### TypeScript
-- `strict: true` — never use `any`, `unknown` must be narrowed before use
-- Prefer `type` over `interface` for data shapes; use `interface` only for extensible contracts
-- No default exports — use named exports everywhere
-- No barrel `index.ts` re-exports unless the directory has 4+ modules
-- Avoid `enum` — use `const` objects with `as const` instead
-- **Always use `@/` path aliases, never relative parent paths** — e.g. `import { initDb } from '@/db/schema'` not `'../db/schema'`. The alias `@/*` maps to `src/*` via `tsconfig.json`.
-
-### Bun
-- File I/O: use `Bun.file()` and `Bun.write()`, never `fs.readFileSync`
-- SQLite: use `bun:sqlite` directly — `new Database(path)`, prepared statements via `db.prepare()`
-- Environment: `Bun.env.GITHUB_TOKEN`, not `process.env` (though both work — prefer `Bun.env`)
-- Scripts: define in `package.json` `scripts`, run with `bun run`
+> TypeScript and Bun-specific rules are in `.github/instructions/typescript.instructions.md`.
 
 ### Database
 - All queries go through typed helpers in `src/db/queries.ts` — no raw SQL in commands
