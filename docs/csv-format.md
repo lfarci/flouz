@@ -1,8 +1,8 @@
-# CSV Format — BNP Paribas Fortis
+# CSV Format — Belgian Bank Export
 
 ## File Structure
 
-BNP Paribas Fortis CSV exports have two sections separated by a blank line:
+Belgian bank CSV exports have two sections separated by a blank line:
 
 1. **Metadata block** — `Key;Value` pairs describing the export parameters
 2. **Data block** — a header row followed by transaction rows

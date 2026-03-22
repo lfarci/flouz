@@ -92,6 +92,6 @@ mock.module('ai', () => ({
 
 Place sample CSV files or JSON fixtures in `__fixtures__/` next to the test:
 ```
-src/parsers/__fixtures__/bnp-sample.csv
-src/parsers/__fixtures__/bnp-metadata-only.csv
+src/parsers/__fixtures__/bank-sample.csv
+src/parsers/__fixtures__/bank-metadata-only.csv
 ```

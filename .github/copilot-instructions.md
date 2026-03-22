@@ -2,7 +2,7 @@
 
 ## Project
 
-Personal finance CLI tool that imports Belgian bank (BNP Paribas Fortis) transaction CSVs into
+Personal finance CLI tool that imports bank transaction CSVs into
 a local SQLite database and uses AI to auto-categorize transactions and surface spending insights.
 
 **New GitHub repository must be created** before scaffolding: `finance-cli` (public or private).
@@ -74,7 +74,7 @@ Initialize with a README, then clone locally to `~/Documents/finance-cli/`.
 src/
   commands/     ← one file per CLI command
   db/           ← schema.ts, queries.ts
-  parsers/      ← source.ts (BNP Paribas CSV parser)
+  parsers/      ← source.ts (bank CSV parser)
   ai/           ← client.ts (model factory), prompts.ts
   index.ts      ← Commander root, registers all commands
 .github/
@@ -85,7 +85,7 @@ src/
 
 ## Domain Knowledge
 
-- Bank: BNP Paribas Fortis (Belgium), IBAN `BE04 0635 4162 8231`
+- Bank: Belgian bank, semicolon-delimited CSV export format
 - Source CSV: semicolon-separated, comma decimals, French headers, metadata block before data rows
 - Categories: 3-level UUID hierarchy (Necessities / Savings / Discretionary → subcategories → leaves)
 - Category IDs are stable UUIDs from `data/Categories.csv` — never regenerate them

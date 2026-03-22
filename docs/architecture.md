@@ -2,7 +2,7 @@
 
 ## Overview
 
-**flouz** is a CLI tool for analyzing Belgian bank transactions using AI. It imports CSV exports from Belgian banks (BNP Paribas Fortis), stores transactions in a local SQLite database, and uses AI to automatically categorize spending.
+**flouz** is a CLI tool for analyzing bank transactions using AI. It imports CSV exports from your bank, stores transactions in a local SQLite database, and uses AI to automatically categorize spending.
 
 ## Stack
 

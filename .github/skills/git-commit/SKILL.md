@@ -42,7 +42,7 @@ Create standardized, semantic git commits using the Conventional Commits specifi
 - `import` — CSV parsing and import command
 - `db` — SQLite schema or query changes
 - `categorize` — AI categorization command
-- `parser` — BNP Paribas CSV parser
+- `parser` — bank CSV parser
 - `mcp` — MCP server
 - `ci` — GitHub Actions workflow
 
@@ -67,9 +67,9 @@ git add src/commands/import.ts src/parsers/source.ts
 ### 3. Execute Commit
 
 ```bash
-git commit -m "feat(import): add BNP Paribas CSV parser with metadata skip
+git commit -m "feat(import): add bank CSV parser with metadata skip
 
-Parse semicolon-delimited BNP export files, skip metadata block,
+Parse semicolon-delimited bank export files, skip metadata block,
 normalize dates to yyyy-MM-dd and amounts to dot-decimal.
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"

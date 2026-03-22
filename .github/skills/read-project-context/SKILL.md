@@ -23,7 +23,7 @@ Read each of the following files before doing anything else:
 1. `.github/copilot-instructions.md` — stack, principles, domain rules
 2. `docs/architecture.md` — project structure and design decisions
 3. `docs/database.md` — SQLite schema and category hierarchy
-4. `docs/csv-format.md` — BNP Paribas CSV format and column mappings
+4. `docs/csv-format.md` — bank CSV format and column mappings
 5. `docs/ai-providers.md` — AI provider switching and configuration
 
 ### Step 2 — Inspect existing implementation

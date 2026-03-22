@@ -8,12 +8,12 @@ Activates when the user says: "import CSV", "debug import", "parse transactions"
 bun run src/index.ts import <file.csv>
 ```
 
-## Common BNP Paribas CSV issues
+## Common bank CSV issues
 
 | Issue | Details |
 |---|---|
-| Metadata block not skipped | BNP exports include several header lines before the actual data; the parser must skip them |
-| Semicolon separator | BNP uses `;` not `,` as the column delimiter |
+| Metadata block not skipped | Bank CSV exports include several header lines before the actual data; the parser must skip them |
+| Semicolon separator | The format uses `;` not `,` as the column delimiter |
 | Comma decimals | Amounts use `,` as the decimal separator (e.g. `1 234,56`) — must be normalized to `.` |
 | French headers | Column names are in French (e.g. `Date`, `Libellé`, `Montant`) |
 
@@ -29,7 +29,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 describe("parse", () => {
-  it("should parse BNP CSV fixture", () => {
+  it("should parse bank CSV fixture", () => {
     const csv = readFileSync(
       join(import.meta.dir, "__fixtures__/<name>.csv"),
       "utf-8"
