@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/lfarci/flouz/compare/v1.3.0...v1.4.0) (2026-03-22)
+
+
+### Features
+
+* replace bank-specific parser with generic CSV import format ([d812c0a](https://github.com/lfarci/flouz/commit/d812c0a1341b7fc6fd5b51f8193c318423fadfe7))
+
 ## [1.3.0](https://github.com/lfarci/flouz/compare/v1.2.0...v1.3.0) (2026-03-22)
 
 
