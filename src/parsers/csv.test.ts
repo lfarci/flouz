@@ -7,13 +7,13 @@ describe('parseCsv', () => {
   describe('happy path', () => {
     it('parses 5 transactions from fixture', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const transactions = parseCsv(content, FIXTURE_PATH)
+      const { transactions } = parseCsv(content, FIXTURE_PATH)
       expect(transactions).toHaveLength(5)
     })
 
     it('maps required fields correctly', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const [first] = parseCsv(content)
+      const { transactions: [first] } = parseCsv(content)
       expect(first.date).toBe('2026-01-15')
       expect(first.amount).toBe(-42.5)
       expect(first.counterparty).toBe('ACME Shop')
@@ -21,7 +21,7 @@ describe('parseCsv', () => {
 
     it('maps optional fields when present', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const [first] = parseCsv(content)
+      const { transactions: [first] } = parseCsv(content)
       expect(first.counterpartyIban).toBe('BE00 0000 0000 0001')
       expect(first.currency).toBe('EUR')
       expect(first.account).toBe('BE11 1111 1111 1111')
@@ -30,14 +30,14 @@ describe('parseCsv', () => {
 
     it('defaults currency to EUR when column is empty', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const transactions = parseCsv(content)
+      const { transactions } = parseCsv(content)
       const noExplicitCurrency = transactions[1]
       expect(noExplicitCurrency.currency).toBe('EUR')
     })
 
     it('sets optional fields to undefined when column is empty', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const transactions = parseCsv(content)
+      const { transactions } = parseCsv(content)
       const noOptionals = transactions[1]
       expect(noOptionals.counterpartyIban).toBeUndefined()
       expect(noOptionals.note).toBeUndefined()
@@ -45,7 +45,7 @@ describe('parseCsv', () => {
 
     it('sets sourceFile on every transaction', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const transactions = parseCsv(content, 'my-file.csv')
+      const { transactions } = parseCsv(content, 'my-file.csv')
       for (const tx of transactions) {
         expect(tx.sourceFile).toBe('my-file.csv')
       }
@@ -53,12 +53,26 @@ describe('parseCsv', () => {
 
     it('sets importedAt to an ISO timestamp', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const [first] = parseCsv(content)
+      const { transactions: [first] } = parseCsv(content)
       expect(first.importedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/)
     })
 
-    it('returns empty array for empty content', () => {
-      expect(parseCsv('')).toEqual([])
+    it('returns empty arrays for empty content', () => {
+      expect(parseCsv('')).toEqual({ transactions: [], errors: [] })
+    })
+
+    it('returns empty arrays for header-only content', () => {
+      expect(parseCsv('date,amount,counterparty')).toEqual({ transactions: [], errors: [] })
+    })
+
+    it('ignores blank lines between data rows', () => {
+      const content = `date,amount,counterparty
+2026-01-15,-42.50,ACME Shop
+
+2026-01-16,25.00,Salary`
+      const { transactions, errors } = parseCsv(content)
+      expect(transactions).toHaveLength(2)
+      expect(errors).toHaveLength(0)
     })
   })
 
@@ -78,32 +92,60 @@ describe('parseCsv', () => {
       expect(() => parseCsv(content)).toThrow('Missing required column: "counterparty"')
     })
 
-    it('throws on invalid date format', () => {
+    it('collects invalid date format in errors', () => {
       const content = 'date,amount,counterparty\n15/01/2026,-10.00,ACME Shop'
-      expect(() => parseCsv(content)).toThrow('date must be YYYY-MM-DD')
+      const { transactions, errors } = parseCsv(content)
+      expect(transactions).toHaveLength(0)
+      expect(errors).toHaveLength(1)
+      expect(errors[0].message).toContain('date must be YYYY-MM-DD')
+      expect(errors[0].row).toBe(2)
     })
 
-    it('throws on non-numeric amount', () => {
+    it('collects non-numeric amount in errors', () => {
       const content = 'date,amount,counterparty\n2026-01-15,ten,ACME Shop'
-      expect(() => parseCsv(content)).toThrow('amount must be a decimal number')
+      const { transactions, errors } = parseCsv(content)
+      expect(transactions).toHaveLength(0)
+      expect(errors).toHaveLength(1)
+      expect(errors[0].message).toContain('amount must be a decimal number')
     })
 
-    it('throws on empty counterparty', () => {
+    it('collects empty counterparty in errors', () => {
       const content = 'date,amount,counterparty\n2026-01-15,-10.00,'
-      expect(() => parseCsv(content)).toThrow('counterparty must not be empty')
+      const { transactions, errors } = parseCsv(content)
+      expect(transactions).toHaveLength(0)
+      expect(errors).toHaveLength(1)
+      expect(errors[0].message).toContain('counterparty must not be empty')
+    })
+
+    it('collects row with all fields empty in errors', () => {
+      const content = 'date,amount,counterparty\n,,'
+      const { transactions, errors } = parseCsv(content)
+      expect(transactions).toHaveLength(0)
+      expect(errors).toHaveLength(1)
+    })
+
+    it('parses valid rows and collects errors from invalid rows', () => {
+      const content = `date,amount,counterparty
+2026-01-15,-42.50,ACME Shop
+15/01/2026,-10.00,Bad Date
+2026-01-16,25.00,Salary`
+      const { transactions, errors } = parseCsv(content)
+      expect(transactions).toHaveLength(2)
+      expect(errors).toHaveLength(1)
+      expect(errors[0].row).toBe(3)
     })
   })
 
   describe('RFC 4180 compliance', () => {
     it('handles quoted fields containing commas', () => {
       const content = 'date,amount,counterparty\n2026-01-15,-10.00,"Smith, John"'
-      const [tx] = parseCsv(content)
+      const { transactions: [tx] } = parseCsv(content)
       expect(tx.counterparty).toBe('Smith, John')
     })
 
     it('handles doubled quotes inside quoted fields', () => {
       const content = 'date,amount,counterparty\n2026-01-15,-10.00,"O\'Brien""s Shop"'
-      const [tx] = parseCsv(content)
+      const { transactions: [tx] } = parseCsv(content)
       expect(tx.counterparty).toBe("O'Brien\"s Shop")
     })
   })

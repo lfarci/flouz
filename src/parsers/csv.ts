@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import type { Transaction } from '@/types'
 
+export type ParseError = { row: number; message: string }
+export type ParseResult = { transactions: Transaction[]; errors: ParseError[] }
+
 const rowSchema = z.object({
   date: z
     .string()
@@ -18,11 +21,11 @@ const rowSchema = z.object({
 
 type RawRow = Record<string, string>
 
-function parseRow(row: RawRow, index: number, sourceFile?: string): Transaction {
+function parseRow(row: RawRow, sourceFile?: string): Transaction {
   const result = rowSchema.safeParse(row)
   if (!result.success) {
     const messages = result.error.issues.map(i => i.message).join('; ')
-    throw new Error(`Row ${index + 1}: ${messages}`)
+    throw new Error(messages)
   }
 
   const data = result.data
@@ -39,9 +42,9 @@ function parseRow(row: RawRow, index: number, sourceFile?: string): Transaction 
   }
 }
 
-export function parseCsv(content: string, sourceFile?: string): Transaction[] {
+export function parseCsv(content: string, sourceFile?: string): ParseResult {
   const lines = content.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0)
-  if (lines.length === 0) return []
+  if (lines.length === 0) return { transactions: [], errors: [] }
 
   const headers = lines[0].split(',').map(h => h.trim())
   const required = ['date', 'amount', 'counterparty']
@@ -52,17 +55,22 @@ export function parseCsv(content: string, sourceFile?: string): Transaction[] {
   }
 
   const transactions: Transaction[] = []
+  const errors: ParseError[] = []
 
   for (let i = 1; i < lines.length; i++) {
-    const cols = splitCsvLine(lines[i])
-    const row: RawRow = {}
-    for (let j = 0; j < headers.length; j++) {
-      row[headers[j]] = cols[j] ?? ''
+    try {
+      const cols = splitCsvLine(lines[i])
+      const row: RawRow = {}
+      for (let j = 0; j < headers.length; j++) {
+        row[headers[j]] = cols[j] ?? ''
+      }
+      transactions.push(parseRow(row, sourceFile))
+    } catch (error) {
+      errors.push({ row: i + 1, message: error instanceof Error ? error.message : String(error) })
     }
-    transactions.push(parseRow(row, i - 1, sourceFile))
   }
 
-  return transactions
+  return { transactions, errors }
 }
 
 function splitCsvLine(line: string): string[] {
