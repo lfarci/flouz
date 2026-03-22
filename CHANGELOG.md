@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/lfarci/flouz/compare/v1.6.0...v1.7.0) (2026-03-22)
+
+
+### Features
+
+* **import:** use tasks component for batch imports ([741e8a7](https://github.com/lfarci/flouz/commit/741e8a7a115f2c1d22824d2781828a536cd0f8cf))
+
 ## [1.6.0](https://github.com/lfarci/flouz/compare/v1.5.0...v1.6.0) (2026-03-22)
 
 
