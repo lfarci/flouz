@@ -13,8 +13,25 @@ AI-powered personal finance CLI for analyzing bank transactions.
 git clone https://github.com/lfarci/flouz.git
 cd flouz
 bun install
-cp .env.example .env   # then fill in your GITHUB_TOKEN
+bun link              # registers `flouz` as a global command
+cp .env.example .env  # then fill in your GITHUB_TOKEN
 ```
+
+After `bun link`, you can run `flouz` from anywhere:
+
+```bash
+flouz --help
+```
+
+## Updating
+
+```bash
+cd flouz
+git pull
+bun install  # sync dependencies if changed
+```
+
+No need to re-run `bun link` after updates.
 
 ## Commands
 

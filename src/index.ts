@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { Command } from 'commander'
 import { createImportCommand } from './commands/import'
 import { createListCommand } from './commands/list'
