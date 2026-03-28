@@ -52,6 +52,13 @@ src/commands/
 - Extract each distinct phase (read, parse, insert, report) into its own function
 - The action function should only orchestrate: setup → phases → teardown
 
+## SIGINT / Resource Lifecycle
+
+- Register `process.once('SIGINT', onCancel)` at the top of the action function
+- Always call `process.removeListener('SIGINT', onCancel)` before returning (success or error)
+- Close the database before `process.exit()`
+- Use `let db: Database | undefined` so the cancel handler can safely call `db?.close()`
+
 ## Error Handling
 
 - Guard clauses at the top of the action for invalid inputs (`log.error` + `process.exit(1)`)
