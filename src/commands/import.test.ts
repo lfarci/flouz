@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { initDb, seedCategories } from '@/db/schema'
-import { insertTransaction, getTransactions } from '@/db/queries'
+import { insertTransaction, getTransactions } from '@/db/transactions'
 import { parseCsv } from '@/parsers/csv'
 import { findCsvFiles } from './import'
 

@@ -3,7 +3,8 @@ import { Database } from 'bun:sqlite'
 import { resolve } from 'path'
 import { writeFileSync } from 'fs'
 import { initDb, seedCategories } from '@/db/schema'
-import { getTransactions, getCategories } from '@/db/queries'
+import { getTransactions } from '@/db/transactions'
+import { getCategories } from '@/db/categories'
 import { resolveDbPath } from '@/config'
 
 export async function createExportCommand(): Promise<Command> {

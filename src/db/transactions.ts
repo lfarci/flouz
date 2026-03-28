@@ -1,8 +1,8 @@
 import { Database } from 'bun:sqlite'
 import type { SQLQueryBindings } from 'bun:sqlite'
-import type { Transaction, TransactionFilters, Category } from '@/types'
+import type { Transaction, TransactionFilters } from '@/types'
 
-export function insertTransaction(db: Database, tx: Omit<Transaction, 'id'>): number {
+export function insertTransaction(db: Database, transaction: Omit<Transaction, 'id'>): number {
   const stmt = db.prepare(`
     INSERT INTO transactions
       (date, amount, counterparty, counterparty_iban, currency, account, source_ref,
@@ -12,20 +12,20 @@ export function insertTransaction(db: Database, tx: Omit<Transaction, 'id'>): nu
        $categoryId, $aiCategoryId, $aiConfidence, $aiReasoning, $note, $sourceFile, $importedAt)
   `)
   const result = stmt.run({
-    $date: tx.date,
-    $amount: tx.amount,
-    $counterparty: tx.counterparty,
-    $counterpartyIban: tx.counterpartyIban ?? null,
-    $currency: tx.currency,
-    $account: tx.account ?? null,
-    $sourceRef: tx.sourceRef ?? null,
-    $categoryId: tx.categoryId ?? null,
-    $aiCategoryId: tx.aiCategoryId ?? null,
-    $aiConfidence: tx.aiConfidence ?? null,
-    $aiReasoning: tx.aiReasoning ?? null,
-    $note: tx.note ?? null,
-    $sourceFile: tx.sourceFile ?? null,
-    $importedAt: tx.importedAt,
+    $date: transaction.date,
+    $amount: transaction.amount,
+    $counterparty: transaction.counterparty,
+    $counterpartyIban: transaction.counterpartyIban ?? null,
+    $currency: transaction.currency,
+    $account: transaction.account ?? null,
+    $sourceRef: transaction.sourceRef ?? null,
+    $categoryId: transaction.categoryId ?? null,
+    $aiCategoryId: transaction.aiCategoryId ?? null,
+    $aiConfidence: transaction.aiConfidence ?? null,
+    $aiReasoning: transaction.aiReasoning ?? null,
+    $note: transaction.note ?? null,
+    $sourceFile: transaction.sourceFile ?? null,
+    $importedAt: transaction.importedAt,
   })
   return result.changes
 }
@@ -82,18 +82,6 @@ export function getTransactions(db: Database, filters: TransactionFilters = {}):
 
 export function updateCategory(db: Database, id: number, categoryId: string): void {
   db.prepare('UPDATE transactions SET category_id = ? WHERE id = ?').run(categoryId, id)
-}
-
-export function getCategories(db: Database): Category[] {
-  const rows = db.prepare(
-    'SELECT id, name, slug, parent_id FROM categories ORDER BY parent_id NULLS FIRST, name'
-  ).all() as Record<string, unknown>[]
-  return rows.map(row => ({
-    id: row.id as string,
-    name: row.name as string,
-    slug: row.slug as string,
-    parentId: (row.parent_id as string | null) ?? null,
-  }))
 }
 
 export function getUncategorized(db: Database): Transaction[] {

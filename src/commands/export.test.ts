@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { initDb, seedCategories } from '@/db/schema'
-import { insertTransaction } from '@/db/queries'
-import { getTransactions, getCategories } from '@/db/queries'
+import { insertTransaction, getTransactions } from '@/db/transactions'
+import { getCategories } from '@/db/categories'
 
 // Test the CSV generation logic (not the command itself)
 describe('export CSV logic', () => {
