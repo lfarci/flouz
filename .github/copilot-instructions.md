@@ -43,6 +43,7 @@ Key rules at a glance:
 - Use `INSERT OR IGNORE` for deduplication, never manual existence checks
 - Transactions (SQLite transactions) for any multi-row write operation
 - Column names: `snake_case`
+- Database initialisation lives in `src/db/schema.ts` — use `openDatabase(path)` to open, init and seed in one call; never call `new Database()` directly in commands
 
 ### AI
 - Never call LLM APIs directly with `fetch` — always use Vercel AI SDK functions

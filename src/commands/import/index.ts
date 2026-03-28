@@ -3,7 +3,7 @@ import { intro, outro, progress, spinner, cancel, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
-import { initDb, seedCategories } from '@/db/schema'
+import { openDatabase } from '@/db/schema'
 import { insertTransaction } from '@/db/queries'
 import { parseCsv, type ParseError } from '@/parsers/csv'
 import { resolveDbPath } from '@/config'
@@ -14,11 +14,16 @@ type ParsedFile = {
   errors: ParseError[]
 }
 
+type InsertResult = {
+  totalImported: number
+  allErrors: Array<ParseError & { file: string }>
+}
+
 export async function findCsvFiles(dirPath: string): Promise<string[]> {
   const entries = await readdir(dirPath, { withFileTypes: true })
   return entries
-    .filter(e => e.isFile() && extname(e.name).toLowerCase() === '.csv')
-    .map(e => join(dirPath, e.name))
+    .filter(entry => entry.isFile() && extname(entry.name).toLowerCase() === '.csv')
+    .map(entry => join(dirPath, entry.name))
 }
 
 async function resolveCsvFiles(path: string): Promise<string[] | null> {
@@ -28,39 +33,27 @@ async function resolveCsvFiles(path: string): Promise<string[] | null> {
   return [resolve(path)]
 }
 
-async function openDatabase(dbPath: string): Promise<Database> {
-  const isNew = !(await Bun.file(dbPath).exists())
-  if (isNew) log.info(`Creating new database at ${dbPath}`)
-  const db = new Database(dbPath)
-  initDb(db)
-  seedCategories(db)
-  return db
-}
-
 async function parseAllFiles(files: string[]): Promise<ParsedFile[]> {
   const label = files.length === 1 ? `Reading ${basename(files[0])}` : `Reading ${files.length} files`
-  const s = spinner()
-  s.start(label)
+  const fileSpinner = spinner()
+  fileSpinner.start(label)
   const parsed: ParsedFile[] = []
   for (const file of files) {
-    if (files.length > 1) s.message(`Reading ${basename(file)}`)
+    if (files.length > 1) fileSpinner.message(`Reading ${basename(file)}`)
     const content = await Bun.file(file).text()
     const { transactions, errors } = parseCsv(content, file)
     parsed.push({ file, transactions, errors })
   }
   const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
   const fileLabel = files.length === 1 ? basename(files[0]) : `${files.length} files`
-  s.stop(`Importing ${fileLabel} (${totalRows} rows)`)
+  fileSpinner.stop(`Importing ${fileLabel} (${totalRows} rows)`)
   return parsed
 }
 
-async function insertAllTransactions(
-  db: Database,
-  parsed: ParsedFile[]
-): Promise<{ totalImported: number; allErrors: Array<ParseError & { file: string }> }> {
+async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promise<InsertResult> {
   const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
-  const p = progress({ max: Math.max(1, totalRows), style: 'heavy' })
-  p.start(`0 / ${totalRows}`)
+  const insertProgress = progress({ max: Math.max(1, totalRows), style: 'heavy' })
+  insertProgress.start(`0 / ${totalRows}`)
   let totalImported = 0
   const allErrors: Array<ParseError & { file: string }> = []
   try {
@@ -71,15 +64,15 @@ async function insertAllTransactions(
         }
       })()
       totalImported += transactions.length
-      p.advance(transactions.length, `${basename(file)} — ${totalImported} / ${totalRows}`)
+      insertProgress.advance(transactions.length, `${basename(file)} — ${totalImported} / ${totalRows}`)
       await Bun.sleep(0)
-      allErrors.push(...errors.map(e => ({ ...e, file })))
+      allErrors.push(...errors.map(parseError => ({ ...parseError, file })))
     }
   } catch (error) {
-    p.error('Failed')
+    insertProgress.error('Failed')
     throw error
   }
-  p.stop(`${totalImported} / ${totalRows}`)
+  insertProgress.stop(`${totalImported} / ${totalRows}`)
   return { totalImported, allErrors }
 }
 
@@ -94,9 +87,9 @@ function reportResults(totalImported: number, allErrors: Array<ParseError & { fi
 async function importAction(path: string, options: { db: string }): Promise<void> {
   intro('flouz import')
 
-  let db: Database | undefined
+  let database: Database | undefined
   const onCancel = () => {
-    db?.close()
+    database?.close()
     cancel('Import cancelled.')
     process.exit(1)
   }
@@ -115,18 +108,21 @@ async function importAction(path: string, options: { db: string }): Promise<void
     process.exit(0)
   }
 
-  db = await openDatabase(resolve(options.db))
+  const dbPath = resolve(options.db)
+  const isNew = !(await Bun.file(dbPath).exists())
+  if (isNew) log.info(`Creating new database at ${dbPath}`)
+  database = openDatabase(dbPath)
 
   try {
     const parsed = await parseAllFiles(files)
-    const { totalImported, allErrors } = await insertAllTransactions(db, parsed)
+    const { totalImported, allErrors } = await insertAllTransactions(database, parsed)
     process.removeListener('SIGINT', onCancel)
-    db.close()
+    database.close()
     reportResults(totalImported, allErrors)
   } catch (error) {
     process.removeListener('SIGINT', onCancel)
     log.error(error instanceof Error ? error.message : String(error))
-    db.close()
+    database.close()
     process.exit(1)
   }
 }

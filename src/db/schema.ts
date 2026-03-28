@@ -1,6 +1,13 @@
 import { Database } from 'bun:sqlite'
 import { CATEGORIES } from '@/data/categories'
 
+export function openDatabase(dbPath: string): Database {
+  const db = new Database(dbPath)
+  initDb(db)
+  seedCategories(db)
+  return db
+}
+
 export function initDb(db: Database): void {
   db.run(`
     CREATE TABLE IF NOT EXISTS categories (
