@@ -16,6 +16,7 @@ type ParsedFile = {
 
 type InsertResult = {
   totalImported: number
+  totalDuplicates: number
   allErrors: Array<ParseError & { file: string }>
 }
 
@@ -55,15 +56,18 @@ async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promis
   const insertProgress = progress({ max: Math.max(1, totalRows), style: 'heavy' })
   insertProgress.start(`0 / ${totalRows}`)
   let totalImported = 0
+  let totalDuplicates = 0
   const allErrors: Array<ParseError & { file: string }> = []
   try {
     for (const { file, transactions, errors } of parsed) {
+      let fileImported = 0
       db.transaction(() => {
         for (const transaction of transactions) {
-          insertTransaction(db, transaction)
+          fileImported += insertTransaction(db, transaction)
         }
       })()
-      totalImported += transactions.length
+      totalImported += fileImported
+      totalDuplicates += transactions.length - fileImported
       insertProgress.advance(transactions.length, `${basename(file)} — ${totalImported} / ${totalRows}`)
       await Bun.sleep(0)
       allErrors.push(...errors.map(parseError => ({ ...parseError, file })))
@@ -73,15 +77,16 @@ async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promis
     throw error
   }
   insertProgress.stop(`${totalImported} / ${totalRows}`)
-  return { totalImported, allErrors }
+  return { totalImported, totalDuplicates, allErrors }
 }
 
-function reportResults(totalImported: number, allErrors: Array<ParseError & { file: string }>): void {
+function reportResults(totalImported: number, totalDuplicates: number, allErrors: Array<ParseError & { file: string }>): void {
   for (const { file, row, message } of allErrors) {
     log.warn(`${file} line ${row}: ${message}`)
   }
+  const duplicateSuffix = totalDuplicates > 0 ? `, ${totalDuplicates} duplicate(s) skipped` : ''
   const errorSuffix = allErrors.length > 0 ? `, ${allErrors.length} invalid row(s) skipped` : ''
-  outro(`✓ ${totalImported} imported${errorSuffix}`)
+  outro(`✓ ${totalImported} imported${duplicateSuffix}${errorSuffix}`)
 }
 
 async function importAction(path: string, options: { db: string }): Promise<void> {
@@ -115,10 +120,10 @@ async function importAction(path: string, options: { db: string }): Promise<void
 
   try {
     const parsed = await parseAllFiles(files)
-    const { totalImported, allErrors } = await insertAllTransactions(database, parsed)
+    const { totalImported, totalDuplicates, allErrors } = await insertAllTransactions(database, parsed)
     process.removeListener('SIGINT', onCancel)
     database.close()
-    reportResults(totalImported, allErrors)
+    reportResults(totalImported, totalDuplicates, allErrors)
   } catch (error) {
     process.removeListener('SIGINT', onCancel)
     log.error(error instanceof Error ? error.message : String(error))

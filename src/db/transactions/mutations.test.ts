@@ -5,7 +5,7 @@ import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { getTransactions } from './queries'
 import { createTransactionsTable } from './schema'
-import { insertTransaction, updateCategory } from './mutations'
+import { computeTransactionHash, insertTransaction, updateCategory } from './mutations'
 
 const fakeTransaction: Omit<Transaction, 'id'> = {
   date: '2026-01-15',
@@ -24,10 +24,62 @@ beforeEach(() => {
   seedCategories(db)
 })
 
+describe('computeTransactionHash', () => {
+  it('returns a 64-character hex string', () => {
+    const hash = computeTransactionHash(fakeTransaction)
+    expect(hash).toHaveLength(64)
+    expect(hash).toMatch(/^[0-9a-f]{64}$/)
+  })
+
+  it('returns the same hash for identical deduplication fields', () => {
+    const hashA = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'ACME Shop' })
+    const hashB = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'ACME Shop' })
+    expect(hashA).toBe(hashB)
+  })
+
+  it('returns different hashes when date differs', () => {
+    const hashA = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'ACME Shop' })
+    const hashB = computeTransactionHash({ date: '2026-01-16', amount: -42.5, counterparty: 'ACME Shop' })
+    expect(hashA).not.toBe(hashB)
+  })
+
+  it('returns different hashes when amount differs', () => {
+    const hashA = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'ACME Shop' })
+    const hashB = computeTransactionHash({ date: '2026-01-15', amount: -10.0, counterparty: 'ACME Shop' })
+    expect(hashA).not.toBe(hashB)
+  })
+
+  it('returns different hashes when counterparty differs', () => {
+    const hashA = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'ACME Shop' })
+    const hashB = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'Other Store' })
+    expect(hashA).not.toBe(hashB)
+  })
+})
+
 describe('insertTransaction', () => {
   it('inserts a transaction and returns 1', () => {
     const changes = insertTransaction(db, fakeTransaction)
     expect(changes).toBe(1)
+  })
+
+  it('returns 0 when inserting a duplicate transaction', () => {
+    insertTransaction(db, fakeTransaction)
+    const changes = insertTransaction(db, fakeTransaction)
+    expect(changes).toBe(0)
+  })
+
+  it('stores only one row when the same transaction is inserted twice', () => {
+    insertTransaction(db, fakeTransaction)
+    insertTransaction(db, fakeTransaction)
+    const transactions = getTransactions(db)
+    expect(transactions).toHaveLength(1)
+  })
+
+  it('inserts two transactions with the same date and amount but different counterparty', () => {
+    insertTransaction(db, fakeTransaction)
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Other Store' })
+    const transactions = getTransactions(db)
+    expect(transactions).toHaveLength(2)
   })
 })
 

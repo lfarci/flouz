@@ -4,6 +4,7 @@ export function createTransactionsTable(db: Database): void {
   db.run(`
     CREATE TABLE IF NOT EXISTS transactions (
       id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+      hash               TEXT NOT NULL UNIQUE,
       date               TEXT NOT NULL,
       amount             REAL NOT NULL,
       counterparty       TEXT NOT NULL,
