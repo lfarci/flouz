@@ -10,13 +10,20 @@ import { findCsvFiles } from '.'
 const FIXTURE = `${import.meta.dir}/../../parsers/__fixtures__/minimal.csv`
 const FIXTURES_DIR = `${import.meta.dir}/../../parsers/__fixtures__`
 
-async function importAll(db: Database, sourceFile: string): Promise<{ imported: number; errors: number }> {
+async function importAll(db: Database, sourceFile: string): Promise<{ imported: number; skipped: number; errors: number }> {
   const content = await Bun.file(sourceFile).text()
   const { transactions, errors } = parseCsv(content, sourceFile)
+  let imported = 0
+  let skipped = 0
   for (const transaction of transactions) {
-    insertTransaction(db, transaction)
+    const changes = insertTransaction(db, transaction)
+    if (changes === 0) {
+      skipped++
+    } else {
+      imported++
+    }
   }
-  return { imported: transactions.length, errors: errors.length }
+  return { imported, skipped, errors: errors.length }
 }
 
 describe('import pipeline', () => {
@@ -63,6 +70,15 @@ not-a-date,-10.00,Bad Row
     expect(errors).toHaveLength(1)
     expect(errors[0].row).toBe(3)
     expect(errors[0].message).toContain('date must be YYYY-MM-DD')
+  })
+
+  it('skips duplicate transactions on a second import of the same file', async () => {
+    const { imported: firstImport } = await importAll(db, FIXTURE)
+    const { imported: secondImport, skipped } = await importAll(db, FIXTURE)
+    expect(firstImport).toBe(5)
+    expect(secondImport).toBe(0)
+    expect(skipped).toBe(5)
+    expect(getTransactions(db)).toHaveLength(5)
   })
 })
 

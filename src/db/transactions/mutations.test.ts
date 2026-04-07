@@ -5,7 +5,7 @@ import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { getTransactions } from './queries'
 import { createTransactionsTable } from './schema'
-import { insertTransaction, updateCategory } from './mutations'
+import { computeFingerprint, insertTransaction, updateCategory } from './mutations'
 
 const fakeTransaction: Omit<Transaction, 'id'> = {
   date: '2026-01-15',
@@ -24,10 +24,60 @@ beforeEach(() => {
   seedCategories(db)
 })
 
+describe('computeFingerprint', () => {
+  it('returns a 64-character hex string', () => {
+    const fingerprint = computeFingerprint('2026-01-15', -42.5, 'ACME Shop')
+    expect(fingerprint).toHaveLength(64)
+    expect(fingerprint).toMatch(/^[0-9a-f]{64}$/)
+  })
+
+  it('returns the same fingerprint for the same inputs', () => {
+    const first = computeFingerprint('2026-01-15', -42.5, 'ACME Shop')
+    const second = computeFingerprint('2026-01-15', -42.5, 'ACME Shop')
+    expect(first).toBe(second)
+  })
+
+  it('returns different fingerprints when date differs', () => {
+    const first = computeFingerprint('2026-01-15', -42.5, 'ACME Shop')
+    const second = computeFingerprint('2026-01-16', -42.5, 'ACME Shop')
+    expect(first).not.toBe(second)
+  })
+
+  it('returns different fingerprints when amount differs', () => {
+    const first = computeFingerprint('2026-01-15', -42.5, 'ACME Shop')
+    const second = computeFingerprint('2026-01-15', -10.0, 'ACME Shop')
+    expect(first).not.toBe(second)
+  })
+
+  it('returns different fingerprints when counterparty differs', () => {
+    const first = computeFingerprint('2026-01-15', -42.5, 'ACME Shop')
+    const second = computeFingerprint('2026-01-15', -42.5, 'Other Shop')
+    expect(first).not.toBe(second)
+  })
+})
+
 describe('insertTransaction', () => {
   it('inserts a transaction and returns 1', () => {
     const changes = insertTransaction(db, fakeTransaction)
     expect(changes).toBe(1)
+  })
+
+  it('returns 0 when inserting a duplicate transaction', () => {
+    insertTransaction(db, fakeTransaction)
+    const changes = insertTransaction(db, fakeTransaction)
+    expect(changes).toBe(0)
+  })
+
+  it('stores only one row when the same transaction is inserted twice', () => {
+    insertTransaction(db, fakeTransaction)
+    insertTransaction(db, fakeTransaction)
+    expect(getTransactions(db)).toHaveLength(1)
+  })
+
+  it('inserts two transactions with the same counterparty but different dates', () => {
+    insertTransaction(db, fakeTransaction)
+    insertTransaction(db, { ...fakeTransaction, date: '2026-01-16' })
+    expect(getTransactions(db)).toHaveLength(2)
   })
 })
 
