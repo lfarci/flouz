@@ -4,7 +4,7 @@ import { Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
 import { openDatabase } from '@/db/schema'
-import { insertTransaction } from '@/db/transactions'
+import { insertTransaction } from '@/db/transactions/mutations'
 import { parseCsv, type ParseError } from '@/parsers/csv'
 import { resolveDbPath } from '@/config'
 

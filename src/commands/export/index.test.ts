@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import { getCategories } from '@/db/categories'
-import { initDb, seedCategories } from '@/db/schema'
-import { insertTransaction } from '@/db/transactions'
+import { getCategories } from '@/db/categories/queries'
+import { seedCategories } from '@/db/categories/seed'
+import { initDb } from '@/db/schema'
+import { insertTransaction } from '@/db/transactions/mutations'
 import { buildCsv, escapeCsvField, loadExportRows } from '.'
 
 describe('export pipeline', () => {

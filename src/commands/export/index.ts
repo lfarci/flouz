@@ -3,9 +3,9 @@ import { intro, outro, spinner, cancel, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { basename, resolve } from 'node:path'
 import { resolveDbPath } from '@/config'
-import { getCategories } from '@/db/categories'
+import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
-import { getTransactions } from '@/db/transactions'
+import { getTransactions } from '@/db/transactions/queries'
 import type { Transaction } from '@/types'
 
 type ExportOptions = {

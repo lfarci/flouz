@@ -3,9 +3,9 @@ import { Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { basename, resolve } from 'node:path'
 import { resolveDbPath } from '@/config'
-import { getCategories } from '@/db/categories'
+import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
-import { getTransactions, getUncategorized } from '@/db/transactions'
+import { getTransactions, getUncategorized } from '@/db/transactions/queries'
 import type { Category, Transaction, TransactionFilters } from '@/types'
 
 type ListOptions = {
