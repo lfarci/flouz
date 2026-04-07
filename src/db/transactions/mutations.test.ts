@@ -29,6 +29,42 @@ describe('insertTransaction', () => {
     const changes = insertTransaction(db, fakeTransaction)
     expect(changes).toBe(1)
   })
+
+  it('returns 0 when inserting a duplicate transaction', () => {
+    insertTransaction(db, fakeTransaction)
+
+    const changes = insertTransaction(db, fakeTransaction)
+
+    expect(changes).toBe(0)
+    expect(getTransactions(db)).toHaveLength(1)
+  })
+
+  it('treats source_ref as metadata and not part of the duplicate detection key', () => {
+    insertTransaction(db, {
+      ...fakeTransaction,
+      sourceRef: '001:1001',
+    })
+
+    const changes = insertTransaction(db, {
+      ...fakeTransaction,
+      sourceRef: '001:1002',
+    })
+
+    expect(changes).toBe(0)
+    expect(getTransactions(db)).toHaveLength(1)
+  })
+
+  it('inserts a second row when the duplicate detection key changes', () => {
+    insertTransaction(db, fakeTransaction)
+
+    const changes = insertTransaction(db, {
+      ...fakeTransaction,
+      amount: -40.5,
+    })
+
+    expect(changes).toBe(1)
+    expect(getTransactions(db)).toHaveLength(2)
+  })
 })
 
 describe('updateCategory', () => {

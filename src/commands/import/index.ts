@@ -8,32 +8,37 @@ import { insertTransaction } from '@/db/transactions/mutations'
 import { parseCsv, type ParseError } from '@/parsers/csv'
 import { resolveDbPath } from '@/config'
 
-type ParsedFile = {
+export type ParsedFile = {
   file: string
   transactions: ReturnType<typeof parseCsv>['transactions']
   errors: ParseError[]
 }
 
-type InsertResult = {
+export type InsertResult = {
+  totalParsed: number
   totalImported: number
+  totalDuplicatesSkipped: number
   allErrors: Array<ParseError & { file: string }>
 }
 
 export async function findCsvFiles(dirPath: string): Promise<string[]> {
-  const entries = await readdir(dirPath, { withFileTypes: true })
+  const absoluteDirPath = resolve(dirPath)
+  const entries = await readdir(absoluteDirPath, { withFileTypes: true })
   return entries
     .filter(entry => entry.isFile() && extname(entry.name).toLowerCase() === '.csv')
-    .map(entry => join(dirPath, entry.name))
+    .map(entry => join(absoluteDirPath, entry.name))
+    .sort((leftPath, rightPath) => leftPath.localeCompare(rightPath))
 }
 
-async function resolveCsvFiles(path: string): Promise<string[] | null> {
-  const info = await stat(path).catch(() => null)
-  if (!info) return null
-  if (info.isDirectory()) return findCsvFiles(path)
-  return [resolve(path)]
+async function resolveCsvFiles(path: string): Promise<string[] | undefined> {
+  const absolutePath = resolve(path)
+  const info = await stat(absolutePath).catch(() => undefined)
+  if (!info) return undefined
+  if (info.isDirectory()) return findCsvFiles(absolutePath)
+  return [absolutePath]
 }
 
-async function parseAllFiles(files: string[]): Promise<ParsedFile[]> {
+export async function parseAllFiles(files: string[]): Promise<ParsedFile[]> {
   const label = files.length === 1 ? `Reading ${basename(files[0])}` : `Reading ${files.length} files`
   const fileSpinner = spinner()
   fileSpinner.start(label)
@@ -50,21 +55,25 @@ async function parseAllFiles(files: string[]): Promise<ParsedFile[]> {
   return parsed
 }
 
-async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promise<InsertResult> {
+export async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promise<InsertResult> {
   const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
   const insertProgress = progress({ max: Math.max(1, totalRows), style: 'heavy' })
   insertProgress.start(`0 / ${totalRows}`)
   let totalImported = 0
+  let totalDuplicatesSkipped = 0
   const allErrors: Array<ParseError & { file: string }> = []
   try {
     for (const { file, transactions, errors } of parsed) {
+      let importedFromFile = 0
       db.transaction(() => {
         for (const transaction of transactions) {
-          insertTransaction(db, transaction)
+          importedFromFile += insertTransaction(db, transaction)
         }
       })()
-      totalImported += transactions.length
-      insertProgress.advance(transactions.length, `${basename(file)} — ${totalImported} / ${totalRows}`)
+      const duplicatesFromFile = transactions.length - importedFromFile
+      totalImported += importedFromFile
+      totalDuplicatesSkipped += duplicatesFromFile
+      insertProgress.advance(transactions.length, `${basename(file)} — ${totalImported} imported / ${totalRows} parsed`)
       await Bun.sleep(0)
       allErrors.push(...errors.map(parseError => ({ ...parseError, file })))
     }
@@ -72,16 +81,18 @@ async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promis
     insertProgress.error('Failed')
     throw error
   }
-  insertProgress.stop(`${totalImported} / ${totalRows}`)
-  return { totalImported, allErrors }
+  insertProgress.stop(`${totalImported} imported / ${totalRows} parsed`)
+  return { totalParsed: totalRows, totalImported, totalDuplicatesSkipped, allErrors }
 }
 
-function reportResults(totalImported: number, allErrors: Array<ParseError & { file: string }>): void {
+function reportResults(result: InsertResult): void {
+  const { totalImported, totalDuplicatesSkipped, allErrors } = result
   for (const { file, row, message } of allErrors) {
     log.warn(`${file} line ${row}: ${message}`)
   }
   const errorSuffix = allErrors.length > 0 ? `, ${allErrors.length} invalid row(s) skipped` : ''
-  outro(`✓ ${totalImported} imported${errorSuffix}`)
+  const duplicateSuffix = totalDuplicatesSkipped > 0 ? `, ${totalDuplicatesSkipped} duplicate row(s) skipped` : ''
+  outro(`✓ ${totalImported} imported${duplicateSuffix}${errorSuffix}`)
 }
 
 async function importAction(path: string, options: { db: string }): Promise<void> {
@@ -115,10 +126,10 @@ async function importAction(path: string, options: { db: string }): Promise<void
 
   try {
     const parsed = await parseAllFiles(files)
-    const { totalImported, allErrors } = await insertAllTransactions(database, parsed)
+    const result = await insertAllTransactions(database, parsed)
     process.removeListener('SIGINT', onCancel)
     database.close()
-    reportResults(totalImported, allErrors)
+    reportResults(result)
   } catch (error) {
     process.removeListener('SIGINT', onCancel)
     log.error(error instanceof Error ? error.message : String(error))

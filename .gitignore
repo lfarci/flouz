@@ -4,3 +4,4 @@ dist/
 *.db
 *.csv
 !src/**/__fixtures__/*.csv
+!src/**/__fixtures__/**/*.csv

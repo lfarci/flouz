@@ -1,0 +1,9 @@
+date,amount,counterparty,counterparty_iban,currency,account,note
+2026-02-01,-3.20,Metro Kiosk,,EUR,BE11 1111 1111 1111,Morning coffee
+2026-02-01,-18.45,City Market,,EUR,BE11 1111 1111 1111,Groceries basket
+2026-02-02,-42.00,Northwind Energy,BE00 0000 0000 1001,EUR,BE11 1111 1111 1111,Monthly electricity
+2026-02-03,2450.00,Example Payroll,,EUR,BE11 1111 1111 1111,February salary
+2026-02-03,-12.80,Metro Kiosk,,EUR,BE11 1111 1111 1111,Evening snacks
+2026-02-04,-55.10,Test Pharmacy,BE00 0000 0000 1002,EUR,,Prescription refill
+2026-02-05,-8.90,Blue Bottle Laundry,,EUR,BE11 1111 1111 1111,Laundry card topup
+2026-02-05,-74.00,ACME Telecom,BE00 0000 0000 1003,EUR,BE11 1111 1111 1111,Fiber subscription

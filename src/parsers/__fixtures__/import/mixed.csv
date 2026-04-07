@@ -1,0 +1,8 @@
+date,amount,counterparty,counterparty_iban,currency,account,note
+2026-02-01,-18.45,City Market,,EUR,BE11 1111 1111 1111,Groceries basket repeat
+2026-02-08,-14.20,Studio Bakery,,EUR,BE11 1111 1111 1111,Weekend brunch
+2026-02-08,-14.20,Studio Bakery,,EUR,BE11 1111 1111 1111,Weekend brunch duplicate
+not-a-date,-11.00,Bad Date Merchant,,EUR,BE11 1111 1111 1111,Bad row
+2026-02-09,invalid,Amount Problem,,EUR,BE11 1111 1111 1111,Bad amount
+2026-02-10,-9.50,,,EUR,BE11 1111 1111 1111,
+2026-02-11,89.00,Refund Hub,,EUR,BE11 1111 1111 1111,Returned purchase

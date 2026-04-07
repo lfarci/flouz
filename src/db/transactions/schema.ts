@@ -1,6 +1,10 @@
 import { Database } from 'bun:sqlite'
 
+export const TRANSACTION_DUPLICATE_DETECTION_KEY_COLUMNS = ['date', 'amount', 'counterparty'] as const
+
 export function createTransactionsTable(db: Database): void {
+  const duplicateDetectionKeySql = TRANSACTION_DUPLICATE_DETECTION_KEY_COLUMNS.join(', ')
+
   db.run(`
     CREATE TABLE IF NOT EXISTS transactions (
       id                 INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +21,8 @@ export function createTransactionsTable(db: Database): void {
       ai_reasoning       TEXT,
       note               TEXT,
       source_file        TEXT,
-      imported_at        TEXT NOT NULL
+      imported_at        TEXT NOT NULL,
+      UNIQUE(${duplicateDetectionKeySql})
     )
   `)
 }

@@ -51,7 +51,7 @@ CREATE TABLE transactions (
   note               TEXT,                   -- raw Communications field from CSV
   source_file        TEXT,                   -- original CSV filename
   imported_at        TEXT NOT NULL,          -- ISO 8601 timestamp of import
-  UNIQUE(date, amount, counterparty)         -- dedup key
+  UNIQUE(date, amount, counterparty)         -- duplicate detection key
 );
 ```
 
@@ -102,9 +102,13 @@ db.prepare(`
 // UPDATE transactions SET category_id = ai_category_id WHERE …
 ```
 
-### Dedup Strategy
+### Duplicate Detection Strategy
 
 The `UNIQUE(date, amount, counterparty)` constraint prevents duplicate imports. Use `INSERT OR IGNORE` so re-importing a CSV is always safe:
+
+- Current dedup identity is the business key `(date, amount, counterparty)`
+- `source_ref` is stored when available but is not currently part of duplicate detection
+- `source_file` and `imported_at` are audit metadata only and never affect deduplication
 
 ```ts
 db.prepare(`
