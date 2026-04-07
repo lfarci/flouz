@@ -38,12 +38,6 @@ Key rules at a glance:
 
 > TypeScript and Bun-specific rules are in `.github/instructions/typescript.instructions.md`.
 
-### Database
-- All queries go through typed helpers in `src/db/queries.ts` — no raw SQL in commands
-- Use `INSERT OR IGNORE` for deduplication, never manual existence checks
-- Transactions (SQLite transactions) for any multi-row write operation
-- Column names: `snake_case`
-
 ### AI
 - Never call LLM APIs directly with `fetch` — always use Vercel AI SDK functions
 - Always use `generateObject` with a Zod schema for structured output — never parse JSON manually
@@ -73,7 +67,7 @@ Key rules at a glance:
 ```
 src/
   commands/     ← one file per CLI command
-  db/           ← schema.ts, queries.ts
+  db/           ← table-specific database modules; see database.instructions.md
   parsers/      ← source.ts (bank CSV parser)
   ai/           ← client.ts (model factory), prompts.ts
   index.ts      ← Commander root, registers all commands
@@ -88,16 +82,14 @@ src/
 - Bank: Belgian bank, semicolon-delimited CSV export format
 - Source CSV: semicolon-separated, comma decimals, French headers, metadata block before data rows
 - Categories: 3-level UUID hierarchy (Necessities / Savings / Discretionary → subcategories → leaves)
-- Category IDs are stable UUIDs from `data/Categories.csv` — never regenerate them
-- Transaction deduplication key: `(date, amount, counterparty)` — composite UNIQUE constraint
 
 ## Design Principles
 
 ### SOLID
-- **Single Responsibility** — each module does one thing: `parsers/source.ts` parses CSVs, `db/queries.ts` queries data, `ai/client.ts` creates the model. Never mix concerns.
+- **Single Responsibility** — each module does one thing: `parsers/source.ts` parses CSVs, `ai/client.ts` creates the model. Never mix concerns.
 - **Open/Closed** — extend behavior via new files/functions, not by modifying stable ones. Adding a new command = new file in `commands/`, not editing `index.ts` logic.
 - **Liskov Substitution** — AI provider adapters must be interchangeable. Swapping `@ai-sdk/openai` for `@ai-sdk/anthropic` must require zero changes outside `ai/client.ts`.
-- **Interface Segregation** — expose only what callers need. Query helpers in `queries.ts` return plain typed objects, not raw `bun:sqlite` statement objects.
+- **Interface Segregation** — expose only what callers need.
 - **Dependency Inversion** — commands depend on abstractions (`getModel()`, query helpers), not on concrete SDKs or `Database` instances directly. Inject `db` as a parameter, never import a global instance.
 
 ### KISS — Keep It Simple
@@ -108,7 +100,6 @@ src/
 
 ### DRY — Don't Repeat Yourself
 - Date parsing, amount parsing, and counterparty cleanup live in `parsers/source.ts` only — never duplicated in tests or commands (tests import the same function).
-- All SQL for a given table lives in `db/queries.ts` — no inline SQL strings in commands.
 - Prompt templates live in `ai/prompts.ts` — no inline prompt strings in commands.
 - Zod schemas that are reused across modules live in a shared `src/types.ts`.
 

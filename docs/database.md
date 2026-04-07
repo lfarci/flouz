@@ -2,6 +2,29 @@
 
 flouz uses SQLite via `bun:sqlite` directly — no ORM. All queries use prepared statements.
 
+## Module Layout
+
+Database code is grouped by table:
+
+```text
+src/db/
+  categories/
+    schema.ts
+    seed.ts
+    queries.ts
+  transactions/
+    schema.ts
+    queries.ts
+    mutations.ts
+  schema.ts
+```
+
+- `schema.ts` inside a table directory defines `CREATE TABLE` logic for that table.
+- `seed.ts` is only used for tables that need bootstrap data.
+- `queries.ts` contains read-only `SELECT` helpers.
+- `mutations.ts` contains write helpers such as `INSERT` and `UPDATE`.
+- `src/db/schema.ts` coordinates cross-table initialization.
+
 ## Schema
 
 ```sql
@@ -95,12 +118,16 @@ db.prepare(`
 Always use prepared statements — never string-interpolate user data into queries:
 
 ```ts
-import { Database } from "bun:sqlite";
+import { Database } from 'bun:sqlite'
+import { insertTransaction } from '@/db/transactions/mutations'
 
-const db = new Database(`${process.env.HOME}/.config/flouz/flouz.db`);
+const db = new Database(`${process.env.HOME}/.config/flouz/flouz.db`)
 
-const insert = db.prepare(
-  "INSERT OR IGNORE INTO transactions (date, amount, counterparty) VALUES (?, ?, ?)"
-);
-insert.run("2026-01-27", -12.50, "Some Merchant");
+insertTransaction(db, {
+  date: '2026-01-27',
+  amount: -12.5,
+  counterparty: 'Some Merchant',
+  currency: 'EUR',
+  importedAt: new Date().toISOString(),
+})
 ```

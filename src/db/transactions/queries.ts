@@ -2,34 +2,6 @@ import { Database } from 'bun:sqlite'
 import type { SQLQueryBindings } from 'bun:sqlite'
 import type { Transaction, TransactionFilters } from '@/types'
 
-export function insertTransaction(db: Database, transaction: Omit<Transaction, 'id'>): number {
-  const stmt = db.prepare(`
-    INSERT INTO transactions
-      (date, amount, counterparty, counterparty_iban, currency, account, source_ref,
-       category_id, ai_category_id, ai_confidence, ai_reasoning, note, source_file, imported_at)
-    VALUES
-      ($date, $amount, $counterparty, $counterpartyIban, $currency, $account, $sourceRef,
-       $categoryId, $aiCategoryId, $aiConfidence, $aiReasoning, $note, $sourceFile, $importedAt)
-  `)
-  const result = stmt.run({
-    $date: transaction.date,
-    $amount: transaction.amount,
-    $counterparty: transaction.counterparty,
-    $counterpartyIban: transaction.counterpartyIban ?? null,
-    $currency: transaction.currency,
-    $account: transaction.account ?? null,
-    $sourceRef: transaction.sourceRef ?? null,
-    $categoryId: transaction.categoryId ?? null,
-    $aiCategoryId: transaction.aiCategoryId ?? null,
-    $aiConfidence: transaction.aiConfidence ?? null,
-    $aiReasoning: transaction.aiReasoning ?? null,
-    $note: transaction.note ?? null,
-    $sourceFile: transaction.sourceFile ?? null,
-    $importedAt: transaction.importedAt,
-  })
-  return result.changes
-}
-
 function rowToTransaction(row: Record<string, unknown>): Transaction {
   return {
     id: row.id as number,
@@ -71,17 +43,16 @@ export function getTransactions(db: Database, filters: TransactionFilters = {}):
     params.push(`%${filters.search}%`)
   }
 
-  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
-  const limit = filters.limit !== undefined ? `LIMIT ?` : ''
-  if (filters.limit !== undefined) params.push(filters.limit)
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+  const limitClause = filters.limit !== undefined ? 'LIMIT ?' : ''
 
-  const sql = `SELECT * FROM transactions ${where} ORDER BY date DESC ${limit}`.trim()
+  if (filters.limit !== undefined) {
+    params.push(filters.limit)
+  }
+
+  const sql = `SELECT * FROM transactions ${whereClause} ORDER BY date DESC ${limitClause}`.trim()
   const rows = db.prepare(sql).all(...params) as Record<string, unknown>[]
   return rows.map(rowToTransaction)
-}
-
-export function updateCategory(db: Database, id: number, categoryId: string): void {
-  db.prepare('UPDATE transactions SET category_id = ? WHERE id = ?').run(categoryId, id)
 }
 
 export function getUncategorized(db: Database): Transaction[] {

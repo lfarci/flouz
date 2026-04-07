@@ -1,18 +1,20 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import { initDb, seedCategories } from '@/db/schema'
-import { insertTransaction, getTransactions } from '@/db/transactions'
+import { seedCategories } from '@/db/categories/seed'
+import { initDb } from '@/db/schema'
+import { insertTransaction } from '@/db/transactions/mutations'
+import { getTransactions } from '@/db/transactions/queries'
 import { parseCsv } from '@/parsers/csv'
-import { findCsvFiles } from './import'
+import { findCsvFiles } from '.'
 
-const FIXTURE = `${import.meta.dir}/../parsers/__fixtures__/minimal.csv`
-const FIXTURES_DIR = `${import.meta.dir}/../parsers/__fixtures__`
+const FIXTURE = `${import.meta.dir}/../../parsers/__fixtures__/minimal.csv`
+const FIXTURES_DIR = `${import.meta.dir}/../../parsers/__fixtures__`
 
 async function importAll(db: Database, sourceFile: string): Promise<{ imported: number; errors: number }> {
   const content = await Bun.file(sourceFile).text()
   const { transactions, errors } = parseCsv(content, sourceFile)
-  for (const tx of transactions) {
-    insertTransaction(db, tx)
+  for (const transaction of transactions) {
+    insertTransaction(db, transaction)
   }
   return { imported: transactions.length, errors: errors.length }
 }
@@ -34,17 +36,17 @@ describe('import pipeline', () => {
 
   it('sets correct date format (yyyy-MM-dd)', async () => {
     await importAll(db, FIXTURE)
-    const txs = getTransactions(db)
-    for (const tx of txs) {
-      expect(tx.date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    const transactions = getTransactions(db)
+    for (const transaction of transactions) {
+      expect(transaction.date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     }
   })
 
   it('sets source_file on imported rows', async () => {
     await importAll(db, FIXTURE)
-    const txs = getTransactions(db)
-    for (const tx of txs) {
-      expect(tx.sourceFile).toBe(FIXTURE)
+    const transactions = getTransactions(db)
+    for (const transaction of transactions) {
+      expect(transaction.sourceFile).toBe(FIXTURE)
     }
   })
 
@@ -54,8 +56,8 @@ describe('import pipeline', () => {
 not-a-date,-10.00,Bad Row
 2026-01-16,25.00,Salary`
     const { transactions, errors } = parseCsv(content)
-    for (const tx of transactions) {
-      insertTransaction(db, tx)
+    for (const transaction of transactions) {
+      insertTransaction(db, transaction)
     }
     expect(getTransactions(db)).toHaveLength(2)
     expect(errors).toHaveLength(1)
