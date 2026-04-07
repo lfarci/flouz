@@ -5,9 +5,8 @@ import {
   insertTransaction,
   getTransactions,
   updateCategory,
-  getCategories,
   getUncategorized,
-} from './queries'
+} from './transactions'
 import type { Transaction } from '@/types'
 
 const fakeTx: Omit<Transaction, 'id'> = {
@@ -90,13 +89,6 @@ describe('updateCategory', () => {
     updateCategory(db, tx.id!, 'food-groceries')
     const [updated] = getTransactions(db)
     expect(updated.aiCategoryId).toBe('transport-fuel')
-  })
-})
-
-describe('getCategories', () => {
-  it('returns all 24 categories', () => {
-    const cats = getCategories(db)
-    expect(cats.length).toBe(24)
   })
 })
 
