@@ -4,7 +4,7 @@ import type { Transaction } from '@/types'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { getTransactions } from './queries'
-import { createTransactionsTable, createDuplicateTransactionsTable } from './schema'
+import { createTransactionsTable } from './schema'
 import { computeTransactionHash, insertTransaction, updateCategory } from './mutations'
 
 const fakeTransaction: Omit<Transaction, 'id'> = {
@@ -21,7 +21,6 @@ beforeEach(() => {
   db = new Database(':memory:')
   createCategoriesTable(db)
   createTransactionsTable(db)
-  createDuplicateTransactionsTable(db)
   seedCategories(db)
 })
 
@@ -95,27 +94,32 @@ describe('insertTransaction', () => {
     expect(transactions).toHaveLength(2)
   })
 
-  it('persists a duplicate record in duplicate_transactions when a duplicate is inserted', () => {
+  it('flags a duplicate with is_duplicate = 1 in the transactions table', () => {
     insertTransaction(db, fakeTransaction)
     insertTransaction(db, fakeTransaction)
-    const rows = db.query<{ hash: string; counterparty: string }, []>(
-      'SELECT hash, counterparty FROM duplicate_transactions'
+    const rows = db.query<{ hash: string; counterparty: string; is_duplicate: number }, []>(
+      'SELECT hash, counterparty, is_duplicate FROM transactions WHERE is_duplicate = 1'
     ).all()
     expect(rows).toHaveLength(1)
     expect(rows[0].counterparty).toBe('ACME Shop')
+    expect(rows[0].is_duplicate).toBe(1)
   })
 
-  it('does not create a duplicate_transactions record on a fresh insert', () => {
+  it('does not flag a fresh insert as duplicate', () => {
     insertTransaction(db, fakeTransaction)
-    const rows = db.query<{ id: number }, []>('SELECT id FROM duplicate_transactions').all()
+    const rows = db.query<{ id: number }, []>(
+      'SELECT id FROM transactions WHERE is_duplicate = 1'
+    ).all()
     expect(rows).toHaveLength(0)
   })
 
-  it('accumulates multiple duplicate records across repeated imports', () => {
+  it('accumulates multiple duplicate rows across repeated imports', () => {
     insertTransaction(db, fakeTransaction)
     insertTransaction(db, fakeTransaction)
     insertTransaction(db, fakeTransaction)
-    const rows = db.query<{ id: number }, []>('SELECT id FROM duplicate_transactions').all()
+    const rows = db.query<{ id: number }, []>(
+      'SELECT id FROM transactions WHERE is_duplicate = 1'
+    ).all()
     expect(rows).toHaveLength(2)
   })
 })

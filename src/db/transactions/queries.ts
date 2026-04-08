@@ -23,7 +23,7 @@ function rowToTransaction(row: Record<string, unknown>): Transaction {
 }
 
 export function getTransactions(db: Database, filters: TransactionFilters = {}): Transaction[] {
-  const conditions: string[] = []
+  const conditions: string[] = ['is_duplicate = 0']
   const params: SQLQueryBindings[] = []
 
   if (filters.from !== undefined) {
@@ -43,7 +43,7 @@ export function getTransactions(db: Database, filters: TransactionFilters = {}):
     params.push(`%${filters.search}%`)
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+  const whereClause = `WHERE ${conditions.join(' AND ')}`
   const limitClause = filters.limit !== undefined ? 'LIMIT ?' : ''
 
   if (filters.limit !== undefined) {
@@ -57,7 +57,7 @@ export function getTransactions(db: Database, filters: TransactionFilters = {}):
 
 export function getUncategorized(db: Database): Transaction[] {
   const rows = db.prepare(
-    'SELECT * FROM transactions WHERE category_id IS NULL AND ai_category_id IS NULL ORDER BY date DESC'
+    'SELECT * FROM transactions WHERE is_duplicate = 0 AND category_id IS NULL AND ai_category_id IS NULL ORDER BY date DESC'
   ).all() as Record<string, unknown>[]
   return rows.map(rowToTransaction)
 }

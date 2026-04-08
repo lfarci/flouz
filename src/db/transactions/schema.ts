@@ -4,7 +4,8 @@ export function createTransactionsTable(db: Database): void {
   db.run(`
     CREATE TABLE IF NOT EXISTS transactions (
       id                 INTEGER PRIMARY KEY AUTOINCREMENT,
-      hash               TEXT NOT NULL UNIQUE,
+      hash               TEXT NOT NULL,
+      is_duplicate       INTEGER NOT NULL DEFAULT 0,
       date               TEXT NOT NULL,
       amount             REAL NOT NULL,
       counterparty       TEXT NOT NULL,
@@ -21,19 +22,9 @@ export function createTransactionsTable(db: Database): void {
       imported_at        TEXT NOT NULL
     )
   `)
-}
-
-export function createDuplicateTransactionsTable(db: Database): void {
+  // Optimise the per-row duplicate lookup in insertTransaction
   db.run(`
-    CREATE TABLE IF NOT EXISTS duplicate_transactions (
-      id           INTEGER PRIMARY KEY AUTOINCREMENT,
-      hash         TEXT NOT NULL,
-      date         TEXT NOT NULL,
-      amount       REAL NOT NULL,
-      counterparty TEXT NOT NULL,
-      note         TEXT,
-      source_file  TEXT,
-      detected_at  TEXT NOT NULL
-    )
+    CREATE INDEX IF NOT EXISTS idx_transactions_hash_duplicate
+    ON transactions (hash, is_duplicate)
   `)
 }

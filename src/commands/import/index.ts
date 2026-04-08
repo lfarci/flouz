@@ -80,7 +80,7 @@ async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promis
   return { totalImported, totalDuplicates, allErrors }
 }
 
-function reportResults(totalImported: number, totalDuplicates: number, allErrors: Array<ParseError & { file: string }>): void {
+function reportResults({ totalImported, totalDuplicates, allErrors }: InsertResult): void {
   for (const { file, row, message } of allErrors) {
     log.warn(`${file} line ${row}: ${message}`)
   }
@@ -120,10 +120,10 @@ async function importAction(path: string, options: { db: string }): Promise<void
 
   try {
     const parsed = await parseAllFiles(files)
-    const { totalImported, totalDuplicates, allErrors } = await insertAllTransactions(database, parsed)
+    const insertResult = await insertAllTransactions(database, parsed)
     process.removeListener('SIGINT', onCancel)
     database.close()
-    reportResults(totalImported, totalDuplicates, allErrors)
+    reportResults(insertResult)
   } catch (error) {
     process.removeListener('SIGINT', onCancel)
     log.error(error instanceof Error ? error.message : String(error))
