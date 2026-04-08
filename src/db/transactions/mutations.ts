@@ -2,11 +2,11 @@ import { Database } from 'bun:sqlite'
 import type { Transaction } from '@/types'
 
 export function computeTransactionHash(
-  transaction: Pick<Transaction, 'date' | 'amount' | 'counterparty'>
+  transaction: Pick<Transaction, 'date' | 'amount' | 'counterparty' | 'note'>
 ): string {
-  // Deduplication key: date + amount + counterparty (JSON-encoded to avoid delimiter collisions)
+  // Deduplication key: date + amount + counterparty + note (JSON-encoded to avoid delimiter collisions)
   const hasher = new Bun.CryptoHasher('sha256')
-  hasher.update(JSON.stringify([transaction.date, transaction.amount, transaction.counterparty]))
+  hasher.update(JSON.stringify([transaction.date, transaction.amount, transaction.counterparty, transaction.note ?? null]))
   return hasher.digest('hex')
 }
 

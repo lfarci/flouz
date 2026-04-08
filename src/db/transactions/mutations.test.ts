@@ -54,6 +54,18 @@ describe('computeTransactionHash', () => {
     const hashB = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'Other Store' })
     expect(hashA).not.toBe(hashB)
   })
+
+  it('returns different hashes when note differs', () => {
+    const hashA = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'ACME Shop', note: 'invoice 1' })
+    const hashB = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'ACME Shop', note: 'invoice 2' })
+    expect(hashA).not.toBe(hashB)
+  })
+
+  it('returns different hashes when note is present vs absent', () => {
+    const hashA = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'ACME Shop', note: 'memo' })
+    const hashB = computeTransactionHash({ date: '2026-01-15', amount: -42.5, counterparty: 'ACME Shop' })
+    expect(hashA).not.toBe(hashB)
+  })
 })
 
 describe('insertTransaction', () => {
