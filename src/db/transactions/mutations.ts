@@ -38,6 +38,21 @@ export function insertTransaction(db: Database, transaction: Omit<Transaction, '
     $importedAt: transaction.importedAt,
   })
 
+  if (result.changes === 0) {
+    db.prepare(`
+      INSERT INTO duplicate_transactions (hash, date, amount, counterparty, note, source_file, detected_at)
+      VALUES ($hash, $date, $amount, $counterparty, $note, $sourceFile, $detectedAt)
+    `).run({
+      $hash: hash,
+      $date: transaction.date,
+      $amount: transaction.amount,
+      $counterparty: transaction.counterparty,
+      $note: transaction.note ?? null,
+      $sourceFile: transaction.sourceFile ?? null,
+      $detectedAt: transaction.importedAt,
+    })
+  }
+
   return result.changes
 }
 

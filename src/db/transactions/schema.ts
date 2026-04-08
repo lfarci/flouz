@@ -22,3 +22,18 @@ export function createTransactionsTable(db: Database): void {
     )
   `)
 }
+
+export function createDuplicateTransactionsTable(db: Database): void {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS duplicate_transactions (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      hash         TEXT NOT NULL,
+      date         TEXT NOT NULL,
+      amount       REAL NOT NULL,
+      counterparty TEXT NOT NULL,
+      note         TEXT,
+      source_file  TEXT,
+      detected_at  TEXT NOT NULL
+    )
+  `)
+}

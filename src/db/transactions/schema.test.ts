@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { createCategoriesTable } from '@/db/categories/schema'
-import { createTransactionsTable } from './schema'
+import { createTransactionsTable, createDuplicateTransactionsTable } from './schema'
 
 describe('createTransactionsTable', () => {
   it('creates transactions table', () => {
@@ -23,6 +23,28 @@ describe('createTransactionsTable', () => {
     expect(() => {
       createTransactionsTable(db)
       createTransactionsTable(db)
+    }).not.toThrow()
+  })
+})
+
+describe('createDuplicateTransactionsTable', () => {
+  it('creates duplicate_transactions table', () => {
+    const db = new Database(':memory:')
+
+    createDuplicateTransactionsTable(db)
+
+    const row = db.query<{ name: string }, []>(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='duplicate_transactions'"
+    ).get()
+    expect(row?.name).toBe('duplicate_transactions')
+  })
+
+  it('is idempotent', () => {
+    const db = new Database(':memory:')
+
+    expect(() => {
+      createDuplicateTransactionsTable(db)
+      createDuplicateTransactionsTable(db)
     }).not.toThrow()
   })
 })
