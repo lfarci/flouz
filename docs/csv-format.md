@@ -38,7 +38,6 @@ BE00 0000 0000 0000;27/01/2026;001;0001;BE00 0000 0000 0000;Some Merchant;;City;
 | `Devise` | `currency` | Usually `EUR` |
 | `Nom contrepartie contient` | `counterparty` | Strip known prefixes (see below) |
 | `Compte contrepartie` | `counterparty_iban` | Raw IBAN, may be empty |
-| `Numéro d'extrait` + `Numéro de transaction` | `source_ref` | Concatenated as `"<extract>:<transaction>"` |
 | `Communications` | `note` | Raw string |
 
 ## Counterparty Extraction

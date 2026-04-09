@@ -8,14 +8,11 @@ function rowToTransaction(row: Record<string, unknown>): Transaction {
     date: row.date as string,
     amount: row.amount as number,
     counterparty: row.counterparty as string,
+    hash: row.hash as string,
     counterpartyIban: (row.counterparty_iban as string | null) ?? undefined,
     currency: row.currency as string,
     account: (row.account as string | null) ?? undefined,
-    sourceRef: (row.source_ref as string | null) ?? undefined,
     categoryId: (row.category_id as string | null) ?? undefined,
-    aiCategoryId: (row.ai_category_id as string | null) ?? undefined,
-    aiConfidence: (row.ai_confidence as number | null) ?? undefined,
-    aiReasoning: (row.ai_reasoning as string | null) ?? undefined,
     note: (row.note as string | null) ?? undefined,
     sourceFile: (row.source_file as string | null) ?? undefined,
     importedAt: row.imported_at as string,
@@ -57,7 +54,7 @@ export function getTransactions(db: Database, filters: TransactionFilters = {}):
 
 export function getUncategorized(db: Database): Transaction[] {
   const rows = db.prepare(
-    'SELECT * FROM transactions WHERE category_id IS NULL AND ai_category_id IS NULL ORDER BY date DESC'
+    'SELECT * FROM transactions WHERE category_id IS NULL ORDER BY date DESC'
   ).all() as Record<string, unknown>[]
   return rows.map(rowToTransaction)
 }

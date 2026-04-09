@@ -1,18 +1,27 @@
 # Transactions Table
 
-Stores imported bank transactions plus manual and AI categorization state.
+Stores imported bank transactions and user categorization state.
 
 ## Columns
 
-- `date`, `amount`, `counterparty`: core transaction fields and dedup key
+- `date`, `amount`, `counterparty`: core transaction identity fields
+- `hash`: required SHA-256 hash of `(date, amount, counterparty, note)` used as preparation for later duplicate-review workflows
 - `category_id`: user-confirmed category
-- `ai_category_id`, `ai_confidence`, `ai_reasoning`: AI suggestion data
 - `source_file`, `imported_at`: import audit metadata
+
+## Hash Strategy
+
+The table persists a `hash` for every row.
+
+- new rows compute the hash during insertion
+- the persisted schema requires the hash column
+- `note` is part of the hash input when present
+- the hash does not change current duplicate-handling behavior yet
 
 ## Queries
 
 - `getTransactions`: lists transactions with optional filters
-- `getUncategorized`: returns rows with no user or AI category
+- `getUncategorized`: returns rows with no user category
 
 ## Mutations
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
 import { Database } from 'bun:sqlite'
+import { computeTransactionHash } from '@/db/transactions/hash'
 import { seedCategories } from '@/db/categories/seed'
 import { initDb } from '@/db/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
@@ -47,6 +48,22 @@ describe('import pipeline', () => {
     const transactions = getTransactions(db)
     for (const transaction of transactions) {
       expect(transaction.sourceFile).toBe(FIXTURE)
+    }
+  })
+
+  it('stores hash on imported rows', async () => {
+    await importAll(db, FIXTURE)
+    const transactions = getTransactions(db)
+
+    for (const transaction of transactions) {
+      expect(transaction.hash).toBe(
+        computeTransactionHash({
+          date: transaction.date,
+          amount: transaction.amount,
+          counterparty: transaction.counterparty,
+          note: transaction.note,
+        })
+      )
     }
   })
 

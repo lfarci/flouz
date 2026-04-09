@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import type { Transaction } from '@/types'
+import { computeTransactionHash } from '@/db/transactions/hash'
+import type { NewTransaction } from '@/types'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { insertTransaction, updateCategory } from './mutations'
 import { createTransactionsTable } from './schema'
 import { getTransactions, getUncategorized } from './queries'
 
-const fakeTransaction: Omit<Transaction, 'id'> = {
+const fakeTransaction: NewTransaction = {
   date: '2026-01-15',
   amount: -42.5,
   counterparty: 'ACME Shop',
@@ -51,6 +52,19 @@ describe('getTransactions', () => {
     expect(transactions.length).toBe(3)
   })
 
+  it('maps hash from the database row', () => {
+    const [transaction] = getTransactions(db)
+
+    expect(transaction.hash).toBe(
+      computeTransactionHash({
+        date: transaction.date,
+        amount: transaction.amount,
+        counterparty: transaction.counterparty,
+        note: transaction.note,
+      })
+    )
+  })
+
   it('filters by from date', () => {
     const transactions = getTransactions(db, { from: '2026-01-15' })
     expect(transactions.length).toBe(2)
@@ -82,7 +96,7 @@ describe('getTransactions', () => {
 })
 
 describe('getUncategorized', () => {
-  it('returns only transactions with both category fields null', () => {
+  it('returns only transactions with no category', () => {
     insertTransaction(db, fakeTransaction)
     insertTransaction(db, {
       ...fakeTransaction,
@@ -96,6 +110,5 @@ describe('getUncategorized', () => {
     const uncategorizedTransactions = getUncategorized(db)
     expect(uncategorizedTransactions.length).toBe(1)
     expect(uncategorizedTransactions[0].categoryId).toBeUndefined()
-    expect(uncategorizedTransactions[0].aiCategoryId).toBeUndefined()
   })
 })

@@ -40,18 +40,14 @@ CREATE TABLE transactions (
   date               TEXT NOT NULL,          -- yyyy-MM-dd
   amount             REAL NOT NULL,          -- signed Euros, dot decimal (negative = debit)
   counterparty       TEXT NOT NULL,          -- cleaned merchant / sender name
+  hash               TEXT NOT NULL,          -- SHA-256 of (date, amount, counterparty, note)
   counterparty_iban  TEXT,                   -- IBAN when available in the source file
   currency           TEXT DEFAULT 'EUR',
   account            TEXT,                   -- source account IBAN
-  source_ref         TEXT,                   -- "extract:transaction" ref for dedup
   category_id        TEXT REFERENCES categories(id),    -- user-assigned category
-  ai_category_id     TEXT REFERENCES categories(id),    -- AI suggestion only, never overwrites category_id
-  ai_confidence      REAL,                   -- 0.0–1.0
-  ai_reasoning       TEXT,                   -- short explanation from the AI
   note               TEXT,                   -- raw Communications field from CSV
   source_file        TEXT,                   -- original CSV filename
-  imported_at        TEXT NOT NULL,          -- ISO 8601 timestamp of import
-  UNIQUE(date, amount, counterparty)         -- dedup key
+  imported_at        TEXT NOT NULL           -- ISO 8601 timestamp of import
 );
 ```
 
@@ -86,31 +82,23 @@ Transactions are assigned to **L3 leaves** only.
 
 ## Key Rules
 
-### `ai_category_id` never overwrites `category_id`
+### Transaction Hash Strategy
 
-The `category_id` column is user-controlled. The AI writes only to `ai_category_id`. Promoting an AI suggestion to a confirmed category is an explicit user action.
+Each transaction row stores a `hash` derived from `(date, amount, counterparty, note)`.
 
-```ts
-// Correct — update only the AI columns
-db.prepare(`
-  UPDATE transactions
-  SET ai_category_id = ?, ai_confidence = ?, ai_reasoning = ?
-  WHERE id = ?
-`).run(categoryId, confidence, reasoning, txId);
+- `source_file` and `imported_at` remain metadata and do not affect the hash
+- `note` is part of the hash input and distinguishes otherwise identical transactions
+- the hash is required in the persisted schema
+- new rows compute the hash during insertion
 
-// Never do this automatically
-// UPDATE transactions SET category_id = ai_category_id WHERE …
-```
+This phase only stores the hash. It does not yet change duplicate-handling behavior or hide duplicate rows from queries.
 
-### Dedup Strategy
-
-The `UNIQUE(date, amount, counterparty)` constraint prevents duplicate imports. Use `INSERT OR IGNORE` so re-importing a CSV is always safe:
+Hash computation is deterministic and uses SHA-256 over a JSON-encoded array to avoid delimiter-collision edge cases:
 
 ```ts
-db.prepare(`
-  INSERT OR IGNORE INTO transactions (date, amount, counterparty, …)
-  VALUES (?, ?, ?, …)
-`).run(date, amount, counterparty, …);
+const hasher = new Bun.CryptoHasher('sha256')
+hasher.update(JSON.stringify([date, amount, counterparty, note ?? null]))
+const hash = hasher.digest('hex')
 ```
 
 ## Usage Pattern

@@ -18,14 +18,11 @@ erDiagram
         string date
         float amount
         string counterparty
+        string hash
         string counterparty_iban
         string currency
         string account
-        string source_ref
         string category_id FK
-        string ai_category_id FK
-        float ai_confidence
-        string ai_reasoning
         string note
         string source_file
         string imported_at
@@ -33,7 +30,6 @@ erDiagram
 
     CATEGORIES ||--o{ CATEGORIES : parent_of
     CATEGORIES ||--o{ TRANSACTIONS : category_id
-    CATEGORIES ||--o{ TRANSACTIONS : ai_category_id
 ```
 
 ## Conventions

@@ -10,18 +10,17 @@ export interface Transaction {
   date: string               // yyyy-MM-dd
   amount: number             // signed float, Euros
   counterparty: string
+  hash: string
   counterpartyIban?: string
   currency: string           // default 'EUR'
   account?: string
-  sourceRef?: string
   categoryId?: string
-  aiCategoryId?: string
-  aiConfidence?: number
-  aiReasoning?: string
   note?: string
   sourceFile?: string
   importedAt: string         // ISO timestamp
 }
+
+export type NewTransaction = Omit<Transaction, 'id' | 'hash'>
 
 export interface TransactionFilters {
   from?: string

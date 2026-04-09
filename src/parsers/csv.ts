@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import type { Transaction } from '@/types'
+import type { NewTransaction } from '@/types'
 
 export type ParseError = { row: number; message: string }
-export type ParseResult = { transactions: Transaction[]; errors: ParseError[] }
+export type ParseResult = { transactions: NewTransaction[]; errors: ParseError[] }
 
 const rowSchema = z.object({
   date: z
@@ -21,7 +21,7 @@ const rowSchema = z.object({
 
 type RawRow = Record<string, string>
 
-function parseRow(row: RawRow, sourceFile?: string): Transaction {
+function parseRow(row: RawRow, sourceFile?: string): NewTransaction {
   const result = rowSchema.safeParse(row)
   if (!result.success) {
     const messages = result.error.issues.map(i => i.message).join('; ')
@@ -59,7 +59,7 @@ export function parseCsv(content: string, sourceFile?: string): ParseResult {
     }
   }
 
-  const transactions: Transaction[] = []
+  const transactions: NewTransaction[] = []
   const errors: ParseError[] = []
 
   for (let i = 1; i < lines.length; i++) {
