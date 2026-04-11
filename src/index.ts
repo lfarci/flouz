@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { Command } from 'commander'
 import { version } from '../package.json'
+import { createAccountsCommand } from './commands/accounts'
 import { createImportCommand } from './commands/import'
 import { createListCommand } from './commands/list'
 import { createExportCommand } from './commands/export'
@@ -16,6 +17,7 @@ program
 program.addCommand(await createImportCommand())
 program.addCommand(await createListCommand())
 program.addCommand(await createExportCommand())
+program.addCommand(await createAccountsCommand())
 program.addCommand(createConfigCommand())
 
 program.parse()

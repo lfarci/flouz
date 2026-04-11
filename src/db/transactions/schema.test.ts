@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
+import { createAccountsTable } from '@/db/accounts/schema'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { createTransactionsTable } from './schema'
 
@@ -12,6 +13,7 @@ describe('createTransactionsTable', () => {
   it('creates transactions table', () => {
     const db = new Database(':memory:')
     createCategoriesTable(db)
+    createAccountsTable(db)
 
     createTransactionsTable(db)
 
@@ -24,6 +26,7 @@ describe('createTransactionsTable', () => {
   it('is idempotent', () => {
     const db = new Database(':memory:')
     createCategoriesTable(db)
+    createAccountsTable(db)
 
     expect(() => {
       createTransactionsTable(db)
@@ -34,15 +37,28 @@ describe('createTransactionsTable', () => {
   it('creates the hash column', () => {
     const db = new Database(':memory:')
     createCategoriesTable(db)
+    createAccountsTable(db)
 
     createTransactionsTable(db)
 
     expect(getColumnNames(db)).toContain('hash')
   })
 
+  it('creates the account_id column', () => {
+    const db = new Database(':memory:')
+    createCategoriesTable(db)
+    createAccountsTable(db)
+
+    createTransactionsTable(db)
+
+    expect(getColumnNames(db)).toContain('account_id')
+    expect(getColumnNames(db)).not.toContain('account')
+  })
+
   it('creates the hash index', () => {
     const db = new Database(':memory:')
     createCategoriesTable(db)
+    createAccountsTable(db)
 
     createTransactionsTable(db)
 

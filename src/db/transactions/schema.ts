@@ -12,7 +12,7 @@ export function createTransactionsTable(db: Database): void {
       hash               TEXT NOT NULL,
       counterparty_iban  TEXT,
       currency           TEXT DEFAULT 'EUR',
-      account            TEXT,
+      account_id         INTEGER REFERENCES accounts(id),
       category_id        TEXT REFERENCES categories(id),
       note               TEXT,
       source_file        TEXT,

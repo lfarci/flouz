@@ -6,6 +6,7 @@ Stores imported bank transactions and user categorization state.
 
 - `date`, `amount`, `counterparty`: core transaction identity fields
 - `hash`: required SHA-256 hash of `(date, amount, counterparty, note)` used as preparation for later duplicate-review workflows
+- `account_id`: optional foreign key to `accounts.id`
 - `category_id`: user-confirmed category
 - `source_file`, `imported_at`: import audit metadata
 

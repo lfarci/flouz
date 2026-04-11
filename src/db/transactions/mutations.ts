@@ -5,10 +5,10 @@ import type { NewTransaction } from '@/types'
 export function insertTransaction(db: Database, transaction: NewTransaction): number {
   const statement = db.prepare(`
     INSERT INTO transactions
-      (date, amount, counterparty, hash, counterparty_iban, currency, account,
+      (date, amount, counterparty, hash, counterparty_iban, currency, account_id,
        category_id, note, source_file, imported_at)
     VALUES
-      ($date, $amount, $counterparty, $hash, $counterpartyIban, $currency, $account,
+      ($date, $amount, $counterparty, $hash, $counterpartyIban, $currency, $accountId,
        $categoryId, $note, $sourceFile, $importedAt)
   `)
   const result = statement.run({
@@ -18,7 +18,7 @@ export function insertTransaction(db: Database, transaction: NewTransaction): nu
     $hash: computeTransactionHash(transaction),
     $counterpartyIban: transaction.counterpartyIban ?? null,
     $currency: transaction.currency,
-    $account: transaction.account ?? null,
+    $accountId: transaction.accountId ?? null,
     $categoryId: transaction.categoryId ?? null,
     $note: transaction.note ?? null,
     $sourceFile: transaction.sourceFile ?? null,

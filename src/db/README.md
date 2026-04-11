@@ -6,6 +6,15 @@ This directory contains SQLite schema and data access code for flouz.
 
 ```mermaid
 erDiagram
+    ACCOUNTS {
+        int id PK
+        string key
+        string company
+        string name
+        string description
+        string iban
+    }
+
     CATEGORIES {
         string id PK
         string name
@@ -21,13 +30,14 @@ erDiagram
         string hash
         string counterparty_iban
         string currency
-        string account
+        int account_id FK
         string category_id FK
         string note
         string source_file
         string imported_at
     }
 
+    ACCOUNTS ||--o{ TRANSACTIONS : account_id
     CATEGORIES ||--o{ CATEGORIES : parent_of
     CATEGORIES ||--o{ TRANSACTIONS : category_id
 ```

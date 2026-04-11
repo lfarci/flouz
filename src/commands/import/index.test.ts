@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
 import { Database } from 'bun:sqlite'
+import { insertAccount } from '@/db/accounts/mutations'
 import { computeTransactionHash } from '@/db/transactions/hash'
 import { seedCategories } from '@/db/categories/seed'
 import { initDb } from '@/db/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
 import { getTransactions } from '@/db/transactions/queries'
 import { parseCsv } from '@/parsers/csv'
-import { findCsvFiles } from '.'
+import { findCsvFiles, resolveImportedTransaction } from '.'
 
 const FIXTURE = `${import.meta.dir}/../../parsers/__fixtures__/minimal.csv`
 const FIXTURES_DIR = `${import.meta.dir}/../../parsers/__fixtures__`
@@ -15,7 +16,8 @@ async function importAll(db: Database, sourceFile: string): Promise<{ imported: 
   const content = await Bun.file(sourceFile).text()
   const { transactions, errors } = parseCsv(content, sourceFile)
   for (const transaction of transactions) {
-    insertTransaction(db, transaction)
+    const resolvedTransaction = resolveImportedTransaction(db, transaction)
+    insertTransaction(db, resolvedTransaction)
   }
   return { imported: transactions.length, errors: errors.length }
 }
@@ -27,6 +29,11 @@ describe('import pipeline', () => {
     db = new Database(':memory:')
     initDb(db)
     seedCategories(db)
+    insertAccount(db, {
+      key: 'checking',
+      company: 'Belfius',
+      name: 'Main account',
+    })
   })
 
   it('imports 5 transactions from fixture', async () => {
@@ -67,6 +74,16 @@ describe('import pipeline', () => {
     }
   })
 
+  it('stores the matching account_id when the CSV row has an account key', async () => {
+    await importAll(db, FIXTURE)
+
+    const transactions = getTransactions(db)
+    const transactionsWithAccount = transactions.filter(transaction => transaction.accountId !== undefined)
+
+    expect(transactionsWithAccount.length).toBe(3)
+    expect(transactionsWithAccount.every(transaction => transaction.accountId === 1)).toBe(true)
+  })
+
   it('imports valid rows and reports invalid rows without throwing', () => {
     const content = `date,amount,counterparty
 2026-01-15,-42.50,ACME Shop
@@ -80,6 +97,12 @@ not-a-date,-10.00,Bad Row
     expect(errors).toHaveLength(1)
     expect(errors[0].row).toBe(3)
     expect(errors[0].message).toContain('date must be YYYY-MM-DD')
+  })
+
+  it('throws when an account key is unknown', () => {
+    const { transactions } = parseCsv('date,amount,counterparty,account\n2026-01-15,-42.50,ACME Shop,missing')
+
+    expect(() => resolveImportedTransaction(db, transactions[0])).toThrow('Unknown account key: missing')
   })
 })
 

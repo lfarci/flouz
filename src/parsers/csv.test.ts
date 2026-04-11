@@ -24,7 +24,7 @@ describe('parseCsv', () => {
       const { transactions: [first] } = parseCsv(content)
       expect(first.counterpartyIban).toBe('BE00 0000 0000 0001')
       expect(first.currency).toBe('EUR')
-      expect(first.account).toBe('BE11 1111 1111 1111')
+      expect(first.accountKey).toBe('checking')
       expect(first.note).toBe('Invoice 42')
     })
 

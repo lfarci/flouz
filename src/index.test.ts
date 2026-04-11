@@ -38,5 +38,6 @@ describe('flouz CLI', () => {
     expect(output).toContain('--version')
     expect(output).toContain('-v')
     expect(output).toContain('display version number')
+    expect(output).toContain('accounts')
   })
 })

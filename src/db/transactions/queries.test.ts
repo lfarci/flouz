@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
+import { insertAccount } from '@/db/accounts/mutations'
+import { createAccountsTable } from '@/db/accounts/schema'
 import { computeTransactionHash } from '@/db/transactions/hash'
 import type { NewTransaction } from '@/types'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { insertTransaction, updateCategory } from './mutations'
 import { createTransactionsTable } from './schema'
-import { getTransactions, getUncategorized } from './queries'
+import { getTransactions, getUncategorized, hasTransactionsForAccount } from './queries'
 
 const fakeTransaction: NewTransaction = {
   date: '2026-01-15',
@@ -21,6 +23,7 @@ let db: Database
 beforeEach(() => {
   db = new Database(':memory:')
   createCategoriesTable(db)
+  createAccountsTable(db)
   createTransactionsTable(db)
   seedCategories(db)
 })
@@ -93,6 +96,24 @@ describe('getTransactions', () => {
     const transactions = getTransactions(db, { limit: 2 })
     expect(transactions.length).toBe(2)
   })
+
+  it('maps accountId from the database row', () => {
+    const accountId = insertAccount(db, {
+      key: 'checking',
+      company: 'Belfius',
+      name: 'Main account',
+    })
+
+    insertTransaction(db, {
+      ...fakeTransaction,
+      date: '2026-02-01',
+      accountId,
+    })
+
+    const [transaction] = getTransactions(db, { from: '2026-02-01' })
+
+    expect(transaction.accountId).toBe(accountId)
+  })
 })
 
 describe('getUncategorized', () => {
@@ -110,5 +131,32 @@ describe('getUncategorized', () => {
     const uncategorizedTransactions = getUncategorized(db)
     expect(uncategorizedTransactions.length).toBe(1)
     expect(uncategorizedTransactions[0].categoryId).toBeUndefined()
+  })
+})
+
+describe('hasTransactionsForAccount', () => {
+  it('returns false when no transaction references the account', () => {
+    const accountId = insertAccount(db, {
+      key: 'checking',
+      company: 'Belfius',
+      name: 'Main account',
+    })
+
+    expect(hasTransactionsForAccount(db, accountId)).toBe(false)
+  })
+
+  it('returns true when a transaction references the account', () => {
+    const accountId = insertAccount(db, {
+      key: 'checking',
+      company: 'Belfius',
+      name: 'Main account',
+    })
+
+    insertTransaction(db, {
+      ...fakeTransaction,
+      accountId,
+    })
+
+    expect(hasTransactionsForAccount(db, accountId)).toBe(true)
   })
 })

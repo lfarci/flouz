@@ -1,6 +1,6 @@
 date,amount,counterparty,counterparty_iban,currency,account,note
-2026-01-15,-42.50,ACME Shop,BE00 0000 0000 0001,EUR,BE11 1111 1111 1111,Invoice 42
-2026-01-16,-12.30,Test Supermarket,,,BE11 1111 1111 1111,
-2026-01-17,1200.00,Fake Employer,,EUR,BE11 1111 1111 1111,January salary
+2026-01-15,-42.50,ACME Shop,BE00 0000 0000 0001,EUR,checking,Invoice 42
+2026-01-16,-12.30,Test Supermarket,,,checking,
+2026-01-17,1200.00,Fake Employer,,EUR,checking,January salary
 2026-01-18,-9.99,Test Streaming,,,,Monthly plan
 2026-01-19,-55.00,Test Pharmacy,BE00 0000 0000 0002,EUR,,

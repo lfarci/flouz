@@ -11,7 +11,7 @@ function rowToTransaction(row: Record<string, unknown>): Transaction {
     hash: row.hash as string,
     counterpartyIban: (row.counterparty_iban as string | null) ?? undefined,
     currency: row.currency as string,
-    account: (row.account as string | null) ?? undefined,
+    accountId: (row.account_id as number | null) ?? undefined,
     categoryId: (row.category_id as string | null) ?? undefined,
     note: (row.note as string | null) ?? undefined,
     sourceFile: (row.source_file as string | null) ?? undefined,
@@ -57,4 +57,12 @@ export function getUncategorized(db: Database): Transaction[] {
     'SELECT * FROM transactions WHERE category_id IS NULL ORDER BY date DESC'
   ).all() as Record<string, unknown>[]
   return rows.map(rowToTransaction)
+}
+
+export function hasTransactionsForAccount(db: Database, accountId: number): boolean {
+  const row = db.prepare(
+    'SELECT 1 AS found FROM transactions WHERE account_id = ? LIMIT 1'
+  ).get(accountId) as { found: number } | null
+
+  return row !== null
 }

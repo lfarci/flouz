@@ -56,14 +56,20 @@ date,amount,counterparty,counterparty_iban,currency,account,note
 | `counterparty` | ✅ | Free text (merchant or sender name) |
 | `counterparty_iban` | ❌ | IBAN of the other party |
 | `currency` | ❌ | 3-letter code, defaults to `EUR` |
-| `account` | ❌ | Your own account where the transaction took place |
+| `account` | ❌ | Configured account key created with `flouz accounts add` |
 | `note` | ❌ | Free text memo |
 
 Example:
 ```csv
 date,amount,counterparty,counterparty_iban,currency,account,note
-2026-01-15,-42.50,ACME Shop,BE00 0000 0000 0000,EUR,BE11 1111 1111 1111,Invoice 42
+2026-01-15,-42.50,ACME Shop,BE00 0000 0000 0000,EUR,checking,Invoice 42
 2026-01-16,1200.00,Employer,,EUR,,January salary
+```
+
+Before importing transactions that use the `account` column, create the referenced accounts first:
+
+```bash
+bun run src/index.ts accounts add checking "Main account" Belfius --iban "BE00 0000 0000 0000"
 ```
 
 Options:
@@ -82,6 +88,14 @@ Options:
 - `-s, --search <text>` — search counterparty name
 - `-l, --limit <n>` — max results (default: 50)
 - `-d, --db <path>` — SQLite database path
+
+### Manage accounts
+
+```bash
+bun run src/index.ts accounts add checking "Main account" Belfius --iban "BE00 0000 0000 0000"
+bun run src/index.ts accounts delete checking
+bun run src/index.ts accounts list
+```
 
 ### Export transactions
 

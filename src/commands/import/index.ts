@@ -3,10 +3,13 @@ import { intro, outro, progress, spinner, cancel, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
+import { getAccountByKey } from '@/db/accounts/queries'
+import { normalizeAccountKey } from '@/db/accounts/mutations'
 import { openDatabase } from '@/db/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
 import { parseCsv, type ParseError } from '@/parsers/csv'
 import { resolveDbPath } from '@/config'
+import type { ImportedTransaction, NewTransaction } from '@/types'
 
 type ParsedFile = {
   file: string
@@ -17,6 +20,25 @@ type ParsedFile = {
 type InsertResult = {
   totalImported: number
   allErrors: Array<ParseError & { file: string }>
+}
+
+export function resolveImportedTransaction(
+  db: Database,
+  transaction: ImportedTransaction
+): NewTransaction {
+  const accountId = resolveAccountId(db, transaction.accountKey)
+  return {
+    date: transaction.date,
+    amount: transaction.amount,
+    counterparty: transaction.counterparty,
+    counterpartyIban: transaction.counterpartyIban,
+    currency: transaction.currency,
+    accountId,
+    categoryId: transaction.categoryId,
+    note: transaction.note,
+    sourceFile: transaction.sourceFile,
+    importedAt: transaction.importedAt,
+  }
 }
 
 export async function findCsvFiles(dirPath: string): Promise<string[]> {
@@ -60,7 +82,8 @@ async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promis
     for (const { file, transactions, errors } of parsed) {
       db.transaction(() => {
         for (const transaction of transactions) {
-          insertTransaction(db, transaction)
+          const resolvedTransaction = resolveImportedTransaction(db, transaction)
+          insertTransaction(db, resolvedTransaction)
         }
       })()
       totalImported += transactions.length
@@ -74,6 +97,20 @@ async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promis
   }
   insertProgress.stop(`${totalImported} / ${totalRows}`)
   return { totalImported, allErrors }
+}
+
+function resolveAccountId(db: Database, accountKey: string | undefined): number | undefined {
+  if (accountKey === undefined) return undefined
+
+  const normalizedKey = normalizeAccountKey(accountKey)
+  if (normalizedKey.length === 0) return undefined
+
+  const account = getAccountByKey(db, normalizedKey)
+  if (account !== undefined) return account.id
+
+  throw new Error(
+    `Unknown account key: ${normalizedKey}. Create it first with \`flouz accounts add\`.`
+  )
 }
 
 function reportResults(totalImported: number, allErrors: Array<ParseError & { file: string }>): void {

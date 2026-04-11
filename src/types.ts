@@ -5,6 +5,17 @@ export interface Category {
   parentId: string | null
 }
 
+export type Account = {
+  id: number
+  key: string
+  company: string
+  name: string
+  description?: string
+  iban?: string
+}
+
+export type NewAccount = Omit<Account, 'id'>
+
 export interface Transaction {
   id?: number
   date: string               // yyyy-MM-dd
@@ -13,7 +24,7 @@ export interface Transaction {
   hash: string
   counterpartyIban?: string
   currency: string           // default 'EUR'
-  account?: string
+  accountId?: number
   categoryId?: string
   note?: string
   sourceFile?: string
@@ -21,6 +32,10 @@ export interface Transaction {
 }
 
 export type NewTransaction = Omit<Transaction, 'id' | 'hash'>
+
+export type ImportedTransaction = Omit<NewTransaction, 'accountId'> & {
+  accountKey?: string
+}
 
 export interface TransactionFilters {
   from?: string

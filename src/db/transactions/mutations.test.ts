@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
+import { createAccountsTable } from '@/db/accounts/schema'
 import { computeTransactionHash } from '@/db/transactions/hash'
 import type { NewTransaction } from '@/types'
 import { createCategoriesTable } from '@/db/categories/schema'
@@ -21,6 +22,7 @@ let db: Database
 beforeEach(() => {
   db = new Database(':memory:')
   createCategoriesTable(db)
+  createAccountsTable(db)
   createTransactionsTable(db)
   seedCategories(db)
 })
