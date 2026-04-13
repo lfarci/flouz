@@ -40,7 +40,7 @@ describe('formatTransactionTable', () => {
     seedCategories(db)
   })
 
-  it('formats a table with dividers, header, and rows', () => {
+  it('formats a boxed table with aligned columns', () => {
     insertTransaction(db, {
       date: '2026-01-15',
       amount: -42.5,
@@ -55,19 +55,21 @@ describe('formatTransactionTable', () => {
         date: '2026-01-15',
         amount: -42.5,
         counterparty: 'ACME Shop and Bakery',
+        hash: 'transaction-hash',
         currency: 'EUR',
         categoryId: 'groceries-category-id',
         importedAt: new Date().toISOString(),
       },
     ])
 
-    expect(lines[0]).toBe(lines[2])
+    expect(lines[0]).toMatch(/^╭/)
     expect(lines[1]).toContain('Date')
+    expect(lines[2]).toMatch(/^├/)
     expect(lines[3]).toContain('2026-01-15')
     expect(lines[3]).toContain('-42.50')
-    expect(lines[3]).toContain('ACME Shop and Bake')
-    expect(lines[3]).toContain('groceries-category')
-    expect(lines[4]).toBe(lines[0])
+    expect(lines[3]).toContain('ACME Shop and Bakery')
+    expect(lines[3]).toContain('groceries-category-id')
+    expect(lines[4]).toMatch(/^╰/)
   })
 })
 

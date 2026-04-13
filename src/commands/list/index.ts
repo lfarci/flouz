@@ -2,6 +2,7 @@ import { cancel, intro, log, outro } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { basename, resolve } from 'node:path'
+import { renderCliTable } from '@/cli/table'
 import { resolveDbPath } from '@/config'
 import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
@@ -67,29 +68,25 @@ function loadListData(db: Database, options: ListOptions): ListData {
 }
 
 export function formatTransactionTable(transactions: Transaction[]): string[] {
-  const header = ['Date', 'Amount', 'Counterparty', 'Category'].map(value => value.padEnd(20)).join(' │ ')
-  const divider = '─'.repeat(header.length)
-  const rows = transactions.map(formatTransactionRow)
-  return [divider, header, divider, ...rows, divider]
-}
-
-function formatTransactionRow(transaction: Transaction): string {
-  const amount = formatAmount(transaction.amount)
-  return [
-    transaction.date.padEnd(20),
-    amount.padEnd(20),
-    truncateForColumn(transaction.counterparty).padEnd(20),
-    truncateForColumn(transaction.categoryId ?? '—').padEnd(20),
-  ].join(' │ ')
+  return renderCliTable({
+    columns: [
+      { header: 'Date', width: 10, minWidth: 10, truncate: 10 },
+      { header: 'Amount', width: 12, minWidth: 10, alignment: 'right', truncate: 12 },
+      { header: 'Counterparty', width: 28, minWidth: 16, truncate: 28 },
+      { header: 'Category', width: 24, minWidth: 12, truncate: 24 },
+    ],
+    rows: transactions.map(transaction => [
+      transaction.date,
+      formatAmount(transaction.amount),
+      transaction.counterparty,
+      transaction.categoryId ?? '—',
+    ]),
+  })
 }
 
 function formatAmount(amount: number): string {
   const sign = amount >= 0 ? '+' : ''
   return `${sign}${amount.toFixed(2)}`
-}
-
-function truncateForColumn(value: string): string {
-  return value.substring(0, 18)
 }
 
 export function buildSummaryLines(transactionCount: number, uncategorizedCount: number): string[] {
@@ -104,9 +101,7 @@ function reportResults(data: ListData): void {
     return
   }
 
-  for (const line of formatTransactionTable(data.transactions)) {
-    log.message(line, { symbol: '' })
-  }
+  log.message(formatTransactionTable(data.transactions), { spacing: 0, withGuide: false })
 
   for (const line of buildSummaryLines(data.transactions.length, data.uncategorizedCount)) {
     log.info(line)

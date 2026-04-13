@@ -1,6 +1,7 @@
 import { log } from '@clack/prompts'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { renderCliTable } from '@/cli/table'
 import { getAccounts } from '@/db/accounts/queries'
 import { openDatabase } from '@/db/schema'
 import type { Account } from '@/types'
@@ -10,23 +11,15 @@ type AccountsCommandOptions = {
 }
 
 export function formatAccountsTable(accounts: Account[]): string[] {
-  const header = ['Key', 'Name', 'Company', 'IBAN'].map(value => value.padEnd(20)).join(' │ ')
-  const divider = '─'.repeat(header.length)
-  const rows = accounts.map(formatAccountRow)
-  return [divider, header, divider, ...rows, divider]
-}
-
-function formatAccountRow(account: Account): string {
-  return [
-    truncateForColumn(account.key).padEnd(20),
-    truncateForColumn(account.name).padEnd(20),
-    truncateForColumn(account.company).padEnd(20),
-    truncateForColumn(account.iban ?? '—').padEnd(20),
-  ].join(' │ ')
-}
-
-function truncateForColumn(value: string): string {
-  return value.substring(0, 18)
+  return renderCliTable({
+    columns: [
+      { header: 'Key', width: 18, minWidth: 12, truncate: 18 },
+      { header: 'Name', width: 24, minWidth: 16, truncate: 24 },
+      { header: 'Company', width: 20, minWidth: 12, truncate: 20 },
+      { header: 'IBAN', width: 22, minWidth: 14, truncate: 22 },
+    ],
+    rows: accounts.map(account => [account.key, account.name, account.company, account.iban ?? '—']),
+  })
 }
 
 async function listAccountsAction(options: AccountsCommandOptions): Promise<void> {
@@ -39,9 +32,7 @@ async function listAccountsAction(options: AccountsCommandOptions): Promise<void
       return
     }
 
-    for (const line of formatAccountsTable(accounts)) {
-      log.message(line, { symbol: '' })
-    }
+    log.message(formatAccountsTable(accounts), { spacing: 0, withGuide: false })
   } catch (error) {
     log.error(error instanceof Error ? error.message : String(error))
     process.exit(1)

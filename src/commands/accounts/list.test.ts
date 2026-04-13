@@ -13,9 +13,9 @@ import { insertAccount } from '@/db/accounts/mutations'
 import { getAccounts } from '@/db/accounts/queries'
 import { createAccountsTable } from '@/db/accounts/schema'
 
-const infoLogMock = mock(() => {})
-const messageLogMock = mock(() => {})
-const errorLogMock = mock(() => {})
+const infoLogMock = mock((message: string) => message)
+const messageLogMock = mock((message: string[] | string, options?: { spacing?: number; withGuide?: boolean }) => ({ message, options }))
+const errorLogMock = mock((message: string) => message)
 
 const openDatabaseMock = createOpenDatabaseMock()
 
@@ -55,7 +55,7 @@ async function runListCommand(argumentsList: string[]): Promise<void> {
 }
 
 async function collectListCommandOutcome(argumentsList: string[]): Promise<ListSummary> {
-  return collectCommandOutcome(
+  return collectCommandOutcome<ListSummary>(
     () => runListCommand(argumentsList),
     () => ({ status: 'resolved' }),
     errorCode => ({
@@ -85,7 +85,7 @@ afterEach(() => {
 })
 
 describe('formatAccountsTable', () => {
-  it('formats accounts into a printable table', () => {
+  it('formats accounts into a printable boxed table', () => {
     const lines = formatAccountsTable([
       {
         id: 1,
@@ -96,12 +96,13 @@ describe('formatAccountsTable', () => {
       },
     ])
 
-    expect(lines[0]).toBe(lines[2])
+    expect(lines[0]).toMatch(/^╭/)
     expect(lines[1]).toContain('Key')
+    expect(lines[2]).toMatch(/^├/)
     expect(lines[3]).toContain('checking')
     expect(lines[3]).toContain('Main account')
     expect(lines[3]).toContain('Belfius')
-    expect(lines[4]).toBe(lines[0])
+    expect(lines[4]).toMatch(/^╰/)
   })
 
   it('shows a placeholder when iban is missing', () => {
@@ -117,7 +118,7 @@ describe('formatAccountsTable', () => {
     expect(lines[3]).toContain('—')
   })
 
-  it('truncates long values to fit the fixed-width columns', () => {
+  it('truncates long values with an ellipsis', () => {
     const lines = formatAccountsTable([
       {
         id: 1,
@@ -128,10 +129,12 @@ describe('formatAccountsTable', () => {
       },
     ])
 
-    expect(lines[3]).toContain('checking-account-l')
-    expect(lines[3]).toContain('Household primary')
-    expect(lines[3]).toContain('Very Long Provider')
-    expect(lines[3]).toContain('BE00 0000 0000 00')
+    expect(lines[3]).toContain('checking-account-')
+    expect(lines[3]).toContain('Household prima')
+    expect(lines[3]).toContain('Very Long P')
+    expect(lines[3]).toContain('BE00 0000 0000 0000')
+    expect(lines[3]).toContain('…')
+    expect(lines[3]).not.toContain('checking-account-long-key')
   })
 })
 
@@ -190,13 +193,13 @@ describe('listAccountsAction', () => {
 
     expect({
       summary,
-      tableLines: messageLogMock.mock.calls.map(call => call[0]),
+      tableBlocks: messageLogMock.mock.calls.map(call => call[0]),
       messageOptions: messageLogMock.mock.calls.map(call => call[1]),
       closeCalls: closeMock.mock.calls.length,
     }).toEqual({
       summary: { status: 'resolved' },
-      tableLines: expectedLines,
-      messageOptions: expectedLines.map(() => ({ symbol: '' })),
+      tableBlocks: [expectedLines],
+      messageOptions: [{ spacing: 0, withGuide: false }],
       closeCalls: 1,
     })
   })
@@ -208,7 +211,7 @@ describe('listAccountsAction', () => {
         throw new Error('Query failed')
       },
       close: closeMock,
-    } as Database
+    } as unknown as Database
     openDatabaseMock.mockReturnValue(failingHandle)
 
     const summary = await collectListCommandOutcome([])
