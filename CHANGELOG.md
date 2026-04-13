@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.0.0](https://github.com/lfarci/flouz/compare/v1.8.0...v2.0.0) (2026-04-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** import, export, and list are no longer top-level commands; use flouz transactions import|export|list instead.
+
+### Features
+
+* **db:** persist transaction hashes ([35d7bc3](https://github.com/lfarci/flouz/commit/35d7bc373072de770bde719712a48144e15a7ec9))
+* implement accounts management for transaction imports ([c09525e](https://github.com/lfarci/flouz/commit/c09525eefb6698daa7422d1c5199397ce4f51aaf))
+* **table:** implement CLI table rendering and update account transaction formatting ([d682a96](https://github.com/lfarci/flouz/commit/d682a96f1d72f21eda0d1137b48397381074631c))
+
+
+### Bug Fixes
+
+* **transactions:** streamline list output ([14c339c](https://github.com/lfarci/flouz/commit/14c339cc0ceeed00bc0c56caf989ec0f68b74e40))
+
+
+### Code Refactoring
+
+* **cli:** group transaction commands under namespace ([b17ea2e](https://github.com/lfarci/flouz/commit/b17ea2e90bf5a30229d2726fa284a31bc1b9a2d0))
+
 ## [1.8.0](https://github.com/lfarci/flouz/compare/v1.7.1...v1.8.0) (2026-03-22)
 
 
