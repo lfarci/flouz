@@ -18,6 +18,15 @@ export function getAccounts(db: Database): Account[] {
   return rows.map(toAccount)
 }
 
+export function getFirstAccount(db: Database): Account | undefined {
+  const row = db.prepare(
+    'SELECT id, key, company, name, description, iban FROM accounts ORDER BY id ASC LIMIT 1'
+  ).get() as AccountRow | null
+
+  if (row === null) return undefined
+  return toAccount(row)
+}
+
 export function getAccountByKey(db: Database, key: string): Account | undefined {
   const row = db.prepare(
     'SELECT id, key, company, name, description, iban FROM accounts WHERE key = ?'
@@ -25,6 +34,11 @@ export function getAccountByKey(db: Database, key: string): Account | undefined 
 
   if (row === null) return undefined
   return toAccount(row)
+}
+
+export function countAccounts(db: Database): number {
+  const row = db.prepare('SELECT COUNT(*) AS count FROM accounts').get() as { count: number }
+  return row.count
 }
 
 function toAccount(row: AccountRow): Account {

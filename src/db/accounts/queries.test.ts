@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { insertAccount } from './mutations'
-import { getAccountByKey, getAccounts } from './queries'
+import { countAccounts, getAccountByKey, getAccounts, getFirstAccount } from './queries'
 import { createAccountsTable } from './schema'
 
 let db: Database
@@ -30,6 +30,34 @@ describe('getAccounts', () => {
   })
 })
 
+describe('getFirstAccount', () => {
+  it('returns undefined when there are no accounts', () => {
+    expect(getFirstAccount(db)).toBeUndefined()
+  })
+
+  it('returns the first inserted account', () => {
+    insertAccount(db, {
+      key: 'checking',
+      company: 'Provider One',
+      name: 'Main account',
+    })
+    insertAccount(db, {
+      key: 'wallet',
+      company: 'Provider Two',
+      name: 'Meal card',
+    })
+
+    const account = getFirstAccount(db)
+
+    expect(account).toEqual({
+      id: 1,
+      key: 'checking',
+      company: 'Provider One',
+      name: 'Main account',
+    })
+  })
+})
+
 describe('getAccountByKey', () => {
   it('returns undefined when the key is missing', () => {
     expect(getAccountByKey(db, 'missing')).toBeUndefined()
@@ -38,7 +66,7 @@ describe('getAccountByKey', () => {
   it('returns the matching account', () => {
     insertAccount(db, {
       key: 'checking',
-      company: 'ING',
+      company: 'Provider One',
       name: 'Joint account',
       description: 'Shared household account',
       iban: 'BE00 0000 0000 0000',
@@ -49,10 +77,31 @@ describe('getAccountByKey', () => {
     expect(account).toEqual({
       id: 1,
       key: 'checking',
-      company: 'ING',
+      company: 'Provider One',
       name: 'Joint account',
       description: 'Shared household account',
       iban: 'BE00 0000 0000 0000',
     })
+  })
+})
+
+describe('countAccounts', () => {
+  it('returns 0 when there are no accounts', () => {
+    expect(countAccounts(db)).toBe(0)
+  })
+
+  it('returns the number of accounts', () => {
+    insertAccount(db, {
+      key: 'checking',
+      company: 'Provider One',
+      name: 'Main account',
+    })
+    insertAccount(db, {
+      key: 'wallet',
+      company: 'Provider Two',
+      name: 'Meal card',
+    })
+
+    expect(countAccounts(db)).toBe(2)
   })
 })
