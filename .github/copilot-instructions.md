@@ -25,7 +25,7 @@ Key rules at a glance:
 |---|---|
 | Runtime | **Bun** — use Bun APIs, never Node.js equivalents |
 | Language | **TypeScript strict mode** |
-| CLI | **Commander.js** — one `Command` per file in `src/commands/` |
+| CLI | **Commander.js** — parent command groups use `index.ts`; leaf subcommands live in sibling files in `src/commands/` |
 | Prompts | **@clack/prompts** — all user-facing output goes through this |
 | Database | **`bun:sqlite`** — built-in, no ORM, prepared statements only |
 | CSV parsing | **`csv-parse`** |
@@ -66,7 +66,7 @@ Key rules at a glance:
 
 ```
 src/
-  commands/     ← one file per CLI command
+  commands/     ← standalone commands or grouped command directories
   db/           ← table-specific database modules; see database.instructions.md
   parsers/      ← source.ts (bank CSV parser)
   ai/           ← client.ts (model factory), prompts.ts
@@ -87,7 +87,7 @@ src/
 
 ### SOLID
 - **Single Responsibility** — each module does one thing: `parsers/source.ts` parses CSVs, `ai/client.ts` creates the model. Never mix concerns.
-- **Open/Closed** — extend behavior via new files/functions, not by modifying stable ones. Adding a new command = new file in `commands/`, not editing `index.ts` logic.
+- **Open/Closed** — extend behavior via new files/functions, not by modifying stable ones. Adding a new leaf subcommand should usually mean a new file inside its command group rather than expanding a parent `index.ts`.
 - **Liskov Substitution** — AI provider adapters must be interchangeable. Swapping `@ai-sdk/openai` for `@ai-sdk/anthropic` must require zero changes outside `ai/client.ts`.
 - **Interface Segregation** — expose only what callers need.
 - **Dependency Inversion** — commands depend on abstractions (`getModel()`, query helpers), not on concrete SDKs or `Database` instances directly. Inject `db` as a parameter, never import a global instance.

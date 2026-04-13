@@ -8,7 +8,6 @@ import { normalizeAccountKey } from '@/db/accounts/mutations'
 import { openDatabase } from '@/db/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
 import { parseCsv, type ParseError } from '@/parsers/csv'
-import { resolveDbPath } from '@/config'
 import type { ImportedTransaction, NewTransaction } from '@/types'
 
 type ParsedFile = {
@@ -122,7 +121,7 @@ function reportResults(totalImported: number, allErrors: Array<ParseError & { fi
 }
 
 async function importAction(path: string, options: { db: string }): Promise<void> {
-  intro('flouz import')
+  intro('flouz transactions import')
 
   let database: Database | undefined
   const onCancel = () => {
@@ -164,8 +163,7 @@ async function importAction(path: string, options: { db: string }): Promise<void
   }
 }
 
-export async function createImportCommand(): Promise<Command> {
-  const defaultDb = await resolveDbPath()
+export function createImportCommand(defaultDb: string): Command {
   return new Command('import')
     .description('Import transactions from a CSV file or directory of CSV files')
     .argument('<path>', 'path to CSV file or directory')

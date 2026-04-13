@@ -38,7 +38,7 @@ No need to re-run `bun link` after updates.
 ### Import transactions
 
 ```bash
-bun run src/index.ts import <file.csv>
+bun run src/index.ts transactions import <file.csv>
 ```
 
 flouz expects a **generic CSV format** — not tied to any specific bank. Convert your bank export to this format before importing.
@@ -78,7 +78,7 @@ Options:
 ### List transactions
 
 ```bash
-bun run src/index.ts list
+bun run src/index.ts transactions list
 ```
 
 Options:
@@ -100,8 +100,8 @@ bun run src/index.ts accounts list
 ### Export transactions
 
 ```bash
-bun run src/index.ts export
-bun run src/index.ts export --output transactions.csv
+bun run src/index.ts transactions export
+bun run src/index.ts transactions export --output transactions.csv
 ```
 
 Options:

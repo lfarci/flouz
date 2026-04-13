@@ -2,7 +2,6 @@ import { Command } from 'commander'
 import { intro, outro, spinner, cancel, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { basename, resolve } from 'node:path'
-import { resolveDbPath } from '@/config'
 import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import { getTransactions } from '@/db/transactions/queries'
@@ -24,7 +23,7 @@ type ExportRow = {
 async function ensureDatabaseExists(dbPath: string): Promise<void> {
   if (await Bun.file(dbPath).exists()) return
   throw new Error(
-    `No database found at ${dbPath}. Run \`flouz import\` first or check your configuration with \`flouz config get\`.`
+    `No database found at ${dbPath}. Run \`flouz transactions import\` first or check your configuration with \`flouz config get\`.`
   )
 }
 
@@ -98,7 +97,7 @@ function reportResults(exportedCount: number, outputPath: string | undefined): v
 
 async function exportAction(options: ExportOptions): Promise<void> {
   const shouldReportProgress = options.output !== undefined
-  if (shouldReportProgress) intro('flouz export')
+  if (shouldReportProgress) intro('flouz transactions export')
 
   let database: Database | undefined
   const onCancel = () => {
@@ -126,8 +125,7 @@ async function exportAction(options: ExportOptions): Promise<void> {
   }
 }
 
-export async function createExportCommand(): Promise<Command> {
-  const defaultDb = await resolveDbPath()
+export function createExportCommand(defaultDb: string): Command {
   return new Command('export')
     .description('Export transactions to CSV')
     .option('-o, --output <file>', 'output file path (default: stdout)')

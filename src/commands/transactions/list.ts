@@ -3,7 +3,6 @@ import { Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { basename, resolve } from 'node:path'
 import { renderCliTable } from '@/cli/table'
-import { resolveDbPath } from '@/config'
 import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import { getTransactions, getUncategorized } from '@/db/transactions/queries'
@@ -26,7 +25,7 @@ type ListData = {
 async function ensureDatabaseExists(dbPath: string): Promise<void> {
   if (await Bun.file(dbPath).exists()) return
   throw new Error(
-    `No database found at ${dbPath}. Run \`flouz import\` first or check your configuration with \`flouz config get\`.`
+    `No database found at ${dbPath}. Run \`flouz transactions import\` first or check your configuration with \`flouz config get\`.`
   )
 }
 
@@ -109,7 +108,7 @@ function reportResults(data: ListData): void {
 }
 
 async function listAction(options: ListOptions): Promise<void> {
-  intro('flouz list')
+  intro('flouz transactions list')
 
   let database: Database | undefined
   const onCancel = () => {
@@ -136,8 +135,7 @@ async function listAction(options: ListOptions): Promise<void> {
   }
 }
 
-export async function createListCommand(): Promise<Command> {
-  const defaultDb = await resolveDbPath()
+export function createListCommand(defaultDb: string): Command {
   return new Command('list')
     .description('List transactions')
     .option('-f, --from <date>', 'filter from date (yyyy-MM-dd)')

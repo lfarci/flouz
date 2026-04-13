@@ -7,7 +7,7 @@ import { initDb } from '@/db/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
 import { getTransactions } from '@/db/transactions/queries'
 import { parseCsv } from '@/parsers/csv'
-import { findCsvFiles, resolveImportedTransaction } from '.'
+import { findCsvFiles, resolveImportedTransaction } from './import'
 
 const FIXTURE = `${import.meta.dir}/../../parsers/__fixtures__/minimal.csv`
 const FIXTURES_DIR = `${import.meta.dir}/../../parsers/__fixtures__`

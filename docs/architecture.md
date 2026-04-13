@@ -20,7 +20,9 @@
 
 ```
 src/
-├── commands/          # Commander.js command handlers (import, categorize, report…)
+├── commands/          # Commander.js command handlers and grouped subcommands
+│   ├── accounts/      # Account management command group
+│   └── transactions/  # Transaction command group (import, export, list)
 ├── db/                # Database access layer — schema, migrations, prepared statements
 ├── parsers/           # CSV parsing logic, one parser per bank format
 └── ai/                # AI provider setup, prompts, and categorization logic

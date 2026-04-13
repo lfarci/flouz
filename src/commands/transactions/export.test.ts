@@ -4,7 +4,7 @@ import { getCategories } from '@/db/categories/queries'
 import { seedCategories } from '@/db/categories/seed'
 import { initDb } from '@/db/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
-import { buildCsv, escapeCsvField, loadExportRows } from '.'
+import { buildCsv, escapeCsvField, loadExportRows } from './export'
 
 describe('export pipeline', () => {
   let db: Database

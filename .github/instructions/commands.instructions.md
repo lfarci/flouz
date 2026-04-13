@@ -7,37 +7,56 @@ description: 'Conventions for structuring CLI commands in the flouz project'
 
 ## Directory Layout
 
-Each command lives in its own subdirectory under `src/commands/`:
+Commands use one of two layouts under `src/commands/`:
 
 ```
 src/commands/
-  import/
-    index.ts        ← command factory + helper functions
-    index.test.ts   ← co-located tests
-  list/
-    index.ts
-    index.test.ts
-  export/
-    index.ts
-    index.test.ts
+  config/
+    index.ts        ← standalone command factory + helpers
+    index.test.ts   ← tests for the standalone command
+    README.md
+  accounts/
+    index.ts        ← parent command group factory
+    index.test.ts   ← tests for parent registration
+    README.md       ← group overview
+    add.ts          ← leaf subcommand factory + helpers
+    add.test.ts     ← tests for the `add` subcommand
+    delete.ts
+    delete.test.ts
+    list.ts
+    list.test.ts
 ```
 
-> One directory per command — never put two commands in the same directory.
+- Standalone commands keep their factory in `index.ts`.
+- Command groups keep the parent factory in `index.ts` and each leaf subcommand in a sibling `<name>.ts` file.
+- Prefer the grouped layout when a command owns subcommands, as in `accounts` and `transactions`.
 
 ## File Responsibilities
 
 ### `index.ts`
 
-- Exports one `create<Name>Command(): Command | Promise<Command>` factory function
-- Contains a private `<name>Action(...)` function that is passed to `.action()`
-- Extracts each logical phase into a named helper function (~20 lines max)
-- No business logic in the factory itself — it only wires up Commander options
+- For standalone commands, exports one `create<Name>Command(): Command | Promise<Command>` factory function
+- For command groups, exports only the parent `create<Name>Command(): Promise<Command>` factory that wires child commands together
+- No business logic in the factory itself — it only wires up Commander options or child commands
+
+### Leaf subcommand files (`add.ts`, `import.ts`, etc.)
+
+- Export one `create<Name>Command(defaultDb: string): Command` factory function
+- Contain the private `<name>Action(...)` function passed to `.action()`
+- Extract each logical phase into named helpers (~20 lines max)
+- Hold the command-specific logic that would otherwise bloat a parent `index.ts`
 
 ### `index.test.ts`
 
-- Co-located with the command it tests
+- For standalone commands and command groups, stays co-located with `index.ts`
 - Imports from `'.'` (the sibling `index.ts`)
-- Tests helper functions and pipeline logic in isolation (no process spawning)
+- Parent command tests focus on subcommand registration rather than leaf command logic
+
+### Leaf subcommand tests (`add.test.ts`, `import.test.ts`, etc.)
+
+- Live next to the leaf subcommand file
+- Import from `'./<name>'`
+- Test helper functions and pipeline logic in isolation (no process spawning)
 
 ## Command Test Structure
 
@@ -70,6 +89,7 @@ src/commands/
 - Command factories: `createImportCommand`, `createListCommand`, etc.
 - Action handlers: `importAction`, `listAction`, etc. (private, not exported)
 - Phase helpers: descriptive verb phrases — `parseAllFiles`, `insertAllTransactions`, `reportResults`
+- Parent group factories: `createAccountsCommand`, `createTransactionsCommand`, etc.
 - No abbreviations in any identifier (see object-calisthenics.instructions.md)
 
 ## Function Size

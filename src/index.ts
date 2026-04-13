@@ -2,10 +2,8 @@
 import { Command } from 'commander'
 import { version } from '../package.json'
 import { createAccountsCommand } from './commands/accounts'
-import { createImportCommand } from './commands/import'
-import { createListCommand } from './commands/list'
-import { createExportCommand } from './commands/export'
 import { createConfigCommand } from './commands/config'
+import { createTransactionsCommand } from './commands/transactions'
 
 const program = new Command()
 
@@ -14,9 +12,7 @@ program
   .description('AI-powered personal finance CLI for bank transactions')
   .version(version, '-v, --version', 'display version number')
 
-program.addCommand(await createImportCommand())
-program.addCommand(await createListCommand())
-program.addCommand(await createExportCommand())
+program.addCommand(await createTransactionsCommand())
 program.addCommand(await createAccountsCommand())
 program.addCommand(createConfigCommand())
 
