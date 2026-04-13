@@ -8,7 +8,7 @@ import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { insertTransaction, updateCategory } from './mutations'
 import { createTransactionsTable } from './schema'
-import { getTransactions, getUncategorized, hasTransactionsForAccount } from './queries'
+import { countTransactions, getTransactions, getUncategorized, hasTransactionsForAccount } from './queries'
 
 const fakeTransaction: NewTransaction = {
   date: '2026-01-15',
@@ -95,6 +95,14 @@ describe('getTransactions', () => {
   it('limits results', () => {
     const transactions = getTransactions(db, { limit: 2 })
     expect(transactions.length).toBe(2)
+  })
+
+  it('counts all matching transactions even when the list query is limited', () => {
+    const count = countTransactions(db, { search: 'Shop' })
+    const transactions = getTransactions(db, { search: 'Shop', limit: 1 })
+
+    expect(count).toBe(2)
+    expect(transactions.length).toBe(1)
   })
 
   it('maps accountId from the database row', () => {

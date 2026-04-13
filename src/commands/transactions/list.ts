@@ -1,12 +1,15 @@
-import { cancel, intro, log, outro } from '@clack/prompts'
+import { cancel, log } from '@clack/prompts'
 import { Database } from 'bun:sqlite'
 import { Command } from 'commander'
-import { basename, resolve } from 'node:path'
+import { isBrokenPipeError, writeStdout } from '@/cli/stdout'
+import { resolve } from 'node:path'
 import { renderCliTable } from '@/cli/table'
 import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
-import { getTransactions, getUncategorized } from '@/db/transactions/queries'
+import { getTransactions } from '@/db/transactions/queries'
 import type { Category, Transaction, TransactionFilters } from '@/types'
+
+type OutputFormat = 'table' | 'csv' | 'json'
 
 type ListOptions = {
   from?: string
@@ -14,12 +17,20 @@ type ListOptions = {
   category?: string
   search?: string
   limit?: string
+  output: OutputFormat
   db: string
 }
 
 type ListData = {
   transactions: Transaction[]
-  uncategorizedCount: number
+}
+
+type ListRow = {
+  date: string
+  amount: string
+  counterparty: string
+  note: string
+  category: string
 }
 
 async function ensureDatabaseExists(dbPath: string): Promise<void> {
@@ -54,7 +65,13 @@ function toTransactionFilters(options: ListOptions, categoryId: string | undefin
 
 function parseLimit(limit: string | undefined): number | undefined {
   if (limit === undefined) return undefined
-  return Number.parseInt(limit, 10)
+
+  const parsedLimit = Number.parseInt(limit, 10)
+  if (Number.isNaN(parsedLimit) || parsedLimit <= 0) {
+    throw new Error(`Invalid limit: ${limit}. Use a positive integer.`)
+  }
+
+  return parsedLimit
 }
 
 function loadListData(db: Database, options: ListOptions): ListData {
@@ -62,24 +79,42 @@ function loadListData(db: Database, options: ListOptions): ListData {
   const filters = toTransactionFilters(options, categoryId)
   return {
     transactions: getTransactions(db, filters),
-    uncategorizedCount: getUncategorized(db).length,
   }
 }
 
-export function formatTransactionTable(transactions: Transaction[]): string[] {
+function createCategorySlugById(db: Database): Map<string, string> {
+  const categories = getCategories(db)
+  return new Map(categories.map(category => [category.id, category.slug]))
+}
+
+function toListRows(transactions: Transaction[], categorySlugById: Map<string, string>): ListRow[] {
+  return transactions.map(transaction => ({
+    date: transaction.date,
+    amount: formatAmount(transaction.amount),
+    counterparty: transaction.counterparty,
+    note: transaction.note ?? '',
+    category: resolveCategorySlug(transaction.categoryId, categorySlugById),
+  }))
+}
+
+function resolveCategorySlug(
+  categoryId: string | undefined,
+  categorySlugById: Map<string, string>
+): string {
+  if (categoryId === undefined) return '—'
+  return categorySlugById.get(categoryId) ?? categoryId
+}
+
+export function formatTransactionTable(rows: ListRow[]): string[] {
   return renderCliTable({
     columns: [
       { header: 'Date', width: 10, minWidth: 10, truncate: 10 },
       { header: 'Amount', width: 12, minWidth: 10, alignment: 'right', truncate: 12 },
-      { header: 'Counterparty', width: 28, minWidth: 16, truncate: 28 },
-      { header: 'Category', width: 24, minWidth: 12, truncate: 24 },
+      { header: 'Counterparty', width: 30, minWidth: 16, wrapWord: true },
+      { header: 'Note', width: 30, minWidth: 14, wrapWord: true },
+      { header: 'Category', width: 18, minWidth: 10, wrapWord: true },
     ],
-    rows: transactions.map(transaction => [
-      transaction.date,
-      formatAmount(transaction.amount),
-      transaction.counterparty,
-      transaction.categoryId ?? '—',
-    ]),
+    rows: rows.map(row => [row.date, row.amount, row.counterparty, row.note, row.category]),
   })
 }
 
@@ -88,28 +123,39 @@ function formatAmount(amount: number): string {
   return `${sign}${amount.toFixed(2)}`
 }
 
-export function buildSummaryLines(transactionCount: number, uncategorizedCount: number): string[] {
-  const lines = [`${transactionCount} transactions`]
-  if (uncategorizedCount === 0) return lines
-  return [...lines, `${uncategorizedCount} uncategorized`]
+export function parseOutputFormat(value: string): OutputFormat {
+  if (value === 'table' || value === 'csv' || value === 'json') return value
+  throw new Error(`Invalid output format: ${value}. Use table, csv, or json.`)
 }
 
-function reportResults(data: ListData): void {
-  if (data.transactions.length === 0) {
-    log.info('No transactions found.')
-    return
-  }
+export function buildCsv(rows: ListRow[]): string {
+  const header = 'date,amount,counterparty,note,category'
+  const dataRows = rows.map(row =>
+    [row.date, row.amount, row.counterparty, row.note, row.category].map(escapeCsvField).join(',')
+  )
+  return [header, ...dataRows].join('\n')
+}
 
-  log.message(formatTransactionTable(data.transactions), { spacing: 0, withGuide: false })
+export function escapeCsvField(value: string): string {
+  if (!/[",\n]/.test(value)) return value
+  return `"${value.replaceAll('"', '""')}"`
+}
 
-  for (const line of buildSummaryLines(data.transactions.length, data.uncategorizedCount)) {
-    log.info(line)
-  }
+export function buildJson(rows: ListRow[]): string {
+  return JSON.stringify(rows, undefined, 2)
+}
+
+function buildOutput(rows: ListRow[], outputFormat: OutputFormat): string {
+  if (outputFormat === 'csv') return buildCsv(rows)
+  if (outputFormat === 'json') return buildJson(rows)
+  return formatTransactionTable(rows).join('\n')
+}
+
+async function writeOutput(output: string): Promise<void> {
+  await writeStdout(`${output}\n`)
 }
 
 async function listAction(options: ListOptions): Promise<void> {
-  intro('flouz transactions list')
-
   let database: Database | undefined
   const onCancel = () => {
     database?.close()
@@ -123,13 +169,23 @@ async function listAction(options: ListOptions): Promise<void> {
     await ensureDatabaseExists(dbPath)
     database = openDatabase(dbPath)
     const data = loadListData(database, options)
+    const categorySlugById = createCategorySlugById(database)
+    const rows = toListRows(data.transactions, categorySlugById)
     database.close()
     process.removeListener('SIGINT', onCancel)
-    reportResults(data)
-    outro(`Read from ${basename(dbPath)}`)
+    if (rows.length === 0 && options.output === 'table') {
+      log.info('No transactions found.')
+      return
+    }
+
+    await writeOutput(buildOutput(rows, options.output))
   } catch (error) {
     process.removeListener('SIGINT', onCancel)
     database?.close()
+    if (isBrokenPipeError(error)) {
+      process.exit(0)
+    }
+
     log.error(error instanceof Error ? error.message : String(error))
     process.exit(1)
   }
@@ -142,7 +198,8 @@ export function createListCommand(defaultDb: string): Command {
     .option('-t, --to <date>', 'filter to date (yyyy-MM-dd)')
     .option('-c, --category <slug>', 'filter by category slug')
     .option('-s, --search <text>', 'search counterparty')
-    .option('-l, --limit <n>', 'max results', '50')
+    .option('-l, --limit <n>', 'max results')
+    .option('-o, --output <format>', 'output format (table, csv, json)', parseOutputFormat, 'table')
     .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(listAction)
 }

@@ -5,10 +5,9 @@
 The `transactions` command groups the main workflows for working with stored transaction data.
 
 - `import` reads CSV data and inserts valid rows into the database
-- `export` writes stored transactions back out as CSV
-- `list` prints stored transactions in a terminal-friendly table
+- `list` prints stored transactions as a table, CSV, or JSON without extra summary lines around the output
 
 ## Scope
 
-This command group owns transaction ingestion, inspection, and export.
+This command group owns transaction ingestion and inspection.
 The parent command wires shared configuration into each subcommand and keeps the transaction workflows organized under one namespace.

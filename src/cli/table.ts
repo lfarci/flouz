@@ -50,18 +50,28 @@ export function renderCliTable(config: TableConfig): string[] {
     columns: Object.fromEntries(
       config.columns.map((column, index) => [
         index,
-        {
-          alignment: column.alignment ?? 'left',
-          truncate: Math.min(column.truncate ?? columnWidths[index], columnWidths[index]),
-          width: columnWidths[index],
-          wrapWord: column.wrapWord ?? false,
-        },
+        buildColumnConfig(column, columnWidths[index]),
       ])
     ),
     drawHorizontalLine: (index, size) => index === 0 || index === 1 || index === size,
   }
 
   return table(data, tableConfig).trimEnd().split('\n')
+}
+
+function buildColumnConfig(column: TableColumn, width: number): TableUserConfig['columns'][number] {
+  const config = {
+    alignment: column.alignment ?? 'left',
+    width,
+    wrapWord: column.wrapWord ?? false,
+  }
+
+  if (column.truncate === undefined) return config
+
+  return {
+    ...config,
+    truncate: Math.min(column.truncate, width),
+  }
 }
 
 function fitColumnWidths(columns: TableColumn[], terminalWidth: number | undefined): number[] {

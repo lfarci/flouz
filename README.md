@@ -86,7 +86,8 @@ Options:
 - `-t, --to <yyyy-MM-dd>` — filter to date
 - `-c, --category <slug>` — filter by category (e.g. `groceries`, `food-and-drink`)
 - `-s, --search <text>` — search counterparty name
-- `-l, --limit <n>` — max results (default: 50)
+- `-l, --limit <n>` — max results
+- `-o, --output <format>` — output format: `table`, `csv`, or `json` (default: `table`)
 - `-d, --db <path>` — SQLite database path
 
 ### Manage accounts
@@ -96,17 +97,6 @@ bun run src/index.ts accounts add checking "Main account" Belfius --iban "BE00 0
 bun run src/index.ts accounts delete checking
 bun run src/index.ts accounts list
 ```
-
-### Export transactions
-
-```bash
-bun run src/index.ts transactions export
-bun run src/index.ts transactions export --output transactions.csv
-```
-
-Options:
-- `-o, --output <file>` — output file (default: stdout)
-- `-d, --db <path>` — SQLite database path
 
 ## Tests
 

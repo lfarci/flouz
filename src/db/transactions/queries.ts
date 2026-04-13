@@ -19,7 +19,12 @@ function rowToTransaction(row: Record<string, unknown>): Transaction {
   }
 }
 
-export function getTransactions(db: Database, filters: TransactionFilters = {}): Transaction[] {
+type FilterQueryParts = {
+  whereClause: string
+  params: SQLQueryBindings[]
+}
+
+function buildFilterQueryParts(filters: TransactionFilters): FilterQueryParts {
   const conditions: string[] = []
   const params: SQLQueryBindings[] = []
 
@@ -40,7 +45,14 @@ export function getTransactions(db: Database, filters: TransactionFilters = {}):
     params.push(`%${filters.search}%`)
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+  return {
+    whereClause: conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '',
+    params,
+  }
+}
+
+export function getTransactions(db: Database, filters: TransactionFilters = {}): Transaction[] {
+  const { whereClause, params } = buildFilterQueryParts(filters)
   const limitClause = filters.limit !== undefined ? 'LIMIT ?' : ''
 
   if (filters.limit !== undefined) {
@@ -50,6 +62,13 @@ export function getTransactions(db: Database, filters: TransactionFilters = {}):
   const sql = `SELECT * FROM transactions ${whereClause} ORDER BY date DESC ${limitClause}`.trim()
   const rows = db.prepare(sql).all(...params) as Record<string, unknown>[]
   return rows.map(rowToTransaction)
+}
+
+export function countTransactions(db: Database, filters: TransactionFilters = {}): number {
+  const { whereClause, params } = buildFilterQueryParts(filters)
+  const sql = `SELECT COUNT(*) AS count FROM transactions ${whereClause}`.trim()
+  const row = db.prepare(sql).get(...params) as { count: number }
+  return row.count
 }
 
 export function getUncategorized(db: Database): Transaction[] {
