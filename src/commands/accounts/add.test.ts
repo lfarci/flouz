@@ -1,5 +1,15 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { Database } from 'bun:sqlite'
+import {
+  collectCommandOutcome,
+  createCommandTestDatabase,
+  createOpenDatabaseMock,
+  createProcessExitMock,
+  getArgumentSetup,
+  restoreProcessExit,
+  runCommandSilently,
+  setProcessExit,
+} from '@/commands/test-helpers'
 import { insertAccount } from '@/db/accounts/mutations'
 import { countAccounts, getAccountByKey } from '@/db/accounts/queries'
 import { createAccountsTable } from '@/db/accounts/schema'
@@ -8,9 +18,7 @@ import type { Account } from '@/types'
 const successLogMock = mock(() => {})
 const errorLogMock = mock(() => {})
 
-let openDatabaseMock = mock((dbPath: string) => {
-  throw new Error(`openDatabase mock not configured for ${dbPath}`)
-})
+const openDatabaseMock = createOpenDatabaseMock()
 
 mock.module('@clack/prompts', () => ({
   log: {
@@ -23,23 +31,9 @@ mock.module('@/db/schema', () => ({
   openDatabase: (dbPath: string) => openDatabaseMock(dbPath),
 }))
 
-class ProcessExitError extends Error {
-  constructor(readonly code: number) {
-    super(`process.exit(${code})`)
-  }
-}
-
-const processExitMock = mock((code?: number) => {
-  throw new ProcessExitError(code ?? 0)
-})
+const processExitMock = createProcessExitMock()
 
 type AddModule = typeof import('./add')
-
-type InMemoryDatabase = {
-  database: Database
-  closeMock: ReturnType<typeof mock>
-  handle: Database
-}
 
 type ActionSummary = {
   status: 'resolved' | 'rejected'
@@ -48,36 +42,17 @@ type ActionSummary = {
   accountCount: number
 }
 
-type ArgumentSetup = {
-  name: string
-  required: boolean
-  description?: string
-  variadic: boolean
-}
-
 let createAddAccountsCommand: AddModule['createAddAccountsCommand']
 let originalProcessExit: typeof process.exit
 
-function createInMemoryDatabase(): InMemoryDatabase {
-  const database = new Database(':memory:')
-  createAccountsTable(database)
-  const closeMock = mock(() => {})
-
-  const handle = {
-    prepare: database.prepare.bind(database),
-    close: closeMock,
-  } as Database
-
-  return { database, closeMock, handle }
+function createInMemoryDatabase() {
+  return createCommandTestDatabase(database => {
+    createAccountsTable(database)
+  })
 }
 
 async function runAddCommand(argumentsList: string[]): Promise<void> {
-  const command = createAddAccountsCommand('default.db')
-  command.configureOutput({
-    writeOut: () => {},
-    writeErr: () => {},
-  })
-  await command.parseAsync(argumentsList, { from: 'user' })
+  await runCommandSilently(createAddAccountsCommand('default.db'), argumentsList)
 }
 
 async function collectAddCommandOutcome(
@@ -85,39 +60,22 @@ async function collectAddCommandOutcome(
   argumentsList: string[],
   accountKey?: string
 ): Promise<ActionSummary> {
-  try {
-    await runAddCommand(argumentsList)
+  const account = () => (accountKey === undefined ? undefined : getAccountByKey(database, accountKey))
 
-    return {
+  return collectCommandOutcome(
+    () => runAddCommand(argumentsList),
+    () => ({
       status: 'resolved',
-      account: accountKey === undefined ? undefined : getAccountByKey(database, accountKey),
+      account: account(),
       accountCount: countAccounts(database),
-    }
-  } catch (error) {
-    const errorCode = error instanceof ProcessExitError ? error.code : undefined
-
-    return {
+    }),
+    errorCode => ({
       status: 'rejected',
       errorCode,
-      account: accountKey === undefined ? undefined : getAccountByKey(database, accountKey),
+      account: account(),
       accountCount: countAccounts(database),
-    }
-  }
-}
-
-function getArgumentSetup(command: ReturnType<typeof createAddAccountsCommand>, index: number): ArgumentSetup | undefined {
-  const argument = command.registeredArguments[index]
-
-  if (argument === undefined) {
-    return undefined
-  }
-
-  return {
-    name: argument.name(),
-    required: argument.required,
-    description: argument.description,
-    variadic: argument.variadic,
-  }
+    })
+  )
 }
 
 beforeAll(async () => {
@@ -131,19 +89,11 @@ beforeEach(() => {
   openDatabaseMock.mockReset()
   processExitMock.mockClear()
 
-  Object.defineProperty(process, 'exit', {
-    value: processExitMock,
-    configurable: true,
-    writable: true,
-  })
+  originalProcessExit = setProcessExit(processExitMock)
 })
 
 afterEach(() => {
-  Object.defineProperty(process, 'exit', {
-    value: originalProcessExit,
-    configurable: true,
-    writable: true,
-  })
+  restoreProcessExit(originalProcessExit)
 })
 
 describe('createAddAccountsCommand', () => {
