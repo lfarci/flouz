@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/lfarci/flouz/compare/v2.0.0...v2.1.0) (2026-04-14)
+
+
+### Features
+
+* implement AI categorization for transactions ([5dd3870](https://github.com/lfarci/flouz/commit/5dd3870cd956440176be759d661901d08ad743a1))
+
 ## [2.0.0](https://github.com/lfarci/flouz/compare/v1.8.0...v2.0.0) (2026-04-13)
 
 
