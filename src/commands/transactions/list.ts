@@ -19,6 +19,7 @@ type ListOptions = {
   limit?: string
   output: OutputFormat
   db: string
+  uncategorized?: boolean
 }
 
 type ListData = {
@@ -60,6 +61,7 @@ function toTransactionFilters(options: ListOptions, categoryId: string | undefin
     categoryId,
     search: options.search,
     limit: parseLimit(options.limit),
+    uncategorized: options.uncategorized,
   }
 }
 
@@ -156,6 +158,11 @@ async function writeOutput(output: string): Promise<void> {
 }
 
 async function listAction(options: ListOptions): Promise<void> {
+  if (options.category && options.uncategorized) {
+    log.error('Cannot use --category and --uncategorized together')
+    process.exit(1)
+  }
+
   let database: Database | undefined
   const onCancel = () => {
     database?.close()
@@ -199,6 +206,7 @@ export function createListCommand(defaultDb: string): Command {
     .option('-c, --category <slug>', 'filter by category slug')
     .option('-s, --search <text>', 'search counterparty')
     .option('-l, --limit <n>', 'max results')
+    .option('--uncategorized', 'show only transactions without a manual category')
     .option('-o, --output <format>', 'output format (table, csv, json)', parseOutputFormat, 'table')
     .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(listAction)

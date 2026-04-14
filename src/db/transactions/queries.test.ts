@@ -6,9 +6,11 @@ import { computeTransactionHash } from '@/db/transactions/hash'
 import type { NewTransaction } from '@/types'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
+import { upsertTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
+import { createTransactionCategorySuggestionsTable } from '@/db/transaction_category_suggestions/schema'
 import { insertTransaction, updateCategory } from './mutations'
 import { createTransactionsTable } from './schema'
-import { countTransactions, getTransactions, getUncategorized, hasTransactionsForAccount } from './queries'
+import { countTransactions, getTransactions, getTransactionsMissingCategoryForCategorization, getUncategorized, hasTransactionsForAccount } from './queries'
 
 const fakeTransaction: NewTransaction = {
   date: '2026-01-15',
@@ -166,5 +168,119 @@ describe('hasTransactionsForAccount', () => {
     })
 
     expect(hasTransactionsForAccount(db, accountId)).toBe(true)
+  })
+})
+
+const CATEGORY_ID = '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f'
+
+describe('getTransactions with uncategorized filter', () => {
+  beforeEach(() => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'No Category' })
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Has Category', date: '2026-02-01' })
+    const allTransactions = getTransactions(db)
+    const categorized = allTransactions.find(t => t.counterparty === 'Has Category')!
+    updateCategory(db, categorized.id!, CATEGORY_ID)
+  })
+
+  it('returns only transactions where category_id IS NULL when uncategorized is true', () => {
+    const transactions = getTransactions(db, { uncategorized: true })
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].counterparty).toBe('No Category')
+    expect(transactions[0].categoryId).toBeUndefined()
+  })
+
+  it('excludes transactions that have a category_id set', () => {
+    const transactions = getTransactions(db, { uncategorized: true })
+
+    expect(transactions.every(t => t.categoryId === undefined)).toBe(true)
+  })
+})
+
+describe('getTransactionsMissingCategoryForCategorization', () => {
+  beforeEach(() => {
+    createTransactionCategorySuggestionsTable(db)
+  })
+
+  it('returns transactions where category_id IS NULL and no suggestion exists', () => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Eligible' })
+
+    const transactions = getTransactionsMissingCategoryForCategorization(db)
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].counterparty).toBe('Eligible')
+  })
+
+  it('returns empty array when no eligible transactions exist', () => {
+    const transactions = getTransactionsMissingCategoryForCategorization(db)
+
+    expect(transactions).toEqual([])
+  })
+
+  it('excludes transactions that already have a category_id', () => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Categorized' })
+    const allTransactions = getTransactions(db)
+    updateCategory(db, allTransactions[0].id!, CATEGORY_ID)
+
+    const transactions = getTransactionsMissingCategoryForCategorization(db)
+
+    expect(transactions).toHaveLength(0)
+  })
+
+  it('excludes transactions that already have a suggestion', () => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Already Suggested' })
+    const allTransactions = getTransactions(db)
+    const transactionId = allTransactions[0].id!
+
+    upsertTransactionCategorySuggestion(db, {
+      transactionId,
+      categoryId: CATEGORY_ID,
+      confidence: 0.9,
+      model: 'test-model',
+    })
+
+    const transactions = getTransactionsMissingCategoryForCategorization(db)
+
+    expect(transactions).toHaveLength(0)
+  })
+
+  it('applies search filter as case-insensitive counterparty match', () => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Delhaize Market' })
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Colruyt Shop', date: '2026-02-01' })
+
+    const transactions = getTransactionsMissingCategoryForCategorization(db, { search: 'delhaize' })
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].counterparty).toBe('Delhaize Market')
+  })
+
+  it('applies from date filter', () => {
+    insertTransaction(db, { ...fakeTransaction, date: '2026-01-10', counterparty: 'Old' })
+    insertTransaction(db, { ...fakeTransaction, date: '2026-02-01', counterparty: 'New' })
+
+    const transactions = getTransactionsMissingCategoryForCategorization(db, { from: '2026-01-20' })
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].counterparty).toBe('New')
+  })
+
+  it('applies to date filter', () => {
+    insertTransaction(db, { ...fakeTransaction, date: '2026-01-10', counterparty: 'Old' })
+    insertTransaction(db, { ...fakeTransaction, date: '2026-02-01', counterparty: 'New' })
+
+    const transactions = getTransactionsMissingCategoryForCategorization(db, { to: '2026-01-20' })
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].counterparty).toBe('Old')
+  })
+
+  it('respects the limit filter', () => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Shop A', date: '2026-01-10' })
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Shop B', date: '2026-01-20' })
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Shop C', date: '2026-01-30' })
+
+    const transactions = getTransactionsMissingCategoryForCategorization(db, { limit: 2 })
+
+    expect(transactions).toHaveLength(2)
   })
 })

@@ -1,9 +1,11 @@
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { getCategories } from '@/db/categories/queries'
 import { seedCategories } from '@/db/categories/seed'
 import { initDb } from '@/db/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
+import { updateCategory } from '@/db/transactions/mutations'
+import { getTransactions } from '@/db/transactions/queries'
 import {
   buildCsv,
   buildJson,
@@ -11,6 +13,7 @@ import {
   findCategoryId,
   formatTransactionTable,
   parseOutputFormat,
+  createListCommand,
 } from './list'
 import { isBrokenPipeError } from '@/cli/stdout'
 
@@ -150,5 +153,71 @@ describe('isBrokenPipeError', () => {
 
   it('returns false for other errors', () => {
     expect(isBrokenPipeError(new Error('other'))).toBe(false)
+  })
+})
+
+const CATEGORY_ID = '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f'
+
+const baseTransaction = {
+  date: '2026-01-15',
+  amount: -42.5,
+  counterparty: 'ACME Shop',
+  currency: 'EUR',
+  importedAt: new Date().toISOString(),
+}
+
+describe('getTransactions uncategorized filter (used by --uncategorized flag)', () => {
+  let db: Database
+
+  beforeEach(() => {
+    db = new Database(':memory:')
+    initDb(db)
+    seedCategories(db)
+
+    insertTransaction(db, { ...baseTransaction, counterparty: 'No Category' })
+    insertTransaction(db, { ...baseTransaction, counterparty: 'Has Category', date: '2026-02-01' })
+    const allTransactions = getTransactions(db)
+    const categorized = allTransactions.find(t => t.counterparty === 'Has Category')!
+    updateCategory(db, categorized.id!, CATEGORY_ID)
+  })
+
+  it('returns only transactions without category_id when uncategorized is true', () => {
+    const transactions = getTransactions(db, { uncategorized: true })
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].counterparty).toBe('No Category')
+  })
+
+  it('excludes transactions with a category_id when uncategorized is true', () => {
+    const transactions = getTransactions(db, { uncategorized: true })
+
+    expect(transactions.some(t => t.categoryId !== undefined)).toBe(false)
+  })
+})
+
+describe('createListCommand --category and --uncategorized conflict', () => {
+  it('exits with code 1 when --category and --uncategorized are both provided', async () => {
+    const exitSpy = spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('process.exit called')
+    }) as never)
+
+    const command = createListCommand(':memory:')
+    command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
+
+    let exited = false
+    try {
+      await command.parseAsync([
+        'node', 'list',
+        '--category', 'groceries',
+        '--uncategorized',
+        '--db', ':memory:',
+      ])
+    } catch {
+      exited = true
+    }
+
+    expect(exited).toBe(true)
+    expect(exitSpy).toHaveBeenCalledWith(1)
+    exitSpy.mockRestore()
   })
 })

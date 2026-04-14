@@ -43,4 +43,22 @@ export interface TransactionFilters {
   categoryId?: string
   search?: string
   limit?: number
+  uncategorized?: boolean
+}
+
+export type TransactionCategorySuggestion = {
+  transactionId: number
+  categoryId: string
+  confidence: number
+  model: string
+  suggestedAt: string
+}
+
+export type NewTransactionCategorySuggestion = Omit<TransactionCategorySuggestion, 'suggestedAt'>
+
+export type CategorizeTransactionsFilters = {
+  from?: string
+  to?: string
+  search?: string
+  limit?: number
 }

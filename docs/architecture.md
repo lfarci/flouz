@@ -43,9 +43,9 @@ The AI provider is configured through environment variables, making it a one-lin
 // GitHub Models (default — free with Copilot subscription)
 import { createOpenAI } from "@ai-sdk/openai";
 const model = createOpenAI({
-  baseURL: process.env.AI_BASE_URL ?? "https://models.inference.ai.azure.com",
+  baseURL: process.env.AI_BASE_URL ?? "https://models.github.ai/inference",
   apiKey: process.env.GITHUB_TOKEN,
-})("gpt-4o-mini");
+}).chat("openai/gpt-4o-mini");
 
 // Anthropic
 import { createAnthropic } from "@ai-sdk/anthropic";

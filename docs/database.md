@@ -49,6 +49,14 @@ CREATE TABLE transactions (
   source_file        TEXT,                   -- original CSV filename
   imported_at        TEXT NOT NULL           -- ISO 8601 timestamp of import
 );
+
+CREATE TABLE transaction_category_suggestions (
+  transaction_id INTEGER PRIMARY KEY REFERENCES transactions(id) ON DELETE CASCADE,
+  category_id    TEXT NOT NULL REFERENCES categories(id),  -- suggested L3 leaf UUID
+  confidence     REAL NOT NULL CHECK(confidence >= 0 AND confidence <= 1),
+  model          TEXT NOT NULL,              -- AI model identifier
+  suggested_at   TEXT NOT NULL              -- ISO 8601 timestamp of suggestion
+);
 ```
 
 ## Category Hierarchy
@@ -100,6 +108,18 @@ const hasher = new Bun.CryptoHasher('sha256')
 hasher.update(JSON.stringify([date, amount, counterparty, note ?? null]))
 const hash = hasher.digest('hex')
 ```
+
+## AI Category Suggestions
+
+The `transaction_category_suggestions` table stores one AI-generated category suggestion per transaction.
+
+**Invariant**: this table **never** overwrites `transactions.category_id`. AI suggestions are stored in `category_id` of the suggestions table; only an explicit user action promotes a suggestion into `transactions.category_id`.
+
+Key points:
+- Upserting a suggestion re-runs the AI for a transaction that has already been processed, refreshing stale results.
+- `ON DELETE CASCADE` on `transaction_id` keeps suggestions tidy when transactions are removed.
+- `confidence` is a float in [0, 1] enforced by a `CHECK` constraint.
+- `foreign_keys = ON` is set by `initDb` so all FK constraints are active.
 
 ## Usage Pattern
 

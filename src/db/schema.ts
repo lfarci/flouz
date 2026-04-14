@@ -3,6 +3,7 @@ import { createAccountsTable } from '@/db/accounts/schema'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { createTransactionsTable } from '@/db/transactions/schema'
+import { createTransactionCategorySuggestionsTable } from '@/db/transaction_category_suggestions/schema'
 
 export function openDatabase(dbPath: string): Database {
   const db = new Database(dbPath)
@@ -12,7 +13,9 @@ export function openDatabase(dbPath: string): Database {
 }
 
 export function initDb(db: Database): void {
+  db.run('PRAGMA foreign_keys = ON')
   createCategoriesTable(db)
   createAccountsTable(db)
   createTransactionsTable(db)
+  createTransactionCategorySuggestionsTable(db)
 }

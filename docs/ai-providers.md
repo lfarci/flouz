@@ -11,8 +11,8 @@ GitHub Models is the default because it is free with a GitHub Copilot subscripti
 | Variable | Description | Default |
 |---|---|---|
 | `GITHUB_TOKEN` | Personal access token or Copilot token | required |
-| `AI_MODEL` | Model name to use | `gpt-4o-mini` |
-| `AI_BASE_URL` | API base URL | `https://models.inference.ai.azure.com` |
+| `AI_MODEL` | Model name to use | `openai/gpt-4o-mini` |
+| `AI_BASE_URL` | API base URL | `https://models.github.ai/inference` |
 
 ## Switching Providers
 
@@ -24,11 +24,11 @@ Change the import and constructor in `src/ai/` — the rest of the codebase is u
 import { createOpenAI } from "@ai-sdk/openai";
 
 const provider = createOpenAI({
-  baseURL: process.env.AI_BASE_URL ?? "https://models.inference.ai.azure.com",
+  baseURL: process.env.AI_BASE_URL ?? "https://models.github.ai/inference",
   apiKey: process.env.GITHUB_TOKEN,
 });
 
-const model = provider(process.env.AI_MODEL ?? "gpt-4o-mini");
+const model = provider.chat(process.env.AI_MODEL ?? "openai/gpt-4o-mini");
 ```
 
 ### Anthropic

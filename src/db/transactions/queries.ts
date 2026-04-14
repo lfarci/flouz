@@ -1,6 +1,6 @@
 import { Database } from 'bun:sqlite'
 import type { SQLQueryBindings } from 'bun:sqlite'
-import type { Transaction, TransactionFilters } from '@/types'
+import type { Transaction, TransactionFilters, CategorizeTransactionsFilters } from '@/types'
 
 function rowToTransaction(row: Record<string, unknown>): Transaction {
   return {
@@ -44,6 +44,9 @@ function buildFilterQueryParts(filters: TransactionFilters): FilterQueryParts {
     conditions.push('counterparty LIKE ?')
     params.push(`%${filters.search}%`)
   }
+  if (filters.uncategorized === true) {
+    conditions.push('category_id IS NULL')
+  }
 
   return {
     whereClause: conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '',
@@ -84,4 +87,39 @@ export function hasTransactionsForAccount(db: Database, accountId: number): bool
   ).get(accountId) as { found: number } | null
 
   return row !== null
+}
+
+export function getTransactionsMissingCategoryForCategorization(
+  db: Database,
+  filters: CategorizeTransactionsFilters = {}
+): Transaction[] {
+  const conditions: string[] = [
+    'category_id IS NULL',
+    'id NOT IN (SELECT transaction_id FROM transaction_category_suggestions)',
+  ]
+  const params: SQLQueryBindings[] = []
+
+  if (filters.from !== undefined) {
+    conditions.push('date >= ?')
+    params.push(filters.from)
+  }
+  if (filters.to !== undefined) {
+    conditions.push('date <= ?')
+    params.push(filters.to)
+  }
+  if (filters.search !== undefined) {
+    conditions.push('counterparty LIKE ?')
+    params.push(`%${filters.search}%`)
+  }
+
+  const whereClause = `WHERE ${conditions.join(' AND ')}`
+  const limitClause = filters.limit !== undefined ? 'LIMIT ?' : ''
+
+  if (filters.limit !== undefined) {
+    params.push(filters.limit)
+  }
+
+  const sql = `SELECT * FROM transactions ${whereClause} ORDER BY date DESC ${limitClause}`.trim()
+  const rows = db.prepare(sql).all(...params) as Record<string, unknown>[]
+  return rows.map(rowToTransaction)
 }

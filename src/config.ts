@@ -7,6 +7,9 @@ const DEFAULT_DB_PATH = `${CONFIG_DIR}/flouz.db`
 
 const ConfigSchema = z.object({
   dbPath: z.string().optional(),
+  githubToken: z.string().optional(),
+  aiModel: z.string().optional(),
+  aiBaseUrl: z.string().optional(),
 })
 
 export type Config = z.infer<typeof ConfigSchema>

@@ -5,7 +5,7 @@ AI-powered personal finance CLI for analyzing bank transactions.
 ## Prerequisites
 
 - [Bun](https://bun.sh) v1.0+
-- A `GITHUB_TOKEN` with access to [GitHub Models](https://github.com/marketplace/models) (free with Copilot subscription)
+- A GitHub account with access to [GitHub Models](https://github.com/marketplace/models) (free with a Copilot subscription)
 
 ## Installation
 
@@ -14,8 +14,17 @@ git clone https://github.com/lfarci/flouz.git
 cd flouz
 bun install
 bun link              # registers `flouz` as a global command
-cp .env.example .env  # then fill in your GITHUB_TOKEN
 ```
+
+After `bun link`, configure your GitHub token so AI features work:
+
+```bash
+flouz config set github-token ghp_your_personal_access_token
+```
+
+Get a token at [github.com/settings/tokens](https://github.com/settings/tokens):
+- **Fine-grained PAT** — enable the **Models: Read** permission (under "Account permissions")
+- **Classic PAT** — no scopes required
 
 After `bun link`, you can run `flouz` from anywhere:
 
@@ -87,7 +96,29 @@ Options:
 - `-c, --category <slug>` — filter by category (e.g. `groceries`, `food-and-drink`)
 - `-s, --search <text>` — search counterparty name
 - `-l, --limit <n>` — max results
+- `--uncategorized` — show only transactions without a manual category
 - `-o, --output <format>` — output format: `table`, `csv`, or `json` (default: `table`)
+- `-d, --db <path>` — SQLite database path
+
+### AI categorization
+
+flouz can suggest categories for uncategorized transactions using an AI model. Suggestions are stored separately from user-assigned categories and never silently overwrite them.
+
+**Recommended workflow — inspect then categorize:**
+
+```bash
+# 1. See what still needs categorizing
+flouz transactions list --uncategorized
+
+# 2. Run AI categorization on a bounded set
+flouz transactions categorize --limit 10
+```
+
+Options:
+- `-f, --from <date>` — process only transactions from this date (YYYY-MM-DD)
+- `-t, --to <date>` — process only transactions up to this date (YYYY-MM-DD)
+- `-s, --search <text>` — filter by counterparty name
+- `-l, --limit <n>` — max transactions to process in one run
 - `-d, --db <path>` — SQLite database path
 
 ### Manage accounts
@@ -112,12 +143,39 @@ bun run typecheck
 
 ## Configuration
 
-| Variable | Default | Description |
+flouz stores settings in `~/.config/flouz/config.json`. Use `flouz config set` to write values and `flouz config get` to read them.
+
+### AI provider
+
+```bash
+flouz config set github-token ghp_your_token   # required for AI features
+flouz config set ai-model openai/gpt-4o-mini   # optional, this is the default
+flouz config set ai-base-url https://...       # optional, defaults to GitHub Models
+```
+
+### Database path
+
+```bash
+flouz config set db-path /path/to/custom.db   # optional, defaults to ~/.config/flouz/flouz.db
+```
+
+### Inspect current configuration
+
+```bash
+flouz config get             # show all keys (github-token is masked as ***)
+flouz config get ai-model    # show a single key
+```
+
+### Environment variable overrides
+
+Environment variables take precedence over the config file — useful for CI/CD or scripting:
+
+| Variable | Config key | Default |
 |---|---|---|
-| `GITHUB_TOKEN` | — | Required for AI features |
-| `AI_MODEL` | `openai/gpt-4.1-mini` | Model to use |
-| `AI_BASE_URL` | `https://models.github.ai/inference` | Provider endpoint |
-| `DB_PATH` | `./flouz.db` | SQLite database file |
+| `GITHUB_TOKEN` | `github-token` | — (required for AI) |
+| `AI_MODEL` | `ai-model` | `openai/gpt-4o-mini` |
+| `AI_BASE_URL` | `ai-base-url` | `https://models.github.ai/inference` |
+| `DB_PATH` | `db-path` | `~/.config/flouz/flouz.db` |
 
 See `docs/ai-providers.md` to switch to Anthropic or Ollama.
 

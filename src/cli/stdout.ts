@@ -20,7 +20,7 @@ export function writeStdout(output: string): Promise<void> {
     process.stdout.once('error', onError)
     process.stdout.write(output, error => {
       cleanup()
-      if (error !== undefined) {
+      if (error != null) {
         reject(error)
         return
       }
