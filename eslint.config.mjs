@@ -3,6 +3,7 @@ import js from '@eslint/js'
 import globals from 'globals'
 import importPlugin from 'eslint-plugin-import'
 import tseslint from 'typescript-eslint'
+import sonarjs from 'eslint-plugin-sonarjs'
 
 const typeCheckedRules = {
   '@typescript-eslint/consistent-type-imports': [
@@ -42,6 +43,7 @@ export default defineConfig(
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  sonarjs.configs.recommended,
   {
     files: ['src/**/*.ts'],
     plugins: {
@@ -76,6 +78,11 @@ export default defineConfig(
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/await-thenable': 'off',
       '@typescript-eslint/no-empty-function': 'off',
+      'sonarjs/no-duplicate-string': 'off',
+      // /tmp usage in tests is intentional
+      'sonarjs/publicly-writable-directories': 'off',
+      // anchored regexes (^) don't have ReDoS risk
+      'sonarjs/slow-regex': 'off',
     },
   }
 )
