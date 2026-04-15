@@ -32,7 +32,17 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Lint
-        run: bun run lint
+        run: |
+          set -o pipefail
+          bun run lint 2>&1 | tee /tmp/lint-output.txt
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## Lint" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          [ -f /tmp/lint-output.txt ] && cat /tmp/lint-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   typecheck:
     name: Type check
@@ -52,7 +62,17 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Type check
-        run: bun run typecheck
+        run: |
+          set -o pipefail
+          bun run typecheck 2>&1 | tee /tmp/typecheck-output.txt
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## Type check" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          [ -f /tmp/typecheck-output.txt ] && cat /tmp/typecheck-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   test:
     name: Test & coverage
@@ -72,4 +92,14 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Run tests with coverage
-        run: bun test --coverage
+        run: |
+          set -o pipefail
+          bun test --coverage 2>&1 | tee /tmp/test-output.txt
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## Test & Coverage" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          [ -f /tmp/test-output.txt ] && cat /tmp/test-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
