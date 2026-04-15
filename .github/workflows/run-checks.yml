@@ -108,8 +108,14 @@ jobs:
         if: always()
         run: |
           if [ "${{ steps.test.outcome }}" = "success" ]; then
-            echo "✅ All tests passed." >> $GITHUB_STEP_SUMMARY
+            echo "✅ All tests passed with sufficient coverage." >> $GITHUB_STEP_SUMMARY
           else
+            FAIL_COUNT=$(grep -oE '[0-9]+ fail' /tmp/test-output.txt | head -1 | grep -oE '[0-9]+' || echo "0")
+            if [ "$FAIL_COUNT" = "0" ]; then
+              echo "⚠️ All tests passed but coverage is below the 80% threshold." >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $FAIL_COUNT test(s) failed." >> $GITHUB_STEP_SUMMARY
+            fi
             echo "<details><summary>Test &amp; coverage output</summary>" >> $GITHUB_STEP_SUMMARY
             echo "<pre>" >> $GITHUB_STEP_SUMMARY
             [ -f /tmp/test-output.txt ] && sed -e 's/\x1B\[[0-9;]*[a-zA-Z]//g' -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' /tmp/test-output.txt >> $GITHUB_STEP_SUMMARY
