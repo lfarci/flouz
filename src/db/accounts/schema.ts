@@ -1,4 +1,4 @@
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 
 const ACCOUNTS_KEY_INDEX = 'idx_accounts_key'
 

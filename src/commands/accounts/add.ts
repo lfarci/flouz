@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { insertAccount } from '@/db/accounts/mutations'
 import { openDatabase } from '@/db/schema'
 
-type AccountsCommandOptions = {
+interface AccountsCommandOptions {
   db: string
 }
 
@@ -33,12 +33,12 @@ function normalizeOptionalField(value?: string): string | undefined {
   return normalizedValue
 }
 
-async function addAccountAction(
+function addAccountAction(
   key: string,
   name: string,
   company: string,
   options: AddAccountOptions
-): Promise<void> {
+): void {
   const database = openDatabase(resolve(options.db))
 
   try {

@@ -2,7 +2,7 @@ import { table, type Alignment, type TableUserConfig } from 'table'
 
 type TableColumnConfig = NonNullable<TableUserConfig['columns']>[number]
 
-type TableColumn = {
+interface TableColumn {
   header: string
   width: number
   minWidth?: number
@@ -11,7 +11,7 @@ type TableColumn = {
   wrapWord?: boolean
 }
 
-type TableConfig = {
+interface TableConfig {
   columns: TableColumn[]
   rows: string[][]
 }

@@ -1,4 +1,4 @@
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import { CATEGORIES } from '@/data/categories'
 
 export function seedCategories(db: Database): void {

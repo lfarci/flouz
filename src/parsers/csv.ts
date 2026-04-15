@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import type { ImportedTransaction } from '@/types'
 
-export type ParseError = { row: number; message: string }
-export type ParseResult = { transactions: ImportedTransaction[]; errors: ParseError[] }
+export interface ParseError { row: number; message: string }
+export interface ParseResult { transactions: ImportedTransaction[]; errors: ParseError[] }
 
 const rowSchema = z.object({
   date: z
@@ -14,6 +14,7 @@ const rowSchema = z.object({
     .transform(v => parseFloat(v)),
   counterparty: z.string().optional().default(''),
   counterparty_iban: z.string().optional().default(''),
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   currency: z.string().optional().transform(v => v || 'EUR'),
   account: z.string().optional().default(''),
   note: z.string().optional().default(''),

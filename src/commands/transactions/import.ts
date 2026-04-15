@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import { intro, outro, progress, spinner, cancel, log } from '@clack/prompts'
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
 import { getAccountByKey } from '@/db/accounts/queries'
@@ -10,15 +10,15 @@ import { insertTransaction } from '@/db/transactions/mutations'
 import { parseCsv, type ParseError } from '@/parsers/csv'
 import type { ImportedTransaction, NewTransaction } from '@/types'
 
-type ParsedFile = {
+interface ParsedFile {
   file: string
   transactions: ReturnType<typeof parseCsv>['transactions']
   errors: ParseError[]
 }
 
-type InsertResult = {
+interface InsertResult {
   totalImported: number
-  allErrors: Array<ParseError & { file: string }>
+  allErrors: (ParseError & { file: string })[]
 }
 
 export function resolveImportedTransaction(
@@ -50,7 +50,7 @@ export async function findCsvFiles(dirPath: string): Promise<string[]> {
 async function resolveCsvFiles(path: string): Promise<string[] | null> {
   const info = await stat(path).catch(() => null)
   if (!info) return null
-  if (info.isDirectory()) return findCsvFiles(path)
+  if (info.isDirectory()) return await findCsvFiles(path)
   return [resolve(path)]
 }
 
@@ -76,7 +76,7 @@ async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promis
   const insertProgress = progress({ max: Math.max(1, totalRows), style: 'heavy' })
   insertProgress.start(`0 / ${totalRows}`)
   let totalImported = 0
-  const allErrors: Array<ParseError & { file: string }> = []
+  const allErrors: (ParseError & { file: string })[] = []
   try {
     for (const { file, transactions, errors } of parsed) {
       db.transaction(() => {
@@ -112,7 +112,7 @@ function resolveAccountId(db: Database, accountKey: string | undefined): number 
   )
 }
 
-function reportResults(totalImported: number, allErrors: Array<ParseError & { file: string }>): void {
+function reportResults(totalImported: number, allErrors: (ParseError & { file: string })[]): void {
   for (const { file, row, message } of allErrors) {
     log.warn(`${file} line ${row}: ${message}`)
   }
@@ -123,23 +123,13 @@ function reportResults(totalImported: number, allErrors: Array<ParseError & { fi
 async function importAction(path: string, options: { db: string }): Promise<void> {
   intro('flouz transactions import')
 
-  let database: Database | undefined
-  const onCancel = () => {
-    database?.close()
-    cancel('Import cancelled.')
-    process.exit(1)
-  }
-  process.once('SIGINT', onCancel)
-
   const files = await resolveCsvFiles(path)
   if (!files) {
-    process.removeListener('SIGINT', onCancel)
     log.error(`Cannot access path: ${path}`)
     process.exit(1)
   }
 
   if (files.length === 0) {
-    process.removeListener('SIGINT', onCancel)
     log.warn(`No CSV files found in: ${path}`)
     process.exit(0)
   }
@@ -147,7 +137,14 @@ async function importAction(path: string, options: { db: string }): Promise<void
   const dbPath = resolve(options.db)
   const isNew = !(await Bun.file(dbPath).exists())
   if (isNew) log.info(`Creating new database at ${dbPath}`)
-  database = openDatabase(dbPath)
+  const database = openDatabase(dbPath)
+
+  const onCancel = () => {
+    database.close()
+    cancel('Import cancelled.')
+    process.exit(1)
+  }
+  process.once('SIGINT', onCancel)
 
   try {
     const parsed = await parseAllFiles(files)

@@ -6,7 +6,7 @@ import { getAccounts } from '@/db/accounts/queries'
 import { openDatabase } from '@/db/schema'
 import type { Account } from '@/types'
 
-type AccountsCommandOptions = {
+interface AccountsCommandOptions {
   db: string
 }
 
@@ -22,7 +22,7 @@ export function formatAccountsTable(accounts: Account[]): string[] {
   })
 }
 
-async function listAccountsAction(options: AccountsCommandOptions): Promise<void> {
+function listAccountsAction(options: AccountsCommandOptions): void {
   const database = openDatabase(resolve(options.db))
 
   try {

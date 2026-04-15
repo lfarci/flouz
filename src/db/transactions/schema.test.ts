@@ -5,7 +5,7 @@ import { createCategoriesTable } from '@/db/categories/schema'
 import { createTransactionsTable } from './schema'
 
 function getColumnNames(db: Database): string[] {
-  const rows = db.prepare("PRAGMA table_info('transactions')").all() as Array<{ name: string }>
+  const rows = db.prepare("PRAGMA table_info('transactions')").all() as { name: string }[]
   return rows.map(row => row.name)
 }
 

@@ -2,20 +2,20 @@ import { mock, beforeEach, describe, expect, it } from 'bun:test'
 import type { Transaction, Category } from '@/types'
 import { TransactionCategorizationResultSchema } from '@/ai/schemas'
 
-const generateObjectMock = mock(async () => ({
+const generateObjectMock = mock(() => ({
   object: {
     categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
     confidence: 0.8,
   },
 }))
 
-mock.module('ai', () => ({
+void mock.module('ai', () => ({
   generateObject: generateObjectMock,
 }))
 
-mock.module('@/ai/client', () => ({
+void mock.module('@/ai/client', () => ({
   getModel: () => 'mock-model',
-  resolveModelName: async () => 'openai/gpt-4o-mini',
+  resolveModelName: () => 'openai/gpt-4o-mini',
 }))
 
 import { categorizeTransaction } from '@/ai/categorize'

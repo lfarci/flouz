@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { rm } from 'node:fs/promises'
+import type * as ConfigModule from '@/config'
 
 // Must import after setting XDG_CONFIG_HOME so the module picks up the right path.
 // Re-import per test group by manipulating env before dynamic import.
@@ -11,7 +12,7 @@ const TMP = join(tmpdir(), `flouz-config-test-${Date.now()}`)
 async function freshModule() {
   // Dynamic import with cache-busting so each test group gets a clean module
   // with the current XDG_CONFIG_HOME value.
-  return import(`@/config?t=${Date.now()}`) as Promise<typeof import('@/config')>
+  return await (import(`@/config?t=${Date.now()}`) as Promise<typeof ConfigModule>)
 }
 
 describe('readConfig', () => {

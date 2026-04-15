@@ -1,7 +1,7 @@
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import type { Account } from '@/types'
 
-type AccountRow = {
+interface AccountRow {
   id: number
   key: string
   company: string

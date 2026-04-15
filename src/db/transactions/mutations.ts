@@ -1,4 +1,4 @@
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import { computeTransactionHash } from '@/db/transactions/hash'
 import type { NewTransaction } from '@/types'
 

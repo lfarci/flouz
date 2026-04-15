@@ -3,7 +3,7 @@ import { Database } from 'bun:sqlite'
 import { createAccountsTable } from './schema'
 
 function getColumnNames(db: Database): string[] {
-  const rows = db.prepare("PRAGMA table_info('accounts')").all() as Array<{ name: string }>
+  const rows = db.prepare("PRAGMA table_info('accounts')").all() as { name: string }[]
   return rows.map(row => row.name)
 }
 

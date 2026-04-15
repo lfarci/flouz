@@ -5,7 +5,7 @@ export interface Category {
   parentId: string | null
 }
 
-export type Account = {
+export interface Account {
   id: number
   key: string
   company: string
@@ -46,7 +46,7 @@ export interface TransactionFilters {
   uncategorized?: boolean
 }
 
-export type TransactionCategorySuggestion = {
+export interface TransactionCategorySuggestion {
   transactionId: number
   categoryId: string
   confidence: number
@@ -56,7 +56,7 @@ export type TransactionCategorySuggestion = {
 
 export type NewTransactionCategorySuggestion = Omit<TransactionCategorySuggestion, 'suggestedAt'>
 
-export type CategorizeTransactionsFilters = {
+export interface CategorizeTransactionsFilters {
   from?: string
   to?: string
   search?: string

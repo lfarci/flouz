@@ -1,5 +1,5 @@
 import { cancel, intro, log, outro, spinner } from '@clack/prompts'
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
 import { categorizeTransaction } from '@/ai/categorize'
@@ -9,7 +9,7 @@ import { upsertTransactionCategorySuggestion } from '@/db/transaction_category_s
 import { getTransactionsMissingCategoryForCategorization } from '@/db/transactions/queries'
 import type { CategorizeTransactionsFilters, Transaction } from '@/types'
 
-type CategorizeOptions = {
+interface CategorizeOptions {
   from?: string
   to?: string
   search?: string
@@ -17,7 +17,7 @@ type CategorizeOptions = {
   db: string
 }
 
-type CategorizeResult = {
+interface CategorizeResult {
   suggested: number
   skipped: number
   firstError?: string

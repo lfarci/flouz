@@ -1,5 +1,4 @@
-import { Database } from 'bun:sqlite'
-import type { SQLQueryBindings } from 'bun:sqlite'
+import { type Database , type SQLQueryBindings } from 'bun:sqlite'
 import type { Transaction, TransactionFilters, CategorizeTransactionsFilters } from '@/types'
 
 function rowToTransaction(row: Record<string, unknown>): Transaction {
@@ -19,7 +18,7 @@ function rowToTransaction(row: Record<string, unknown>): Transaction {
   }
 }
 
-type FilterQueryParts = {
+interface FilterQueryParts {
   whereClause: string
   params: SQLQueryBindings[]
 }

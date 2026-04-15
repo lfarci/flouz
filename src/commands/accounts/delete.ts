@@ -6,7 +6,7 @@ import { getAccountByKey } from '@/db/accounts/queries'
 import { openDatabase } from '@/db/schema'
 import { hasTransactionsForAccount } from '@/db/transactions/queries'
 
-type DeleteAccountOptions = {
+interface DeleteAccountOptions {
   db: string
 }
 
@@ -20,7 +20,7 @@ function requireAccountKey(value: string): string {
   return normalizedValue
 }
 
-async function deleteAccountAction(key: string, options: DeleteAccountOptions): Promise<void> {
+function deleteAccountAction(key: string, options: DeleteAccountOptions): void {
   const database = openDatabase(resolve(options.db))
 
   try {
