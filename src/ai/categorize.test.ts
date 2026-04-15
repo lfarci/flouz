@@ -1,6 +1,9 @@
-import { mock, beforeEach, describe, expect, it } from 'bun:test'
+import { mock, afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import type { Transaction, Category } from '@/types'
 import { TransactionCategorizationResultSchema } from '@/ai/schemas'
+
+const chatMock = mock(() => 'mock-chat-model')
+const createOpenAIMock = mock(() => ({ chat: chatMock }))
 
 const generateTextMock = mock(() => Promise.resolve({
   output: {
@@ -14,12 +17,15 @@ void mock.module('ai', () => ({
   Output: { object: () => ({}) },
 }))
 
-void mock.module('@/ai/client', () => ({
-  getModel: () => 'mock-model',
-  resolveModelName: () => 'openai/gpt-4o-mini',
+void mock.module('@ai-sdk/openai', () => ({
+  createOpenAI: createOpenAIMock,
 }))
 
 import { categorizeTransaction } from '@/ai/categorize'
+
+const originalAiModel = Bun.env.AI_MODEL
+const originalAiBaseUrl = Bun.env.AI_BASE_URL
+const originalGithubToken = Bun.env.GITHUB_TOKEN
 
 const VALID_CATEGORY_ID = '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f'
 
@@ -38,10 +44,26 @@ const fakeCategories: Category[] = [
 ]
 
 beforeEach(() => {
+  chatMock.mockReset()
+  chatMock.mockReturnValue('mock-chat-model')
+  createOpenAIMock.mockReset()
+  createOpenAIMock.mockReturnValue({ chat: chatMock })
   generateTextMock.mockReset()
   generateTextMock.mockResolvedValue({
     output: { categoryId: VALID_CATEGORY_ID, confidence: 0.8 },
   })
+  delete Bun.env.AI_MODEL
+  delete Bun.env.AI_BASE_URL
+  Bun.env.GITHUB_TOKEN = 'ghp_test_token'
+})
+
+afterEach(() => {
+  if (originalAiModel !== undefined) Bun.env.AI_MODEL = originalAiModel
+  else delete Bun.env.AI_MODEL
+  if (originalAiBaseUrl !== undefined) Bun.env.AI_BASE_URL = originalAiBaseUrl
+  else delete Bun.env.AI_BASE_URL
+  if (originalGithubToken !== undefined) Bun.env.GITHUB_TOKEN = originalGithubToken
+  else delete Bun.env.GITHUB_TOKEN
 })
 
 describe('categorizeTransaction', () => {
