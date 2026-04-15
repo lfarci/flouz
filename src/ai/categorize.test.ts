@@ -2,7 +2,7 @@ import { mock, beforeEach, describe, expect, it } from 'bun:test'
 import type { Transaction, Category } from '@/types'
 import { TransactionCategorizationResultSchema } from '@/ai/schemas'
 
-const generateObjectMock = mock(() => ({
+const generateObjectMock = mock(() => Promise.resolve({
   object: {
     categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
     confidence: 0.8,
