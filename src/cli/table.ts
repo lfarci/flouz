@@ -1,5 +1,7 @@
 import { table, type Alignment, type TableUserConfig } from 'table'
 
+type TableColumnConfig = NonNullable<TableUserConfig['columns']>[number]
+
 type TableColumn = {
   header: string
   width: number
@@ -59,7 +61,7 @@ export function renderCliTable(config: TableConfig): string[] {
   return table(data, tableConfig).trimEnd().split('\n')
 }
 
-function buildColumnConfig(column: TableColumn, width: number): TableUserConfig['columns'][number] {
+function buildColumnConfig(column: TableColumn, width: number): TableColumnConfig {
   const config = {
     alignment: column.alignment ?? 'left',
     width,

@@ -60,10 +60,8 @@ export function createCommandTestDatabase(
   initializeDatabase(database)
   const closeMock = mock(() => {})
 
-  const handle = {
-    prepare: database.prepare.bind(database),
-    close: closeMock,
-  } as Database
+  const handle = database as unknown as Database & { close: typeof closeMock }
+  handle.close = closeMock
 
   return { database, closeMock, handle }
 }
