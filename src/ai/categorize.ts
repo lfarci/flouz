@@ -1,5 +1,4 @@
-// eslint-disable-next-line sonarjs/deprecation -- generateObject Zod overload is deprecated in AI SDK; migration is tracked separately
-import { generateObject } from 'ai'
+import { generateText, Output } from 'ai'
 import type { Category, Transaction } from '@/types'
 import { getModel, resolveModelName } from './client'
 import { buildTransactionCategorizationPrompt } from './prompts'
@@ -18,21 +17,20 @@ export async function categorizeTransaction(
   const prompt = buildTransactionCategorizationPrompt(transaction, categories)
   const model = await getModel()
 
-  // eslint-disable-next-line sonarjs/deprecation -- see import comment above
-  const result = await generateObject({
+  const result = await generateText({
     model,
-    schema: TransactionCategorizationResultSchema,
+    output: Output.object({ schema: TransactionCategorizationResultSchema }),
     prompt,
   })
 
   const validCategoryIds = new Set(categories.map(category => category.id))
-  if (!validCategoryIds.has(result.object.categoryId)) {
-    throw new Error(`AI returned invalid categoryId: ${result.object.categoryId}`)
+  if (!validCategoryIds.has(result.output.categoryId)) {
+    throw new Error(`AI returned invalid categoryId: ${result.output.categoryId}`)
   }
 
   return {
-    categoryId: result.object.categoryId,
-    confidence: result.object.confidence,
+    categoryId: result.output.categoryId,
+    confidence: result.output.confidence,
     model: await resolveModelName(),
   }
 }
