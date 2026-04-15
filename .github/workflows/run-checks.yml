@@ -39,10 +39,10 @@ jobs:
       - name: Job summary
         if: always()
         run: |
-          echo "## Lint" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          [ -f /tmp/lint-output.txt ] && cat /tmp/lint-output.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>Lint output</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "<pre>" >> $GITHUB_STEP_SUMMARY
+          [ -f /tmp/lint-output.txt ] && sed -e 's/\x1B\[[0-9;]*[a-zA-Z]//g' -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' /tmp/lint-output.txt >> $GITHUB_STEP_SUMMARY
+          echo "</pre></details>" >> $GITHUB_STEP_SUMMARY
 
   typecheck:
     name: Type check
@@ -69,10 +69,10 @@ jobs:
       - name: Job summary
         if: always()
         run: |
-          echo "## Type check" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          [ -f /tmp/typecheck-output.txt ] && cat /tmp/typecheck-output.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>Type check output</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "<pre>" >> $GITHUB_STEP_SUMMARY
+          [ -f /tmp/typecheck-output.txt ] && sed -e 's/\x1B\[[0-9;]*[a-zA-Z]//g' -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' /tmp/typecheck-output.txt >> $GITHUB_STEP_SUMMARY
+          echo "</pre></details>" >> $GITHUB_STEP_SUMMARY
 
   test:
     name: Test & coverage
@@ -99,7 +99,7 @@ jobs:
       - name: Job summary
         if: always()
         run: |
-          echo "## Test & Coverage" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          [ -f /tmp/test-output.txt ] && cat /tmp/test-output.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "<details><summary>Test &amp; coverage output</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "<pre>" >> $GITHUB_STEP_SUMMARY
+          [ -f /tmp/test-output.txt ] && sed -e 's/\x1B\[[0-9;]*[a-zA-Z]//g' -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' /tmp/test-output.txt >> $GITHUB_STEP_SUMMARY
+          echo "</pre></details>" >> $GITHUB_STEP_SUMMARY
