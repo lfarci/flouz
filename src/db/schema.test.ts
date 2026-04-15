@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import { initDb } from './schema'
+import { initDb, openDatabase } from './schema'
 
 describe('initDb', () => {
   it('creates categories table', () => {
@@ -27,5 +27,25 @@ describe('initDb', () => {
       initDb(db)
       initDb(db)
     }).not.toThrow()
+  })
+})
+
+describe('openDatabase', () => {
+  it('returns a database with all tables created', () => {
+    const db = openDatabase(':memory:')
+    const tables = db.query<{ name: string }, []>(
+      "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+    ).all().map(row => row.name)
+    expect(tables).toContain('categories')
+    expect(tables).toContain('transactions')
+    expect(tables).toContain('accounts')
+    db.close()
+  })
+
+  it('seeds categories on open', () => {
+    const db = openDatabase(':memory:')
+    const count = db.query<{ count: number }, []>('SELECT COUNT(*) AS count FROM categories').get()
+    expect(count?.count).toBeGreaterThan(0)
+    db.close()
   })
 })
