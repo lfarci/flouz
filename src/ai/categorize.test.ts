@@ -2,15 +2,16 @@ import { mock, beforeEach, describe, expect, it } from 'bun:test'
 import type { Transaction, Category } from '@/types'
 import { TransactionCategorizationResultSchema } from '@/ai/schemas'
 
-const generateObjectMock = mock(() => Promise.resolve({
-  object: {
+const generateTextMock = mock(() => Promise.resolve({
+  output: {
     categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
     confidence: 0.8,
   },
 }))
 
 void mock.module('ai', () => ({
-  generateObject: generateObjectMock,
+  generateText: generateTextMock,
+  Output: { object: () => ({}) },
 }))
 
 void mock.module('@/ai/client', () => ({
@@ -37,9 +38,9 @@ const fakeCategories: Category[] = [
 ]
 
 beforeEach(() => {
-  generateObjectMock.mockReset()
-  generateObjectMock.mockResolvedValue({
-    object: { categoryId: VALID_CATEGORY_ID, confidence: 0.8 },
+  generateTextMock.mockReset()
+  generateTextMock.mockResolvedValue({
+    output: { categoryId: VALID_CATEGORY_ID, confidence: 0.8 },
   })
 })
 
@@ -53,8 +54,8 @@ describe('categorizeTransaction', () => {
   })
 
   it('throws when the returned categoryId is not in the provided categories list', async () => {
-    generateObjectMock.mockResolvedValue({
-      object: { categoryId: 'aaaaaaaa-0000-0000-0000-000000000000', confidence: 0.8 },
+    generateTextMock.mockResolvedValue({
+      output: { categoryId: 'aaaaaaaa-0000-0000-0000-000000000000', confidence: 0.8 },
     })
 
     await expect(
@@ -62,8 +63,8 @@ describe('categorizeTransaction', () => {
     ).rejects.toThrow('AI returned invalid categoryId: aaaaaaaa-0000-0000-0000-000000000000')
   })
 
-  it('throws when generateObject rejects (simulating an AI error)', async () => {
-    generateObjectMock.mockRejectedValue(new Error('AI service unavailable'))
+  it('throws when generateText rejects (simulating an AI error)', async () => {
+    generateTextMock.mockRejectedValue(new Error('AI service unavailable'))
 
     await expect(
       categorizeTransaction(fakeTransaction, fakeCategories)
