@@ -1,4 +1,4 @@
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import type { NewAccount } from '@/types'
 
 export function insertAccount(db: Database, account: NewAccount): number {

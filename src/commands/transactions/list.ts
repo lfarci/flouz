@@ -1,5 +1,5 @@
 import { cancel, log } from '@clack/prompts'
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { isBrokenPipeError, writeStdout } from '@/cli/stdout'
 import { resolve } from 'node:path'
@@ -11,7 +11,7 @@ import type { Category, Transaction, TransactionFilters } from '@/types'
 
 type OutputFormat = 'table' | 'csv' | 'json'
 
-type ListOptions = {
+interface ListOptions {
   from?: string
   to?: string
   category?: string
@@ -22,11 +22,11 @@ type ListOptions = {
   uncategorized?: boolean
 }
 
-type ListData = {
+interface ListData {
   transactions: Transaction[]
 }
 
-type ListRow = {
+interface ListRow {
   date: string
   amount: string
   counterparty: string

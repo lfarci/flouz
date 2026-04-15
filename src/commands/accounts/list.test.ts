@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import {
   collectCommandOutcome,
   createCommandTestDatabase,
@@ -12,6 +12,7 @@ import {
 import { insertAccount } from '@/db/accounts/mutations'
 import { getAccounts } from '@/db/accounts/queries'
 import { createAccountsTable } from '@/db/accounts/schema'
+import type { createListAccountsCommand as CreateListAccountsCommand, formatAccountsTable as FormatAccountsTable } from './list'
 
 const infoLogMock = mock((message: string) => message)
 const messageLogMock = mock((message: string[] | string, options?: { spacing?: number; withGuide?: boolean }) => ({ message, options }))
@@ -19,7 +20,7 @@ const errorLogMock = mock((message: string) => message)
 
 const openDatabaseMock = createOpenDatabaseMock()
 
-mock.module('@clack/prompts', () => ({
+void mock.module('@clack/prompts', () => ({
   log: {
     info: infoLogMock,
     message: messageLogMock,
@@ -27,21 +28,19 @@ mock.module('@clack/prompts', () => ({
   },
 }))
 
-mock.module('@/db/schema', () => ({
+void mock.module('@/db/schema', () => ({
   openDatabase: (dbPath: string) => openDatabaseMock(dbPath),
 }))
 
 const processExitMock = createProcessExitMock()
 
-type ListModule = typeof import('./list')
-
-type ListSummary = {
+interface ListSummary {
   status: 'resolved' | 'rejected'
   errorCode?: number
 }
 
-let createListAccountsCommand: ListModule['createListAccountsCommand']
-let formatAccountsTable: ListModule['formatAccountsTable']
+let createListAccountsCommand: typeof CreateListAccountsCommand
+let formatAccountsTable: typeof FormatAccountsTable
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {
@@ -55,7 +54,7 @@ async function runListCommand(argumentsList: string[]): Promise<void> {
 }
 
 async function collectListCommandOutcome(argumentsList: string[]): Promise<ListSummary> {
-  return collectCommandOutcome<ListSummary>(
+  return await collectCommandOutcome<ListSummary>(
     () => runListCommand(argumentsList),
     () => ({ status: 'resolved' }),
     errorCode => ({

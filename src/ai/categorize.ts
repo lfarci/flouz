@@ -4,7 +4,7 @@ import { getModel, resolveModelName } from './client'
 import { buildTransactionCategorizationPrompt } from './prompts'
 import { TransactionCategorizationResultSchema } from './schemas'
 
-type CategorizationResult = {
+interface CategorizationResult {
   categoryId: string
   confidence: number
   model: string

@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import {
   collectCommandOutcome,
   createCommandTestDatabase,
@@ -14,28 +14,27 @@ import { insertAccount } from '@/db/accounts/mutations'
 import { countAccounts, getAccountByKey } from '@/db/accounts/queries'
 import { createAccountsTable } from '@/db/accounts/schema'
 import type { Account } from '@/types'
+import type { createAddAccountsCommand as CreateAddAccountsCommand } from './add'
 
 const successLogMock = mock(() => {})
 const errorLogMock = mock(() => {})
 
 const openDatabaseMock = createOpenDatabaseMock()
 
-mock.module('@clack/prompts', () => ({
+void mock.module('@clack/prompts', () => ({
   log: {
     success: successLogMock,
     error: errorLogMock,
   },
 }))
 
-mock.module('@/db/schema', () => ({
+void mock.module('@/db/schema', () => ({
   openDatabase: (dbPath: string) => openDatabaseMock(dbPath),
 }))
 
 const processExitMock = createProcessExitMock()
 
-type AddModule = typeof import('./add')
-
-type ActionSummary = {
+interface ActionSummary {
   status: 'resolved' | 'rejected'
   errorCode?: number
   account?: Account
@@ -46,7 +45,7 @@ type ActionOutcomeFactory = () => ActionSummary
 
 type RejectedActionOutcomeFactory = (errorCode: number | undefined) => ActionSummary
 
-let createAddAccountsCommand: AddModule['createAddAccountsCommand']
+let createAddAccountsCommand: typeof CreateAddAccountsCommand
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {
@@ -66,7 +65,7 @@ async function collectAddCommandOutcome(
 ): Promise<ActionSummary> {
   const account = () => (accountKey === undefined ? undefined : getAccountByKey(database, accountKey))
 
-  return collectCommandOutcome(
+  return await collectCommandOutcome(
     () => runAddCommand(argumentsList),
     (() => ({
       status: 'resolved',

@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 import {
   collectCommandOutcome,
   createCommandTestDatabase,
@@ -17,28 +17,27 @@ import { createCategoriesTable } from '@/db/categories/schema'
 import { createTransactionsTable } from '@/db/transactions/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
 import type { Account } from '@/types'
+import type { createDeleteAccountsCommand as CreateDeleteAccountsCommand } from './delete'
 
 const successLogMock = mock(() => {})
 const errorLogMock = mock(() => {})
 
 const openDatabaseMock = createOpenDatabaseMock()
 
-mock.module('@clack/prompts', () => ({
+void mock.module('@clack/prompts', () => ({
   log: {
     success: successLogMock,
     error: errorLogMock,
   },
 }))
 
-mock.module('@/db/schema', () => ({
+void mock.module('@/db/schema', () => ({
   openDatabase: (dbPath: string) => openDatabaseMock(dbPath),
 }))
 
 const processExitMock = createProcessExitMock()
 
-type DeleteModule = typeof import('./delete')
-
-type DeleteSummary = {
+interface DeleteSummary {
   status: 'resolved' | 'rejected'
   errorCode?: number
   account?: Account
@@ -58,7 +57,7 @@ function getLoggedMessages(logMock: { mock: { calls: LogMessage[] } }): string[]
   })
 }
 
-let createDeleteAccountsCommand: DeleteModule['createDeleteAccountsCommand']
+let createDeleteAccountsCommand: typeof CreateDeleteAccountsCommand
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {
@@ -80,7 +79,7 @@ async function collectDeleteCommandOutcome(
 ): Promise<DeleteSummary> {
   const account = () => (accountKey === undefined ? undefined : getAccountByKey(database, accountKey))
 
-  return collectCommandOutcome(
+  return await collectCommandOutcome(
     () => runDeleteCommand(argumentsList),
     (() => ({
       status: 'resolved',

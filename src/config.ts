@@ -18,7 +18,7 @@ export async function readConfig(): Promise<Config> {
   const file = Bun.file(CONFIG_FILE)
   if (!(await file.exists())) return {}
   try {
-    const raw = await file.json()
+    const raw: unknown = await file.json()
     const result = ConfigSchema.safeParse(raw)
     return result.success ? result.data : {}
   } catch {

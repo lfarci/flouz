@@ -1,4 +1,4 @@
-import { Database } from 'bun:sqlite'
+import { type Database } from 'bun:sqlite'
 
 const HASH_INDEX = 'idx_transactions_hash'
 

@@ -8,13 +8,13 @@ export class ProcessExitError extends Error {
   }
 }
 
-export type CommandTestDatabase = {
+export interface CommandTestDatabase {
   database: Database
   closeMock: ReturnType<typeof mock>
   handle: Database
 }
 
-export type CommandArgumentSetup = {
+export interface CommandArgumentSetup {
   name: string
   required: boolean
   description?: string
