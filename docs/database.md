@@ -116,6 +116,7 @@ The `transaction_category_suggestions` table stores one AI-generated category su
 **Invariant**: this table **never** overwrites `transactions.category_id`. AI suggestions are stored in `category_id` of the suggestions table; only an explicit user action promotes a suggestion into `transactions.category_id`.
 
 Key points:
+
 - Upserting a suggestion re-runs the AI for a transaction that has already been processed, refreshing stale results.
 - `ON DELETE CASCADE` on `transaction_id` keeps suggestions tidy when transactions are removed.
 - `confidence` is a float in [0, 1] enforced by a `CHECK` constraint.

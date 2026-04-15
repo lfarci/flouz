@@ -8,9 +8,12 @@ describe('createCategoriesTable', () => {
 
     createCategoriesTable(db)
 
-    const row = db.query<{ name: string }, []>(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='categories'"
-    ).get()
+    const row = db
+      .query<
+        { name: string },
+        []
+      >("SELECT name FROM sqlite_master WHERE type='table' AND name='categories'")
+      .get()
     expect(row?.name).toBe('categories')
   })
 

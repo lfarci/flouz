@@ -12,7 +12,9 @@ const TMP = join(tmpdir(), `flouz-config-test-${Date.now()}`)
 async function freshModule() {
   // Dynamic import with cache-busting so each test group gets a clean module
   // with the current XDG_CONFIG_HOME value.
-  return await (import(`@/config?t=${Date.now()}`) as Promise<typeof ConfigModule>)
+  return await (import(`@/config?t=${Date.now()}`) as Promise<
+    typeof ConfigModule
+  >)
 }
 
 describe('readConfig', () => {
@@ -51,7 +53,10 @@ describe('readConfig', () => {
     const { readConfig } = await freshModule()
     const { mkdir } = await import('node:fs/promises')
     await mkdir(`${TMP}/flouz`, { recursive: true })
-    await Bun.write(`${TMP}/flouz/config.json`, JSON.stringify({ unknown: 123 }))
+    await Bun.write(
+      `${TMP}/flouz/config.json`,
+      JSON.stringify({ unknown: 123 }),
+    )
     const config = await readConfig()
     expect(config).toEqual({})
   })

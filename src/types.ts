@@ -18,17 +18,17 @@ export type NewAccount = Omit<Account, 'id'>
 
 export interface Transaction {
   id?: number
-  date: string               // yyyy-MM-dd
-  amount: number             // signed float, Euros
+  date: string // yyyy-MM-dd
+  amount: number // signed float, Euros
   counterparty: string
   hash: string
   counterpartyIban?: string
-  currency: string           // default 'EUR'
+  currency: string // default 'EUR'
   accountId?: number
   categoryId?: string
   note?: string
   sourceFile?: string
-  importedAt: string         // ISO timestamp
+  importedAt: string // ISO timestamp
 }
 
 export type NewTransaction = Omit<Transaction, 'id' | 'hash'>
@@ -46,22 +46,17 @@ export interface TransactionFilters {
   uncategorized?: boolean
 }
 
-export type TransactionCategorySuggestionStatus = 'pending' | 'approved' | 'applied'
-
 export interface TransactionCategorySuggestion {
   transactionId: number
   categoryId: string
   confidence: number
   model: string
   suggestedAt: string
-  status: TransactionCategorySuggestionStatus
-  reviewedAt?: string
-  appliedAt?: string
 }
 
 export type NewTransactionCategorySuggestion = Omit<
   TransactionCategorySuggestion,
-  'suggestedAt' | 'status' | 'reviewedAt' | 'appliedAt'
+  'suggestedAt'
 >
 
 export interface CategorizeTransactionsFilters {
@@ -69,26 +64,4 @@ export interface CategorizeTransactionsFilters {
   to?: string
   search?: string
   limit?: number
-}
-
-export interface SuggestionFilters {
-  from?: string
-  to?: string
-  search?: string
-  limit?: number
-  status?: TransactionCategorySuggestionStatus
-}
-
-export interface SuggestionWithContext {
-  transactionId: number
-  transactionDate: string
-  counterparty: string
-  amount: number
-  categoryId: string
-  categoryName: string
-  confidence: number
-  status: TransactionCategorySuggestionStatus
-  suggestedAt: string
-  reviewedAt?: string
-  appliedAt?: string
 }

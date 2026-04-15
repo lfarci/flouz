@@ -33,7 +33,9 @@ export function createProcessExitMock() {
   })
 }
 
-export function setProcessExit(processExitMock: typeof process.exit): typeof process.exit {
+export function setProcessExit(
+  processExitMock: typeof process.exit,
+): typeof process.exit {
   const originalProcessExit = process.exit
 
   Object.defineProperty(process, 'exit', {
@@ -45,7 +47,9 @@ export function setProcessExit(processExitMock: typeof process.exit): typeof pro
   return originalProcessExit
 }
 
-export function restoreProcessExit(originalProcessExit: typeof process.exit): void {
+export function restoreProcessExit(
+  originalProcessExit: typeof process.exit,
+): void {
   Object.defineProperty(process, 'exit', {
     value: originalProcessExit,
     configurable: true,
@@ -54,7 +58,7 @@ export function restoreProcessExit(originalProcessExit: typeof process.exit): vo
 }
 
 export function createCommandTestDatabase(
-  initializeDatabase: (database: Database) => void
+  initializeDatabase: (database: Database) => void,
 ): CommandTestDatabase {
   const database = new Database(':memory:')
   initializeDatabase(database)
@@ -66,7 +70,10 @@ export function createCommandTestDatabase(
   return { database, closeMock, handle }
 }
 
-export async function runCommandSilently(command: Command, argumentsList: string[]): Promise<void> {
+export async function runCommandSilently(
+  command: Command,
+  argumentsList: string[],
+): Promise<void> {
   command.configureOutput({
     writeOut: () => {},
     writeErr: () => {},
@@ -78,7 +85,7 @@ export async function runCommandSilently(command: Command, argumentsList: string
 export async function collectCommandOutcome<T>(
   runCommand: () => Promise<void>,
   createResolvedOutcome: () => T,
-  createRejectedOutcome: (errorCode: number | undefined) => T
+  createRejectedOutcome: (errorCode: number | undefined) => T,
 ): Promise<T> {
   try {
     await runCommand()
@@ -88,7 +95,10 @@ export async function collectCommandOutcome<T>(
   }
 }
 
-export function getArgumentSetup(command: Command, index: number): CommandArgumentSetup | undefined {
+export function getArgumentSetup(
+  command: Command,
+  index: number,
+): CommandArgumentSetup | undefined {
   if (index >= command.registeredArguments.length) {
     return undefined
   }

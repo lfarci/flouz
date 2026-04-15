@@ -1,10 +1,8 @@
 import { Command } from 'commander'
 import { resolveDbPath } from '@/config'
-import { createCategoriesCommand } from './categories'
 import { createCategorizeCommand } from './categorize'
 import { createImportCommand } from './import'
 import { createListCommand } from './list'
-import { createSuggestionsCommand } from './suggestions'
 
 export async function createTransactionsCommand(): Promise<Command> {
   const defaultDb = await resolveDbPath()
@@ -13,6 +11,4 @@ export async function createTransactionsCommand(): Promise<Command> {
     .addCommand(createImportCommand(defaultDb))
     .addCommand(createCategorizeCommand(defaultDb))
     .addCommand(createListCommand(defaultDb))
-    .addCommand(createCategoriesCommand(defaultDb))
-    .addCommand(createSuggestionsCommand(defaultDb))
 }

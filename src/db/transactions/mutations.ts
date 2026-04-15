@@ -2,7 +2,10 @@ import { type Database } from 'bun:sqlite'
 import { computeTransactionHash } from '@/db/transactions/hash'
 import type { NewTransaction } from '@/types'
 
-export function insertTransaction(db: Database, transaction: NewTransaction): number {
+export function insertTransaction(
+  db: Database,
+  transaction: NewTransaction,
+): number {
   const statement = db.prepare(`
     INSERT INTO transactions
       (date, amount, counterparty, hash, counterparty_iban, currency, account_id,
@@ -28,18 +31,13 @@ export function insertTransaction(db: Database, transaction: NewTransaction): nu
   return result.changes
 }
 
-export function updateCategory(db: Database, id: number, categoryId: string): void {
-  db.prepare('UPDATE transactions SET category_id = ? WHERE id = ?').run(categoryId, id)
-}
-
-export function applyTransactionCategory(
+export function updateCategory(
   db: Database,
   id: number,
-  categoryId: string
-): number {
-  const result = db.prepare(
-    'UPDATE transactions SET category_id = ? WHERE id = ? AND category_id IS NULL'
-  ).run(categoryId, id)
-
-  return result.changes
+  categoryId: string,
+): void {
+  db.prepare('UPDATE transactions SET category_id = ? WHERE id = ?').run(
+    categoryId,
+    id,
+  )
 }

@@ -2,12 +2,12 @@
 
 flouz supports a three-tier configuration system. Settings are resolved in priority order:
 
-| Priority | Source | Scope |
-|---|---|---|
-| 1 (highest) | `--db` CLI flag | Single command invocation |
-| 2 | `DB_PATH` environment variable | Shell session or `.env` file |
-| 3 | Config file (`~/.config/flouz/config.json`) | Persistent, user-wide |
-| 4 (lowest) | Built-in default (`~/.config/flouz/flouz.db`) | Fallback |
+| Priority    | Source                                        | Scope                        |
+| ----------- | --------------------------------------------- | ---------------------------- |
+| 1 (highest) | `--db` CLI flag                               | Single command invocation    |
+| 2           | `DB_PATH` environment variable                | Shell session or `.env` file |
+| 3           | Config file (`~/.config/flouz/config.json`)   | Persistent, user-wide        |
+| 4 (lowest)  | Built-in default (`~/.config/flouz/flouz.db`) | Fallback                     |
 
 ## Config File
 
@@ -33,9 +33,9 @@ The file is created automatically on the first `flouz config set` call. You neve
 }
 ```
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `dbPath` | `string` | No | Path to the SQLite database file. Absolute or relative to the working directory. |
+| Field    | Type     | Required | Description                                                                      |
+| -------- | -------- | -------- | -------------------------------------------------------------------------------- |
+| `dbPath` | `string` | No       | Path to the SQLite database file. Absolute or relative to the working directory. |
 
 ## Managing Config with the CLI
 
@@ -59,9 +59,9 @@ flouz config get
 
 ## Supported Keys
 
-| Key | Config field | Description |
-|---|---|---|
-| `db-path` | `dbPath` | Path to the SQLite database file |
+| Key       | Config field | Description                      |
+| --------- | ------------ | -------------------------------- |
+| `db-path` | `dbPath`     | Path to the SQLite database file |
 
 ## Environment Variable
 
@@ -96,8 +96,6 @@ To migrate your data to a new location, copy the database file manually:
 cp ~/old/path/flouz.db ~/new/path/flouz.db
 flouz config set db-path ~/new/path/flouz.db
 ```
-
-
 
 ### Keeping finances in a dedicated directory
 

@@ -2,7 +2,10 @@ import type { Category, Transaction } from '@/types'
 
 function formatCategoryList(categories: Category[]): string {
   return categories
-    .map(category => `- id: ${category.id} | slug: ${category.slug} | name: ${category.name}`)
+    .map(
+      (category) =>
+        `- id: ${category.id} | slug: ${category.slug} | name: ${category.name}`,
+    )
     .join('\n')
 }
 
@@ -20,7 +23,7 @@ function formatTransactionDetails(transaction: Transaction): string {
 
 export function buildTransactionCategorizationPrompt(
   transaction: Transaction,
-  categories: Category[]
+  categories: Category[],
 ): string {
   return `You are a personal finance assistant. Categorize the following bank transaction by selecting the most appropriate category from the list below.
 

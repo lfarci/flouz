@@ -1,5 +1,5 @@
 ---
-applyTo: "**"
+applyTo: '**'
 ---
 
 # Data Privacy — Never Commit Personal or Bank Data
@@ -22,6 +22,7 @@ applyTo: "**"
 ## .gitignore rules (already configured)
 
 The following are gitignored and must stay that way:
+
 - `*.csv` — never force-add CSV files
 - `*.db`, `*.sqlite` — never force-add database files
 - `.env` — never commit environment files

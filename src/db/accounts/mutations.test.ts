@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import { deleteAccountByKey, insertAccount, normalizeAccountKey } from './mutations'
+import {
+  deleteAccountByKey,
+  insertAccount,
+  normalizeAccountKey,
+} from './mutations'
 import { createAccountsTable } from './schema'
 
 let db: Database
@@ -30,10 +34,12 @@ describe('insertAccount', () => {
       iban: 'BE00 0000 0000 0000',
     })
 
-    const row = db.query<
-      { description: string | null; iban: string | null },
-      []
-    >('SELECT description, iban FROM accounts LIMIT 1').get()
+    const row = db
+      .query<
+        { description: string | null; iban: string | null },
+        []
+      >('SELECT description, iban FROM accounts LIMIT 1')
+      .get()
 
     expect(row?.description).toBe('Employer meal card')
     expect(row?.iban).toBe('BE00 0000 0000 0000')

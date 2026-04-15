@@ -42,6 +42,7 @@ Create standardized, semantic git commits using the Conventional Commits specifi
 **`feat` — new user-facing capability only**
 
 Reserve `feat` for changes that introduce something users couldn't do before:
+
 - A new CLI command (`import`, `categorize`)
 - A new flag or option that unlocks new behavior
 - A new database table or API integration
@@ -49,6 +50,7 @@ Reserve `feat` for changes that introduce something users couldn't do before:
 **`fix` — any correction or small improvement**
 
 Use `fix` for everything that corrects, adjusts, or polishes existing behavior:
+
 - Fixing a bug or crash
 - Adjusting wording, labels, or formatting in CLI output
 - Tweaking spacing, alignment, colors, or spinner text in prompts
@@ -59,16 +61,16 @@ Use `fix` for everything that corrects, adjusts, or polishes existing behavior:
 
 **Examples**
 
-| Change | Type |
-| ------ | ---- |
-| Add `--dry-run` flag to import command | `feat` |
-| Change "Importing…" spinner to "Reading file…" | `fix` |
-| Fix crash when CSV has no rows | `fix` |
-| Rename `categorize` output columns | `fix` |
-| Add `chat` command | `feat` |
-| Improve error message for missing file | `fix` |
-| Reword help text on `--format` flag | `fix` |
-| Add AI-based category suggestion | `feat` |
+| Change                                         | Type   |
+| ---------------------------------------------- | ------ |
+| Add `--dry-run` flag to import command         | `feat` |
+| Change "Importing…" spinner to "Reading file…" | `fix`  |
+| Fix crash when CSV has no rows                 | `fix`  |
+| Rename `categorize` output columns             | `fix`  |
+| Add `chat` command                             | `feat` |
+| Improve error message for missing file         | `fix`  |
+| Reword help text on `--format` flag            | `fix`  |
+| Add AI-based category suggestion               | `feat` |
 
 ## Scope Examples for finance-cli
 

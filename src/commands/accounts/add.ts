@@ -37,7 +37,7 @@ function addAccountAction(
   key: string,
   name: string,
   company: string,
-  options: AddAccountOptions
+  options: AddAccountOptions,
 ): void {
   const database = openDatabase(resolve(options.db))
 

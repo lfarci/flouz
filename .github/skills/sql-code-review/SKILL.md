@@ -27,11 +27,13 @@ del.run(id)
 ## ⚡ Performance
 
 ### Index Strategy
+
 - `(date)` — for `--from` / `--to` filters on `list` command
 - `(category_id)` — for category filter queries
 - `UNIQUE(date, amount, counterparty)` — deduplication constraint on import
 
 ### Anti-patterns to Flag
+
 ```sql
 -- ❌ BAD: SELECT * fetches unnecessary columns
 SELECT * FROM transactions WHERE date > ?
@@ -49,11 +51,13 @@ SELECT * FROM transactions WHERE date >= '2026-01-01' AND date < '2027-01-01'
 ## 🛠️ Code Quality
 
 ### Naming Conventions
+
 - Table names: lowercase plural (`transactions`, `categories`)
 - Column names: snake_case (`category_id`, `ai_confidence`, `imported_at`)
 - Prepared statement variables: descriptive (`insertTransaction`, `getByCategory`)
 
 ### bun:sqlite Patterns
+
 ```typescript
 // ✅ Reuse prepared statements — don't re-prepare on every call
 class TransactionQueries {
@@ -62,9 +66,11 @@ class TransactionQueries {
 
   constructor(db: Database) {
     this.insert = db.prepare(
-      'INSERT OR IGNORE INTO transactions (date, amount, counterparty) VALUES (?, ?, ?)'
+      'INSERT OR IGNORE INTO transactions (date, amount, counterparty) VALUES (?, ?, ?)',
     )
-    this.getAll = db.prepare('SELECT id, date, amount, counterparty FROM transactions')
+    this.getAll = db.prepare(
+      'SELECT id, date, amount, counterparty FROM transactions',
+    )
   }
 
   insertTransaction(date: string, amount: number, counterparty: string) {
@@ -76,21 +82,25 @@ class TransactionQueries {
 ## 📋 Review Checklist
 
 ### Security
+
 - [ ] All user inputs and AI-generated values are parameterized (`?` placeholders)
 - [ ] No template literal SQL construction from external input
 - [ ] `ai_category_id` never silently overwrites user-set `category_id`
 
 ### Performance
+
 - [ ] Indexes exist for `date`, `category_id`, `UNIQUE(date, amount, counterparty)`
 - [ ] No `SELECT *` in production queries
 - [ ] WHERE clauses use range conditions instead of functions on columns
 
 ### Code Quality
+
 - [ ] Prepared statements are reused, not re-created on each call
 - [ ] Column names are consistent snake_case
 - [ ] Error handling covers `UNIQUE` constraint violations on import
 
 ## 📊 SQLite-Specific Notes
+
 - `INSERT OR IGNORE` for deduplication — do not use `ON CONFLICT DO UPDATE` unless intentional
 - Use `TEXT` for dates in ISO format (`yyyy-MM-dd`) — SQLite has no native date type
 - Use `REAL` for amounts — not `DECIMAL` (SQLite stores as float anyway)

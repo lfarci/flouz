@@ -10,12 +10,12 @@ bun run src/index.ts import <file.csv>
 
 ## Common bank CSV issues
 
-| Issue | Details |
-|---|---|
+| Issue                      | Details                                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
 | Metadata block not skipped | Bank CSV exports include several header lines before the actual data; the parser must skip them |
-| Semicolon separator | The format uses `;` not `,` as the column delimiter |
-| Comma decimals | Amounts use `,` as the decimal separator (e.g. `1 234,56`) — must be normalized to `.` |
-| French headers | Column names are in French (e.g. `Date`, `Libellé`, `Montant`) |
+| Semicolon separator        | The format uses `;` not `,` as the column delimiter                                             |
+| Comma decimals             | Amounts use `,` as the decimal separator (e.g. `1 234,56`) — must be normalized to `.`          |
+| French headers             | Column names are in French (e.g. `Date`, `Libellé`, `Montant`)                                  |
 
 ## Adding a fixture and a targeted test
 

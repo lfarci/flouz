@@ -19,7 +19,9 @@ export function insertAccount(db: Database, account: NewAccount): number {
 }
 
 export function deleteAccountByKey(db: Database, key: string): number {
-  const result = db.prepare('DELETE FROM accounts WHERE key = ?').run(normalizeAccountKey(key))
+  const result = db
+    .prepare('DELETE FROM accounts WHERE key = ?')
+    .run(normalizeAccountKey(key))
   return result.changes
 }
 

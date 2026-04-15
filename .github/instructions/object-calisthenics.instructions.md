@@ -10,7 +10,9 @@ description: 'Object Calisthenics rules for TypeScript business domain code — 
 ## Rules
 
 ### 1. One Level of Indentation per Method
+
 Extract nested logic into well-named helper functions.
+
 ```typescript
 // BAD
 function processTransactions(rows: Row[]) {
@@ -33,6 +35,7 @@ function isUncategorizedExpense(row: Row): boolean {
 ```
 
 ### 2. No else — Use Early Returns
+
 ```typescript
 // BAD
 function getLabel(amount: number): string {
@@ -51,6 +54,7 @@ function getLabel(amount: number): string {
 ```
 
 ### 3. No Abbreviations
+
 - `tx` → `transaction`
 - `cp` → `counterparty`
 - `cat` → `category`
@@ -58,11 +62,13 @@ function getLabel(amount: number): string {
 - `dt` → `date`
 
 ### 4. Keep Functions Small
+
 - Max ~20 lines per function
 - Max ~10 functions per module
 - If a module exceeds ~100 lines, split it
 
 ### 5. One Dot per Line (Law of Demeter)
+
 ```typescript
 // BAD
 const label = transaction.category.parent.name.toLowerCase()
@@ -72,22 +78,29 @@ const label = transaction.getCategoryLabel()
 ```
 
 ### 6. No Getters/Setters in Domain Objects
+
 Use factory functions and readonly properties.
+
 ```typescript
 // BAD
 class Transaction {
   public categoryId: string
-  setCategoryId(id: string) { this.categoryId = id }
+  setCategoryId(id: string) {
+    this.categoryId = id
+  }
 }
 
 // GOOD
-interface Transaction { readonly categoryId: string | undefined }
+interface Transaction {
+  readonly categoryId: string | undefined
+}
 function withCategory(t: Transaction, id: string): Transaction {
   return { ...t, categoryId: id }
 }
 ```
 
 ## Exemptions
+
 - Plain data interfaces returned from SQLite queries — public readonly properties are fine
 - Test files — any style that makes tests readable
 - Commander.js command options objects — configuration objects

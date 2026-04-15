@@ -1,4 +1,12 @@
-import { mock, afterEach, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
+import {
+  mock,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'bun:test'
 import {
   collectCommandOutcome,
   createCommandTestDatabase,
@@ -67,13 +75,17 @@ let createImportCommand: typeof CreateImportCommand
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createCategoriesTable(database)
     createAccountsTable(database)
     createTransactionsTable(database)
     createTransactionCategorySuggestionsTable(database)
     seedCategories(database)
-    insertAccount(database, { key: 'checking', name: 'Main account', company: 'Test Bank' })
+    insertAccount(database, {
+      key: 'checking',
+      name: 'Main account',
+      company: 'Test Bank',
+    })
   })
 }
 
@@ -101,7 +113,9 @@ afterEach(() => {
   restoreProcessExit(originalProcessExit)
 })
 
-type ImportOutcome = { status: 'resolved' } | { status: 'rejected'; errorCode: number | undefined }
+type ImportOutcome =
+  | { status: 'resolved' }
+  | { status: 'rejected'; errorCode: number | undefined }
 
 describe('importAction — non-existent path', () => {
   it('logs an error and exits with code 1 for a missing path', async () => {
@@ -112,7 +126,7 @@ describe('importAction — non-existent path', () => {
         await command.parseAsync(['/non/existent/path.csv'], { from: 'user' })
       },
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(summary).toEqual({ status: 'rejected', errorCode: 1 })
@@ -122,7 +136,7 @@ describe('importAction — non-existent path', () => {
 
 describe('importAction — empty directory', () => {
   it('warns and exits with code 0 when no CSV files exist in the directory', async () => {
-    const tmpDir = await import('node:os').then(os => os.tmpdir())
+    const tmpDir = await import('node:os').then((os) => os.tmpdir())
 
     const summary = await collectCommandOutcome<ImportOutcome>(
       async () => {
@@ -131,7 +145,7 @@ describe('importAction — empty directory', () => {
         await command.parseAsync([tmpDir], { from: 'user' })
       },
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(summary).toEqual({ status: 'rejected', errorCode: 0 })
@@ -151,7 +165,7 @@ describe('importAction — successful import from fixture file', () => {
         await command.parseAsync([FIXTURE], { from: 'user' })
       },
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(summary).toEqual({ status: 'resolved' })
@@ -170,7 +184,7 @@ describe('importAction — successful import from fixture file', () => {
         await command.parseAsync([FIXTURES_DIR], { from: 'user' })
       },
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(summary).toEqual({ status: 'resolved' })

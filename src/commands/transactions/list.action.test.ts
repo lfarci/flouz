@@ -1,4 +1,12 @@
-import { mock, afterEach, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
+import {
+  mock,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'bun:test'
 import {
   collectCommandOutcome,
   createCommandTestDatabase,
@@ -57,7 +65,7 @@ const baseTransaction = {
 }
 
 function createInMemoryDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createCategoriesTable(database)
     createAccountsTable(database)
     createTransactionsTable(database)
@@ -85,7 +93,9 @@ afterEach(() => {
   restoreProcessExit(originalProcessExit)
 })
 
-type ListOutcome = { status: 'resolved' } | { status: 'rejected'; errorCode: number | undefined }
+type ListOutcome =
+  | { status: 'resolved' }
+  | { status: 'rejected'; errorCode: number | undefined }
 
 function parseJsonArrayOutput(output: string): unknown[] {
   const parsed: unknown = JSON.parse(output)
@@ -106,7 +116,7 @@ describe('listAction — non-existent database', () => {
         await command.parseAsync(['--db', '/no/such/file.db'], { from: 'user' })
       },
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(summary).toEqual({ status: 'rejected', errorCode: 1 })
@@ -126,7 +136,7 @@ describe('listAction — empty result in table mode', () => {
         await command.parseAsync(['--db', EXISTING_PATH], { from: 'user' })
       },
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(logInfoMock).toHaveBeenCalled()
@@ -147,7 +157,7 @@ describe('listAction — table output', () => {
         await command.parseAsync(['--db', EXISTING_PATH], { from: 'user' })
       },
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(writeStdoutMock).toHaveBeenCalled()
@@ -165,10 +175,12 @@ describe('listAction — csv output', () => {
       async () => {
         const command = createListCommand(EXISTING_PATH)
         command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
-        await command.parseAsync(['--output', 'csv', '--db', EXISTING_PATH], { from: 'user' })
+        await command.parseAsync(['--output', 'csv', '--db', EXISTING_PATH], {
+          from: 'user',
+        })
       },
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(writeStdoutMock).toHaveBeenCalled()
@@ -188,10 +200,12 @@ describe('listAction — json output', () => {
       async () => {
         const command = createListCommand(EXISTING_PATH)
         command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
-        await command.parseAsync(['--output', 'json', '--db', EXISTING_PATH], { from: 'user' })
+        await command.parseAsync(['--output', 'json', '--db', EXISTING_PATH], {
+          from: 'user',
+        })
       },
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(writeStdoutMock).toHaveBeenCalled()
@@ -205,17 +219,24 @@ describe('listAction — --limit option', () => {
   it('returns only the requested number of transactions', async () => {
     const { database, handle } = createInMemoryDatabase()
     insertTransaction(database, baseTransaction)
-    insertTransaction(database, { ...baseTransaction, date: '2026-01-16', counterparty: 'Test Shop' })
+    insertTransaction(database, {
+      ...baseTransaction,
+      date: '2026-01-16',
+      counterparty: 'Test Shop',
+    })
     openDatabaseMock.mockReturnValue(handle)
 
     await collectCommandOutcome(
       async () => {
         const command = createListCommand(EXISTING_PATH)
         command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
-        await command.parseAsync(['--limit', '1', '--output', 'json', '--db', EXISTING_PATH], { from: 'user' })
+        await command.parseAsync(
+          ['--limit', '1', '--output', 'json', '--db', EXISTING_PATH],
+          { from: 'user' },
+        )
       },
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     const output = writeStdoutMock.mock.calls[0][0]
@@ -231,10 +252,12 @@ describe('listAction — --limit option', () => {
       async () => {
         const command = createListCommand(EXISTING_PATH)
         command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
-        await command.parseAsync(['--limit', 'bad', '--db', EXISTING_PATH], { from: 'user' })
+        await command.parseAsync(['--limit', 'bad', '--db', EXISTING_PATH], {
+          from: 'user',
+        })
       },
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(summary).toEqual({ status: 'rejected', errorCode: 1 })
@@ -254,7 +277,7 @@ describe('listAction — openDatabase error', () => {
         await command.parseAsync(['--db', EXISTING_PATH], { from: 'user' })
       },
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(summary).toEqual({ status: 'rejected', errorCode: 1 })

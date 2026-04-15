@@ -6,15 +6,15 @@
 
 ## Stack
 
-| Technology | Role |
-|---|---|
-| [Bun](https://bun.sh) | Runtime, test runner, package manager |
-| [Commander.js](https://github.com/tj/commander.js) | CLI framework (commands, options, help) |
+| Technology                                            | Role                                        |
+| ----------------------------------------------------- | ------------------------------------------- |
+| [Bun](https://bun.sh)                                 | Runtime, test runner, package manager       |
+| [Commander.js](https://github.com/tj/commander.js)    | CLI framework (commands, options, help)     |
 | [@clack/prompts](https://github.com/natemoo-re/clack) | Interactive terminal UI (spinners, prompts) |
-| [bun:sqlite](https://bun.sh/docs/api/sqlite) | Local SQLite database (built into Bun) |
-| [csv-parse](https://csv.js.org/parse/) | CSV parsing with configurable separators |
-| [Vercel AI SDK](https://sdk.vercel.ai) | AI provider abstraction layer |
-| [Zod](https://zod.dev) | Schema validation for AI structured output |
+| [bun:sqlite](https://bun.sh/docs/api/sqlite)          | Local SQLite database (built into Bun)      |
+| [csv-parse](https://csv.js.org/parse/)                | CSV parsing with configurable separators    |
+| [Vercel AI SDK](https://sdk.vercel.ai)                | AI provider abstraction layer               |
+| [Zod](https://zod.dev)                                | Schema validation for AI structured output  |
 
 ## Project Structure
 
@@ -41,19 +41,21 @@ The AI provider is configured through environment variables, making it a one-lin
 
 ```ts
 // GitHub Models (default — free with Copilot subscription)
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAI } from '@ai-sdk/openai'
 const model = createOpenAI({
-  baseURL: process.env.AI_BASE_URL ?? "https://models.github.ai/inference",
+  baseURL: process.env.AI_BASE_URL ?? 'https://models.github.ai/inference',
   apiKey: process.env.GITHUB_TOKEN,
-}).chat("openai/gpt-4o-mini");
+}).chat('openai/gpt-4o-mini')
 
 // Anthropic
-import { createAnthropic } from "@ai-sdk/anthropic";
-const model = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY })("claude-3-5-haiku-20241022");
+import { createAnthropic } from '@ai-sdk/anthropic'
+const model = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY })(
+  'claude-3-5-haiku-20241022',
+)
 
 // Ollama (local)
-import { createOllama } from "ollama-ai-provider";
-const model = createOllama()("llama3.2");
+import { createOllama } from 'ollama-ai-provider'
+const model = createOllama()('llama3.2')
 ```
 
 Switch by changing the import and constructor — the rest of the code stays the same.

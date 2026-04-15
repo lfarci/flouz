@@ -3,7 +3,7 @@ import { Database } from 'bun:sqlite'
 import { getCategories } from '@/db/categories/queries'
 import { seedCategories } from '@/db/categories/seed'
 import { initDb } from '@/db/schema'
-import { insertTransaction , updateCategory } from '@/db/transactions/mutations'
+import { insertTransaction, updateCategory } from '@/db/transactions/mutations'
 import { getTransactions } from '@/db/transactions/queries'
 import {
   findCategoryId,
@@ -33,13 +33,15 @@ describe('findCategoryId', () => {
     const categoryId = findCategoryId(categories, 'groceries')
 
     expect(categoryId).toBeDefined()
-    expect(categories.some(category => category.id === categoryId)).toBe(true)
+    expect(categories.some((category) => category.id === categoryId)).toBe(true)
   })
 
   it('throws when the category slug is unknown', () => {
     const categories = getCategories(db)
 
-    expect(() => findCategoryId(categories, 'missing')).toThrow('Unknown category slug: missing')
+    expect(() => findCategoryId(categories, 'missing')).toThrow(
+      'Unknown category slug: missing',
+    )
   })
 })
 
@@ -88,7 +90,7 @@ describe('parseOutputFormat', () => {
 
   it('throws on unsupported formats', () => {
     expect(() => parseOutputFormat('yaml')).toThrow(
-      'Invalid output format: yaml. Use table, csv, or json.'
+      'Invalid output format: yaml. Use table, csv, or json.',
     )
   })
 })
@@ -104,11 +106,13 @@ describe('buildCsv', () => {
           note: 'Monthly, refill',
           category: 'groceries',
         },
-      ])
-    ).toBe([
-      'date,amount,counterparty,note,category',
-      '2026-01-15,-42.50,ACME Shop and Bakery,"Monthly, refill",groceries',
-    ].join('\n'))
+      ]),
+    ).toBe(
+      [
+        'date,amount,counterparty,note,category',
+        '2026-01-15,-42.50,ACME Shop and Bakery,"Monthly, refill",groceries',
+      ].join('\n'),
+    )
   })
 })
 
@@ -129,18 +133,20 @@ describe('buildJson', () => {
           note: 'Invoice 42 paid in full',
           category: 'groceries',
         },
-      ])
-    ).toBe([
-      '[',
-      '  {',
-      '    "date": "2026-01-15",',
-      '    "amount": "-42.50",',
-      '    "counterparty": "ACME Shop and Bakery",',
-      '    "note": "Invoice 42 paid in full",',
-      '    "category": "groceries"',
-      '  }',
-      ']',
-    ].join('\n'))
+      ]),
+    ).toBe(
+      [
+        '[',
+        '  {',
+        '    "date": "2026-01-15",',
+        '    "amount": "-42.50",',
+        '    "counterparty": "ACME Shop and Bakery",',
+        '    "note": "Invoice 42 paid in full",',
+        '    "category": "groceries"',
+        '  }',
+        ']',
+      ].join('\n'),
+    )
   })
 })
 
@@ -176,9 +182,15 @@ describe('getTransactions uncategorized filter (used by --uncategorized flag)', 
     seedCategories(db)
 
     insertTransaction(db, { ...baseTransaction, counterparty: 'No Category' })
-    insertTransaction(db, { ...baseTransaction, counterparty: 'Has Category', date: '2026-02-01' })
+    insertTransaction(db, {
+      ...baseTransaction,
+      counterparty: 'Has Category',
+      date: '2026-02-01',
+    })
     const allTransactions = getTransactions(db)
-    const categorized = allTransactions.find(t => t.counterparty === 'Has Category')!
+    const categorized = allTransactions.find(
+      (t) => t.counterparty === 'Has Category',
+    )!
     updateCategory(db, categorized.id!, CATEGORY_ID)
   })
 
@@ -192,7 +204,7 @@ describe('getTransactions uncategorized filter (used by --uncategorized flag)', 
   it('excludes transactions with a category_id when uncategorized is true', () => {
     const transactions = getTransactions(db, { uncategorized: true })
 
-    expect(transactions.some(t => t.categoryId !== undefined)).toBe(false)
+    expect(transactions.some((t) => t.categoryId !== undefined)).toBe(false)
   })
 })
 
@@ -208,10 +220,13 @@ describe('createListCommand --category and --uncategorized conflict', () => {
     let exited = false
     try {
       await command.parseAsync([
-        'node', 'list',
-        '--category', 'groceries',
+        'node',
+        'list',
+        '--category',
+        'groceries',
         '--uncategorized',
-        '--db', ':memory:',
+        '--db',
+        ':memory:',
       ])
     } catch {
       exited = true

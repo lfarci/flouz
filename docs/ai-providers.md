@@ -8,11 +8,11 @@ GitHub Models is the default because it is free with a GitHub Copilot subscripti
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|---|---|---|
-| `GITHUB_TOKEN` | Personal access token or Copilot token | required |
-| `AI_MODEL` | Model name to use | `openai/gpt-4o-mini` |
-| `AI_BASE_URL` | API base URL | `https://models.github.ai/inference` |
+| Variable       | Description                            | Default                              |
+| -------------- | -------------------------------------- | ------------------------------------ |
+| `GITHUB_TOKEN` | Personal access token or Copilot token | required                             |
+| `AI_MODEL`     | Model name to use                      | `openai/gpt-4o-mini`                 |
+| `AI_BASE_URL`  | API base URL                           | `https://models.github.ai/inference` |
 
 ## Switching Providers
 
@@ -21,35 +21,35 @@ Change the import and constructor in `src/ai/` — the rest of the codebase is u
 ### GitHub Models (default)
 
 ```ts
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAI } from '@ai-sdk/openai'
 
 const provider = createOpenAI({
-  baseURL: process.env.AI_BASE_URL ?? "https://models.github.ai/inference",
+  baseURL: process.env.AI_BASE_URL ?? 'https://models.github.ai/inference',
   apiKey: process.env.GITHUB_TOKEN,
-});
+})
 
-const model = provider.chat(process.env.AI_MODEL ?? "openai/gpt-4o-mini");
+const model = provider.chat(process.env.AI_MODEL ?? 'openai/gpt-4o-mini')
 ```
 
 ### Anthropic
 
 ```ts
-import { createAnthropic } from "@ai-sdk/anthropic";
+import { createAnthropic } from '@ai-sdk/anthropic'
 
 const provider = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
-});
+})
 
-const model = provider(process.env.AI_MODEL ?? "claude-3-5-haiku-20241022");
+const model = provider(process.env.AI_MODEL ?? 'claude-3-5-haiku-20241022')
 ```
 
 ### Ollama (local, no API key needed)
 
 ```ts
-import { createOllama } from "ollama-ai-provider";
+import { createOllama } from 'ollama-ai-provider'
 
-const provider = createOllama();
-const model = provider(process.env.AI_MODEL ?? "llama3.2");
+const provider = createOllama()
+const model = provider(process.env.AI_MODEL ?? 'llama3.2')
 ```
 
 ## Structured Output with `generateObject`
@@ -57,8 +57,8 @@ const model = provider(process.env.AI_MODEL ?? "llama3.2");
 All AI calls use `generateObject` with a Zod schema to get typed, validated output — never raw text that needs manual parsing:
 
 ```ts
-import { generateObject } from "ai";
-import { z } from "zod";
+import { generateObject } from 'ai'
+import { z } from 'zod'
 
 const result = await generateObject({
   model,
@@ -68,10 +68,10 @@ const result = await generateObject({
     reasoning: z.string(),
   }),
   prompt: `Categorize this transaction: ${counterparty} ${amount} EUR`,
-});
+})
 
 // result.object is fully typed
-const { categoryId, confidence, reasoning } = result.object;
+const { categoryId, confidence, reasoning } = result.object
 ```
 
 ## Security Rules

@@ -1,4 +1,12 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+} from 'bun:test'
 import { type Database } from 'bun:sqlite'
 import {
   collectCommandOutcome,
@@ -43,27 +51,33 @@ interface ActionSummary {
 
 type ActionOutcomeFactory = () => ActionSummary
 
-type RejectedActionOutcomeFactory = (errorCode: number | undefined) => ActionSummary
+type RejectedActionOutcomeFactory = (
+  errorCode: number | undefined,
+) => ActionSummary
 
 let createAddAccountsCommand: typeof CreateAddAccountsCommand
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createAccountsTable(database)
   })
 }
 
 async function runAddCommand(argumentsList: string[]): Promise<void> {
-  await runCommandSilently(createAddAccountsCommand('default.db'), argumentsList)
+  await runCommandSilently(
+    createAddAccountsCommand('default.db'),
+    argumentsList,
+  )
 }
 
 async function collectAddCommandOutcome(
   database: Database,
   argumentsList: string[],
-  accountKey?: string
+  accountKey?: string,
 ): Promise<ActionSummary> {
-  const account = () => (accountKey === undefined ? undefined : getAccountByKey(database, accountKey))
+  const account = () =>
+    accountKey === undefined ? undefined : getAccountByKey(database, accountKey)
 
   return await collectCommandOutcome(
     () => runAddCommand(argumentsList),
@@ -77,7 +91,7 @@ async function collectAddCommandOutcome(
       errorCode,
       account: account(),
       accountCount: countAccounts(database),
-    })) as RejectedActionOutcomeFactory
+    })) as RejectedActionOutcomeFactory,
   )
 }
 
@@ -174,7 +188,9 @@ describe('addAccountAction', () => {
   })
 
   it('rejects a missing company argument', async () => {
-    await expect(runAddCommand(['checking', 'Main account'])).rejects.toMatchObject({
+    await expect(
+      runAddCommand(['checking', 'Main account']),
+    ).rejects.toMatchObject({
       code: 1,
       message: 'process.exit(1)',
     })
@@ -187,7 +203,7 @@ describe('addAccountAction', () => {
     const summary = await collectAddCommandOutcome(
       database,
       ['checking', 'Main account', 'Provider One'],
-      'checking'
+      'checking',
     )
 
     expect(summary).toEqual({
@@ -245,7 +261,7 @@ describe('addAccountAction', () => {
     const summary = await collectAddCommandOutcome(
       database,
       ['  checking  ', '  Main account  ', '  Provider One  '],
-      'checking'
+      'checking',
     )
 
     expect(summary).toEqual({
@@ -274,7 +290,7 @@ describe('addAccountAction', () => {
     const summary = await collectAddCommandOutcome(
       database,
       ['checking', 'Other account', 'Provider Two'],
-      'checking'
+      'checking',
     )
 
     expect(summary).toEqual({
@@ -302,7 +318,7 @@ describe('addAccountAction', () => {
     const summary = await collectAddCommandOutcome(
       database,
       ['  checking  ', 'Other account', 'Provider Two'],
-      'checking'
+      'checking',
     )
 
     expect(summary).toEqual({
@@ -324,8 +340,8 @@ describe('addAccountAction', () => {
 
     const summary = await collectAddCommandOutcome(
       database,
-      ['   ', 'Main account', 'Provider One'] ,
-      'checking'
+      ['   ', 'Main account', 'Provider One'],
+      'checking',
     )
 
     expect(summary).toEqual({
@@ -343,7 +359,7 @@ describe('addAccountAction', () => {
     const summary = await collectAddCommandOutcome(
       database,
       ['checking', '   ', 'Provider One'],
-      'checking'
+      'checking',
     )
 
     expect(summary).toEqual({
@@ -361,7 +377,7 @@ describe('addAccountAction', () => {
     const summary = await collectAddCommandOutcome(
       database,
       ['checking', 'Main account', '   '],
-      'checking'
+      'checking',
     )
 
     expect(summary).toEqual({
@@ -385,7 +401,7 @@ describe('addAccountAction', () => {
         '--description',
         '  Employer meal card  ',
       ],
-      'savings'
+      'savings',
     )
 
     expect(summary).toEqual({
@@ -408,14 +424,8 @@ describe('addAccountAction', () => {
 
     const summary = await collectAddCommandOutcome(
       database,
-      [
-        'savings',
-        'Savings account',
-        'Provider One',
-        '--description',
-        '   ',
-      ],
-      'savings'
+      ['savings', 'Savings account', 'Provider One', '--description', '   '],
+      'savings',
     )
 
     expect(summary).toEqual({
@@ -445,7 +455,7 @@ describe('addAccountAction', () => {
         '--iban',
         '  BE00 0000 0000 0000  ',
       ],
-      'wallet'
+      'wallet',
     )
 
     expect(summary).toEqual({
@@ -468,14 +478,8 @@ describe('addAccountAction', () => {
 
     const summary = await collectAddCommandOutcome(
       database,
-      [
-        'wallet',
-        'Wallet account',
-        'Provider Two',
-        '--iban',
-        '   ',
-      ],
-      'wallet'
+      ['wallet', 'Wallet account', 'Provider Two', '--iban', '   '],
+      'wallet',
     )
 
     expect(summary).toEqual({

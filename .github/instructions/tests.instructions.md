@@ -1,11 +1,12 @@
 ---
-description: "Guidelines for writing TypeScript tests with bun test. Applies to all test files in the project."
+description: 'Guidelines for writing TypeScript tests with bun test. Applies to all test files in the project.'
 applyTo: '**/*.test.ts'
 ---
 
 # Testing Guidelines (bun test)
 
 ## Stack
+
 - **Runner:** `bun test` — Jest-compatible API, zero extra dependencies
 - **DB:** Always `new Database(':memory:')` — never create files on disk in tests
 - **AI mocking:** `mock.module('ai', ...)` from `bun:test` — no real API calls, no cost
@@ -45,6 +46,7 @@ describe('parseAmount', () => {
 ## Naming Convention
 
 Use descriptive names that express behavior:
+
 ```
 ✅  'returns undefined when date column is missing'
 ✅  'inserts transaction with IGNORE on duplicate'
@@ -68,7 +70,11 @@ describe('queries', () => {
   })
 
   it('inserts and retrieves a transaction', () => {
-    insertTransaction(db, { date: '2026-01-15', amount: -42.5, counterparty: 'Delhaize' })
+    insertTransaction(db, {
+      date: '2026-01-15',
+      amount: -42.5,
+      counterparty: 'Delhaize',
+    })
     const rows = getTransactions(db, {})
     expect(rows).toHaveLength(1)
     expect(rows[0].counterparty).toBe('Delhaize')
@@ -83,14 +89,19 @@ import { mock } from 'bun:test'
 
 mock.module('ai', () => ({
   generateObject: async () => ({
-    object: { categoryId: 'uuid-groceries', confidence: 0.9, reasoning: 'supermarket' }
-  })
+    object: {
+      categoryId: 'uuid-groceries',
+      confidence: 0.9,
+      reasoning: 'supermarket',
+    },
+  }),
 }))
 ```
 
 ## Fixture Files
 
 Place sample CSV files or JSON fixtures in `__fixtures__/` next to the test:
+
 ```
 src/parsers/__fixtures__/bank-sample.csv
 src/parsers/__fixtures__/bank-metadata-only.csv

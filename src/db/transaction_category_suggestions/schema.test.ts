@@ -20,13 +20,21 @@ function insertSuggestion(
   db: Database,
   transactionId: number,
   categoryId: string,
-  confidence: number
+  confidence: number,
 ): void {
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO transaction_category_suggestions
       (transaction_id, category_id, confidence, model, suggested_at)
     VALUES (?, ?, ?, ?, ?)
-  `).run(transactionId, categoryId, confidence, 'test-model', new Date().toISOString())
+  `,
+  ).run(
+    transactionId,
+    categoryId,
+    confidence,
+    'test-model',
+    new Date().toISOString(),
+  )
 }
 
 let db: Database
@@ -39,9 +47,11 @@ beforeEach(() => {
 
 describe('transaction_category_suggestions table creation', () => {
   it('creates the table after initDb', () => {
-    const row = db.prepare(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='transaction_category_suggestions'"
-    ).get() as { name: string } | null
+    const row = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='transaction_category_suggestions'",
+      )
+      .get() as { name: string } | null
 
     expect(row).not.toBeNull()
     expect(row?.name).toBe('transaction_category_suggestions')
@@ -98,38 +108,54 @@ describe('transaction_category_suggestions foreign key constraints', () => {
 
   it('throws when category_id does not reference an existing category', () => {
     insertTransaction(db, baseTransaction)
-    const row = db.prepare('SELECT id FROM transactions LIMIT 1').get() as { id: number }
+    const row = db.prepare('SELECT id FROM transactions LIMIT 1').get() as {
+      id: number
+    }
 
-    expect(() => insertSuggestion(db, row.id, NONEXISTENT_CATEGORY_ID, 0.5)).toThrow()
+    expect(() =>
+      insertSuggestion(db, row.id, NONEXISTENT_CATEGORY_ID, 0.5),
+    ).toThrow()
   })
 })
 
 describe('transaction_category_suggestions CHECK constraint on confidence', () => {
   it('throws when confidence is above 1', () => {
     insertTransaction(db, baseTransaction)
-    const row = db.prepare('SELECT id FROM transactions LIMIT 1').get() as { id: number }
+    const row = db.prepare('SELECT id FROM transactions LIMIT 1').get() as {
+      id: number
+    }
 
     expect(() => insertSuggestion(db, row.id, VALID_CATEGORY_ID, 1.5)).toThrow()
   })
 
   it('throws when confidence is below 0', () => {
     insertTransaction(db, baseTransaction)
-    const row = db.prepare('SELECT id FROM transactions LIMIT 1').get() as { id: number }
+    const row = db.prepare('SELECT id FROM transactions LIMIT 1').get() as {
+      id: number
+    }
 
-    expect(() => insertSuggestion(db, row.id, VALID_CATEGORY_ID, -0.1)).toThrow()
+    expect(() =>
+      insertSuggestion(db, row.id, VALID_CATEGORY_ID, -0.1),
+    ).toThrow()
   })
 })
 
 describe('transaction_category_suggestions valid insert', () => {
   it('inserts a row successfully when confidence is 0.5', () => {
     insertTransaction(db, baseTransaction)
-    const row = db.prepare('SELECT id FROM transactions LIMIT 1').get() as { id: number }
+    const row = db.prepare('SELECT id FROM transactions LIMIT 1').get() as {
+      id: number
+    }
 
-    expect(() => insertSuggestion(db, row.id, VALID_CATEGORY_ID, 0.5)).not.toThrow()
+    expect(() =>
+      insertSuggestion(db, row.id, VALID_CATEGORY_ID, 0.5),
+    ).not.toThrow()
 
-    const inserted = db.prepare(
-      'SELECT * FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(row.id) as { confidence: number } | null
+    const inserted = db
+      .prepare(
+        'SELECT * FROM transaction_category_suggestions WHERE transaction_id = ?',
+      )
+      .get(row.id) as { confidence: number } | null
 
     expect(inserted).not.toBeNull()
     expect(inserted?.confidence).toBe(0.5)

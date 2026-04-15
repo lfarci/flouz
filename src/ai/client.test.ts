@@ -1,4 +1,12 @@
-import { mock, spyOn, describe, it, expect, beforeEach, afterEach } from 'bun:test'
+import {
+  mock,
+  spyOn,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+} from 'bun:test'
 import * as configModule from '@/config'
 
 const chatMock = mock(() => 'mock-chat-model')
@@ -8,7 +16,12 @@ void mock.module('@ai-sdk/openai', () => ({
   createOpenAI: createOpenAIMock,
 }))
 
-import { resolveModelName, getModel, DEFAULT_MODEL, DEFAULT_BASE_URL } from '@/ai/client'
+import {
+  resolveModelName,
+  getModel,
+  DEFAULT_MODEL,
+  DEFAULT_BASE_URL,
+} from '@/ai/client'
 
 const originalAiModel = Bun.env.AI_MODEL
 const originalGithubToken = Bun.env.GITHUB_TOKEN
@@ -27,7 +40,8 @@ beforeEach(() => {
 afterEach(() => {
   if (originalAiModel !== undefined) Bun.env.AI_MODEL = originalAiModel
   else delete Bun.env.AI_MODEL
-  if (originalGithubToken !== undefined) Bun.env.GITHUB_TOKEN = originalGithubToken
+  if (originalGithubToken !== undefined)
+    Bun.env.GITHUB_TOKEN = originalGithubToken
   else delete Bun.env.GITHUB_TOKEN
   if (originalAiBaseUrl !== undefined) Bun.env.AI_BASE_URL = originalAiBaseUrl
   else delete Bun.env.AI_BASE_URL
@@ -48,7 +62,9 @@ describe('resolveModelName', () => {
   })
 
   it('returns the config aiModel when AI_MODEL env var is not set', async () => {
-    const spy = spyOn(configModule, 'readConfig').mockResolvedValue({ aiModel: 'config/model' })
+    const spy = spyOn(configModule, 'readConfig').mockResolvedValue({
+      aiModel: 'config/model',
+    })
     const name = await resolveModelName()
     spy.mockRestore()
     expect(name).toBe('config/model')
@@ -72,7 +88,9 @@ describe('getModel', () => {
   })
 
   it('creates the provider with the githubToken from config', async () => {
-    const spy = spyOn(configModule, 'readConfig').mockResolvedValue({ githubToken: 'config_token_123' })
+    const spy = spyOn(configModule, 'readConfig').mockResolvedValue({
+      githubToken: 'config_token_123',
+    })
     await getModel()
     spy.mockRestore()
     expect(createOpenAIMock).toHaveBeenCalledWith({
@@ -97,4 +115,3 @@ describe('getModel', () => {
     expect(chatMock).toHaveBeenCalledWith(DEFAULT_MODEL)
   })
 })
-

@@ -84,5 +84,5 @@ export default defineConfig(
       // anchored regexes (^) don't have ReDoS risk
       'sonarjs/slow-regex': 'off',
     },
-  }
+  },
 )

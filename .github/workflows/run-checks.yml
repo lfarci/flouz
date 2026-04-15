@@ -27,7 +27,7 @@ jobs:
         id: format
         run: |
           set -o pipefail
-          npx prettier@3.8.3 --check . --ignore-unknown 2>&1 | tee /tmp/format-output.txt
+          npm exec --yes prettier@3.8.3 -- --check . --ignore-unknown 2>&1 | tee /tmp/format-output.txt
 
       - name: Job summary
         if: always()

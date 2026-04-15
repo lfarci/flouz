@@ -1,5 +1,9 @@
-import { type Database , type SQLQueryBindings } from 'bun:sqlite'
-import type { Transaction, TransactionFilters, CategorizeTransactionsFilters } from '@/types'
+import { type Database, type SQLQueryBindings } from 'bun:sqlite'
+import type {
+  Transaction,
+  TransactionFilters,
+  CategorizeTransactionsFilters,
+} from '@/types'
 
 function rowToTransaction(row: Record<string, unknown>): Transaction {
   return {
@@ -48,12 +52,16 @@ function buildFilterQueryParts(filters: TransactionFilters): FilterQueryParts {
   }
 
   return {
-    whereClause: conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '',
+    whereClause:
+      conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '',
     params,
   }
 }
 
-export function getTransactions(db: Database, filters: TransactionFilters = {}): Transaction[] {
+export function getTransactions(
+  db: Database,
+  filters: TransactionFilters = {},
+): Transaction[] {
   const { whereClause, params } = buildFilterQueryParts(filters)
   const limitClause = filters.limit !== undefined ? 'LIMIT ?' : ''
 
@@ -61,12 +69,16 @@ export function getTransactions(db: Database, filters: TransactionFilters = {}):
     params.push(filters.limit)
   }
 
-  const sql = `SELECT * FROM transactions ${whereClause} ORDER BY date DESC ${limitClause}`.trim()
+  const sql =
+    `SELECT * FROM transactions ${whereClause} ORDER BY date DESC ${limitClause}`.trim()
   const rows = db.prepare(sql).all(...params) as Record<string, unknown>[]
   return rows.map(rowToTransaction)
 }
 
-export function countTransactions(db: Database, filters: TransactionFilters = {}): number {
+export function countTransactions(
+  db: Database,
+  filters: TransactionFilters = {},
+): number {
   const { whereClause, params } = buildFilterQueryParts(filters)
   const sql = `SELECT COUNT(*) AS count FROM transactions ${whereClause}`.trim()
   const row = db.prepare(sql).get(...params) as { count: number }
@@ -74,23 +86,28 @@ export function countTransactions(db: Database, filters: TransactionFilters = {}
 }
 
 export function getUncategorized(db: Database): Transaction[] {
-  const rows = db.prepare(
-    'SELECT * FROM transactions WHERE category_id IS NULL ORDER BY date DESC'
-  ).all() as Record<string, unknown>[]
+  const rows = db
+    .prepare(
+      'SELECT * FROM transactions WHERE category_id IS NULL ORDER BY date DESC',
+    )
+    .all() as Record<string, unknown>[]
   return rows.map(rowToTransaction)
 }
 
-export function hasTransactionsForAccount(db: Database, accountId: number): boolean {
-  const row = db.prepare(
-    'SELECT 1 AS found FROM transactions WHERE account_id = ? LIMIT 1'
-  ).get(accountId) as { found: number } | null
+export function hasTransactionsForAccount(
+  db: Database,
+  accountId: number,
+): boolean {
+  const row = db
+    .prepare('SELECT 1 AS found FROM transactions WHERE account_id = ? LIMIT 1')
+    .get(accountId) as { found: number } | null
 
   return row !== null
 }
 
 export function getTransactionsMissingCategoryForCategorization(
   db: Database,
-  filters: CategorizeTransactionsFilters = {}
+  filters: CategorizeTransactionsFilters = {},
 ): Transaction[] {
   const conditions: string[] = [
     'category_id IS NULL',
@@ -118,7 +135,8 @@ export function getTransactionsMissingCategoryForCategorization(
     params.push(filters.limit)
   }
 
-  const sql = `SELECT * FROM transactions ${whereClause} ORDER BY date DESC ${limitClause}`.trim()
+  const sql =
+    `SELECT * FROM transactions ${whereClause} ORDER BY date DESC ${limitClause}`.trim()
   const rows = db.prepare(sql).all(...params) as Record<string, unknown>[]
   return rows.map(rowToTransaction)
 }
