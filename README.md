@@ -183,6 +183,13 @@ bun run src/index.ts accounts list
 bun test
 ```
 
+## Formatting
+
+```bash
+bun run format
+bun run format:check
+```
+
 ## Type checking
 
 ```bash
