@@ -1,5 +1,5 @@
 import { mock, afterEach, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
-import { Database } from 'bun:sqlite'
+import type { Database } from 'bun:sqlite'
 import {
   collectCommandOutcome,
   createCommandTestDatabase,
@@ -17,11 +17,13 @@ import { createTransactionCategorySuggestionsTable } from '@/db/transaction_cate
 import { insertTransaction } from '@/db/transactions/mutations'
 import type { createCategorizeCommand as CreateCategorizeCommand } from './categorize'
 
-const categorizeTransactionMock = mock(async () => ({
-  categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
-  confidence: 0.9,
-  model: 'openai/gpt-4o-mini',
-}))
+const categorizeTransactionMock = mock(() =>
+  Promise.resolve({
+    categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
+    confidence: 0.9,
+    model: 'openai/gpt-4o-mini',
+  })
+)
 
 void mock.module('@/ai/categorize', () => ({
   categorizeTransaction: categorizeTransactionMock,
@@ -183,7 +185,7 @@ describe('categorizeAction — with eligible transactions', () => {
     )
 
     expect(logWarnMock).toHaveBeenCalled()
-    const message = logWarnMock.mock.calls[0][0] as string
+    const message = logWarnMock.mock.calls[0][0]
     expect(message).toContain('AI timeout')
   })
 

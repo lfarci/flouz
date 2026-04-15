@@ -137,7 +137,7 @@ describe('getConfigAction', () => {
     await command.parseAsync(['get'], { from: 'user' })
 
     expect(logInfoMock).toHaveBeenCalled()
-    const message = logInfoMock.mock.calls[0][0] as string
+    const message = logInfoMock.mock.calls[0][0]
     expect(message).toContain('db-path')
     expect(message).toContain('/custom/path.db')
     readConfigSpy.mockRestore()
@@ -151,7 +151,7 @@ describe('getConfigAction', () => {
     await command.parseAsync(['get', 'ai-model'], { from: 'user' })
 
     expect(logInfoMock).toHaveBeenCalled()
-    const message = logInfoMock.mock.calls[0][0] as string
+    const message = logInfoMock.mock.calls[0][0]
     expect(message).toContain('ai-model')
     expect(message).toContain('openai/gpt-4o')
     readConfigSpy.mockRestore()
@@ -176,7 +176,7 @@ describe('getConfigAction', () => {
 
     await command.parseAsync(['get'], { from: 'user' })
 
-    const message = logInfoMock.mock.calls[0][0] as string
+    const message = logInfoMock.mock.calls[0][0]
     expect(message).not.toContain('ghp_super_secret')
     expect(message).toContain('***')
     readConfigSpy.mockRestore()

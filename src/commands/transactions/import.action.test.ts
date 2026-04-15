@@ -156,7 +156,7 @@ describe('importAction — successful import from fixture file', () => {
 
     expect(summary).toEqual({ status: 'resolved' })
     expect(outroMock).toHaveBeenCalled()
-    expect((outroMock.mock.calls[0][0] as string)).toContain('imported')
+    expect(outroMock.mock.calls[0][0]).toContain('imported')
   })
 
   it('imports all CSV files from a directory', async () => {

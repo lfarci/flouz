@@ -87,6 +87,16 @@ afterEach(() => {
 
 type ListOutcome = { status: 'resolved' } | { status: 'rejected'; errorCode: number | undefined }
 
+function parseJsonArrayOutput(output: string): unknown[] {
+  const parsed: unknown = JSON.parse(output)
+
+  if (!Array.isArray(parsed)) {
+    throw new Error('Expected JSON array output')
+  }
+
+  return parsed
+}
+
 describe('listAction — non-existent database', () => {
   it('logs an error and exits with code 1 when the database file does not exist', async () => {
     const summary = await collectCommandOutcome<ListOutcome>(
@@ -162,7 +172,7 @@ describe('listAction — csv output', () => {
     )
 
     expect(writeStdoutMock).toHaveBeenCalled()
-    const output = writeStdoutMock.mock.calls[0][0] as string
+    const output = writeStdoutMock.mock.calls[0][0]
     expect(output).toContain('date,amount,counterparty')
     expect(output).toContain('ACME Shop')
   })
@@ -185,9 +195,8 @@ describe('listAction — json output', () => {
     )
 
     expect(writeStdoutMock).toHaveBeenCalled()
-    const output = writeStdoutMock.mock.calls[0][0] as string
-    const parsed = JSON.parse(output) as unknown[]
-    expect(Array.isArray(parsed)).toBe(true)
+    const output = writeStdoutMock.mock.calls[0][0]
+    const parsed = parseJsonArrayOutput(output)
     expect(parsed).toHaveLength(1)
   })
 })
@@ -209,8 +218,8 @@ describe('listAction — --limit option', () => {
       () => undefined
     )
 
-    const output = writeStdoutMock.mock.calls[0][0] as string
-    const parsed = JSON.parse(output) as unknown[]
+    const output = writeStdoutMock.mock.calls[0][0]
+    const parsed = parseJsonArrayOutput(output)
     expect(parsed).toHaveLength(1)
   })
 
