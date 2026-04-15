@@ -1,5 +1,6 @@
 [test]
 timeout = 10000
+coverageThreshold = 0.8
 
 [install]
 exact = true
