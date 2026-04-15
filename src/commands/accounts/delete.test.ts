@@ -45,6 +45,19 @@ type DeleteSummary = {
   accountCount: number
 }
 
+type DeleteOutcomeFactory = () => DeleteSummary
+
+type RejectedDeleteOutcomeFactory = (errorCode: number | undefined) => DeleteSummary
+
+type LogMessage = [message?: string, ...details: unknown[]]
+
+function getLoggedMessages(logMock: { mock: { calls: LogMessage[] } }): string[] {
+  return logMock.mock.calls.flatMap(call => {
+    const [message] = call
+    return typeof message === 'string' ? [message] : []
+  })
+}
+
 let createDeleteAccountsCommand: DeleteModule['createDeleteAccountsCommand']
 let originalProcessExit: typeof process.exit
 
@@ -69,17 +82,17 @@ async function collectDeleteCommandOutcome(
 
   return collectCommandOutcome(
     () => runDeleteCommand(argumentsList),
-    () => ({
+    (() => ({
       status: 'resolved',
       account: account(),
       accountCount: countAccounts(database),
-    }),
-    errorCode => ({
+    })) as DeleteOutcomeFactory,
+    ((errorCode: number | undefined) => ({
       status: 'rejected',
       errorCode,
       account: account(),
       accountCount: countAccounts(database),
-    })
+    })) as RejectedDeleteOutcomeFactory
   )
 }
 
@@ -142,7 +155,7 @@ describe('deleteAccountAction', () => {
 
     expect({
       summary,
-      errorMessages: errorLogMock.mock.calls.map(call => call[0]),
+      errorMessages: getLoggedMessages(errorLogMock),
       closeCalls: closeMock.mock.calls.length,
     }).toEqual({
       summary: {
@@ -164,7 +177,7 @@ describe('deleteAccountAction', () => {
 
     expect({
       summary,
-      errorMessages: errorLogMock.mock.calls.map(call => call[0]),
+      errorMessages: getLoggedMessages(errorLogMock),
       closeCalls: closeMock.mock.calls.length,
     }).toEqual({
       summary: {
@@ -200,7 +213,7 @@ describe('deleteAccountAction', () => {
 
     expect({
       summary,
-      errorMessages: errorLogMock.mock.calls.map(call => call[0]),
+      errorMessages: getLoggedMessages(errorLogMock),
       closeCalls: closeMock.mock.calls.length,
     }).toEqual({
       summary: {
@@ -232,7 +245,7 @@ describe('deleteAccountAction', () => {
 
     expect({
       summary,
-      successMessages: successLogMock.mock.calls.map(call => call[0]),
+      successMessages: getLoggedMessages(successLogMock),
       closeCalls: closeMock.mock.calls.length,
     }).toEqual({
       summary: {

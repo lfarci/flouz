@@ -42,6 +42,10 @@ type ActionSummary = {
   accountCount: number
 }
 
+type ActionOutcomeFactory = () => ActionSummary
+
+type RejectedActionOutcomeFactory = (errorCode: number | undefined) => ActionSummary
+
 let createAddAccountsCommand: AddModule['createAddAccountsCommand']
 let originalProcessExit: typeof process.exit
 
@@ -64,17 +68,17 @@ async function collectAddCommandOutcome(
 
   return collectCommandOutcome(
     () => runAddCommand(argumentsList),
-    () => ({
+    (() => ({
       status: 'resolved',
       account: account(),
       accountCount: countAccounts(database),
-    }),
-    errorCode => ({
+    })) as ActionOutcomeFactory,
+    ((errorCode: number | undefined) => ({
       status: 'rejected',
       errorCode,
       account: account(),
       accountCount: countAccounts(database),
-    })
+    })) as RejectedActionOutcomeFactory
   )
 }
 
