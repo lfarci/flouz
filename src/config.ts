@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { mkdir } from 'node:fs/promises'
 
-const CONFIG_DIR = `${Bun.env.XDG_CONFIG_HOME ?? `${Bun.env.HOME}/.config`}/flouz`
+const xdgConfigHome = Bun.env.XDG_CONFIG_HOME ?? `${Bun.env.HOME}/.config`
+const CONFIG_DIR = `${xdgConfigHome}/flouz`
 const CONFIG_FILE = `${CONFIG_DIR}/config.json`
 const DEFAULT_DB_PATH = `${CONFIG_DIR}/flouz.db`
 

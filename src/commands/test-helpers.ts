@@ -89,11 +89,11 @@ export async function collectCommandOutcome<T>(
 }
 
 export function getArgumentSetup(command: Command, index: number): CommandArgumentSetup | undefined {
-  const argument = command.registeredArguments[index]
-
-  if (argument === undefined) {
+  if (index >= command.registeredArguments.length) {
     return undefined
   }
+
+  const argument = command.registeredArguments[index]
 
   return {
     name: argument.name(),
