@@ -5,17 +5,8 @@ import { seedCategories } from '@/db/categories/seed'
 import { initDb } from '@/db/schema'
 import { insertTransaction, updateCategory } from '@/db/transactions/mutations'
 import { getTransactions } from '@/db/transactions/queries'
-import {
-  findCategoryId,
-  parseOutputFormat,
-  createListCommand,
-} from './list'
-import {
-  buildCsv,
-  buildJson,
-  escapeCsvField,
-  formatTransactionTable,
-} from './format'
+import { findCategoryId, parseOutputFormat, createListCommand } from './list'
+import { buildCsv, buildJson, escapeCsvField, formatTransactionTable } from './format'
 import { isBrokenPipeError } from '@/cli/stdout'
 
 describe('findCategoryId', () => {

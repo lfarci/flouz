@@ -70,14 +70,14 @@ Lists pending suggestions by default. Pass `--status` to view approved or applie
 flouz transactions suggestions list [options]
 ```
 
-| Option | Description |
-|---|---|
-| `--status <status>` | Filter by status: `pending`, `approved`, or `applied` (default: `pending`) |
-| `-f, --from <date>` | Filter from date (YYYY-MM-DD) |
-| `-t, --to <date>` | Filter to date (YYYY-MM-DD) |
-| `-s, --search <text>` | Search counterparty name |
-| `-l, --limit <n>` | Max results |
-| `-d, --db <path>` | SQLite database path |
+| Option                | Description                                                                |
+| --------------------- | -------------------------------------------------------------------------- |
+| `--status <status>`   | Filter by status: `pending`, `approved`, or `applied` (default: `pending`) |
+| `-f, --from <date>`   | Filter from date (YYYY-MM-DD)                                              |
+| `-t, --to <date>`     | Filter to date (YYYY-MM-DD)                                                |
+| `-s, --search <text>` | Search counterparty name                                                   |
+| `-l, --limit <n>`     | Max results                                                                |
+| `-d, --db <path>`     | SQLite database path                                                       |
 
 #### `suggestions approve`
 
@@ -95,10 +95,10 @@ Deletes matching `pending` or `approved` suggestions. The deleted transactions b
 flouz transactions suggestions reject [options]
 ```
 
-| Option | Description |
-|---|---|
+| Option              | Description                                                    |
+| ------------------- | -------------------------------------------------------------- |
 | `--status <status>` | Status to reject: `pending` or `approved` (default: `pending`) |
-| (common filters) | `--from`, `--to`, `--search`, `--limit`, `--db` |
+| (common filters)    | `--from`, `--to`, `--search`, `--limit`, `--db`                |
 
 #### `suggestions apply`
 

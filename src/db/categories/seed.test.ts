@@ -12,10 +12,10 @@ describe('seedCategories', () => {
     createCategoriesTable(db)
   })
 
-  it('inserts all 24 categories', () => {
+  it('inserts all categories', () => {
     seedCategories(db)
     const row = db.query<{ count: number }, []>('SELECT COUNT(*) as count FROM categories').get()
-    expect(row?.count).toBe(24)
+    expect(row?.count).toBe(CATEGORIES.length)
   })
 
   it('root categories have null parent_id', () => {
@@ -77,6 +77,6 @@ describe('seedCategories', () => {
     seedCategories(db)
     seedCategories(db)
     const row = db.query<{ count: number }, []>('SELECT COUNT(*) as count FROM categories').get()
-    expect(row?.count).toBe(24)
+    expect(row?.count).toBe(CATEGORIES.length)
   })
 })

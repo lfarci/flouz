@@ -124,10 +124,30 @@ export const CATEGORIES: Category[] = [
   },
 
   // L3 under Transport
-  { id: '6a7b8c9d-0e1f-4a2b-3c4d-5e6f7a8b9c0d', name: 'Public Transport', slug: 'public-transport', parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a' },
-  { id: '7b8c9d0e-1f2a-4b3c-4d5e-6f7a8b9c0d1e', name: 'Parking',          slug: 'parking',          parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a' },
-  { id: '8c9d0e1f-2a3b-4c4d-5e6f-7a8b9c0d1e2f', name: 'Car',              slug: 'car',              parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a' },
-  { id: '9d0e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a', name: 'Bicycle',          slug: 'bicycle',          parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a' },
+  {
+    id: '6a7b8c9d-0e1f-4a2b-3c4d-5e6f7a8b9c0d',
+    name: 'Public Transport',
+    slug: 'public-transport',
+    parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a',
+  },
+  {
+    id: '7b8c9d0e-1f2a-4b3c-4d5e-6f7a8b9c0d1e',
+    name: 'Parking',
+    slug: 'parking',
+    parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a',
+  },
+  {
+    id: '8c9d0e1f-2a3b-4c4d-5e6f-7a8b9c0d1e2f',
+    name: 'Car',
+    slug: 'car',
+    parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a',
+  },
+  {
+    id: '9d0e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a',
+    name: 'Bicycle',
+    slug: 'bicycle',
+    parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a',
+  },
 
   // L3 under Utilities
   {

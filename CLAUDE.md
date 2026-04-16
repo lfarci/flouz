@@ -4,18 +4,18 @@ Personal finance CLI tool that imports bank transaction CSVs into a local SQLite
 
 ## Stack
 
-| Concern | Choice |
-|---|---|
-| Runtime | **Bun** — use Bun APIs, never Node.js equivalents |
-| Language | **TypeScript strict mode** |
-| CLI | **Commander.js** — parent command groups use `index.ts`; leaf subcommands live in sibling files in `src/commands/` |
-| Prompts | **@clack/prompts** — all user-facing output goes through this |
-| Database | **`bun:sqlite`** — built-in, no ORM, prepared statements only |
-| CSV parsing | **`csv-parse`** |
-| AI | **Vercel AI SDK** (`ai`) — `generateObject`, `generateText`, `streamText` |
-| AI provider | **GitHub Models** (default) via `@ai-sdk/openai` with custom `baseURL` |
-| Validation | **Zod** — all external data and LLM output validated with Zod schemas |
-| Testing | **`bun test`** — Jest-compatible API, no extra test runner |
+| Concern     | Choice                                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| Runtime     | **Bun** — use Bun APIs, never Node.js equivalents                                                                  |
+| Language    | **TypeScript strict mode**                                                                                         |
+| CLI         | **Commander.js** — parent command groups use `index.ts`; leaf subcommands live in sibling files in `src/commands/` |
+| Prompts     | **@clack/prompts** — all user-facing output goes through this                                                      |
+| Database    | **`bun:sqlite`** — built-in, no ORM, prepared statements only                                                      |
+| CSV parsing | **`csv-parse`**                                                                                                    |
+| AI          | **Vercel AI SDK** (`ai`) — `generateObject`, `generateText`, `streamText`                                          |
+| AI provider | **GitHub Models** (default) via `@ai-sdk/openai` with custom `baseURL`                                             |
+| Validation  | **Zod** — all external data and LLM output validated with Zod schemas                                              |
+| Testing     | **`bun test`** — Jest-compatible API, no extra test runner                                                         |
 
 ## Project Structure
 
@@ -55,6 +55,7 @@ src/
 ## Design Principles
 
 ### SOLID
+
 - **Single Responsibility** — each module does one thing: `parsers/source.ts` parses CSVs, `ai/client.ts` creates the model; never mix concerns
 - **Open/Closed** — extend behaviour via new files/functions, not by modifying stable ones; a new subcommand means a new file in its command group, not an expanded parent `index.ts`
 - **Liskov Substitution** — AI provider adapters must be interchangeable; swapping `@ai-sdk/openai` for `@ai-sdk/anthropic` must require zero changes outside `ai/client.ts`
@@ -62,6 +63,7 @@ src/
 - **Dependency Inversion** — commands depend on abstractions (`getModel()`, query helpers), not concrete SDKs; inject `db` as a parameter, never import a global instance
 
 ### KISS & DRY
+
 - Solve the problem at hand, not the hypothetical future problem
 - Prefer a plain `for` loop over a clever `reduce` when it reads more clearly
 - Date parsing, amount parsing, and counterparty cleanup live in `parsers/source.ts` only

@@ -51,9 +51,9 @@ describe('transaction_category_suggestions lifecycle columns', () => {
     const { id } = db.prepare('SELECT id FROM transactions LIMIT 1').get() as { id: number }
     insertSuggestion(db, id, VALID_CATEGORY_ID, 0.5)
 
-    const row = db.prepare(
-      'SELECT status, reviewed_at, applied_at FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(id) as { status: string; reviewed_at: string | null; applied_at: string | null } | null
+    const row = db
+      .prepare('SELECT status, reviewed_at, applied_at FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(id) as { status: string; reviewed_at: string | null; applied_at: string | null } | null
 
     expect(row).not.toBeNull()
     expect(row?.status).toBe('pending')
@@ -67,9 +67,7 @@ describe('transaction_category_suggestions lifecycle columns', () => {
     insertSuggestion(db, id, VALID_CATEGORY_ID, 0.5)
 
     expect(() =>
-      db.prepare(
-        "UPDATE transaction_category_suggestions SET status = 'invalid' WHERE transaction_id = ?"
-      ).run(id)
+      db.prepare("UPDATE transaction_category_suggestions SET status = 'invalid' WHERE transaction_id = ?").run(id),
     ).toThrow()
   })
 
@@ -80,9 +78,7 @@ describe('transaction_category_suggestions lifecycle columns', () => {
       insertSuggestion(db, id, VALID_CATEGORY_ID, 0.5)
 
       expect(() =>
-        db.prepare(
-          'UPDATE transaction_category_suggestions SET status = ? WHERE transaction_id = ?'
-        ).run(status, id)
+        db.prepare('UPDATE transaction_category_suggestions SET status = ? WHERE transaction_id = ?').run(status, id),
       ).not.toThrow()
     }
   })

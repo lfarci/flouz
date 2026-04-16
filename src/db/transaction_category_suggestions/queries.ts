@@ -11,7 +11,7 @@ export function getSuggestedTransactionIds(db: Database): number[] {
 
 export function getTransactionCategorySuggestions(
   db: Database,
-  filters: SuggestionFilters = {}
+  filters: SuggestionFilters = {},
 ): SuggestionWithContext[] {
   const conditions: string[] = []
   const params: SQLQueryBindings[] = []
@@ -75,7 +75,7 @@ export function getTransactionCategorySuggestions(
     appliedAt: string | null
   }[]
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     transactionId: row.transactionId,
     transactionDate: row.transactionDate,
     counterparty: row.counterparty,
@@ -90,14 +90,8 @@ export function getTransactionCategorySuggestions(
   }))
 }
 
-export function getApprovedSuggestionTransactionIds(
-  db: Database,
-  filters: SuggestionFilters = {}
-): number[] {
-  const conditions: string[] = [
-    "s.status = 'approved'",
-    't.category_id IS NULL',
-  ]
+export function getApprovedSuggestionTransactionIds(db: Database, filters: SuggestionFilters = {}): number[] {
+  const conditions: string[] = ["s.status = 'approved'", 't.category_id IS NULL']
   const params: SQLQueryBindings[] = []
 
   if (filters.from !== undefined) {
@@ -130,28 +124,26 @@ export function getApprovedSuggestionTransactionIds(
   `.trim()
 
   const rows = db.prepare(sql).all(...params) as { transactionId: number }[]
-  return rows.map(row => row.transactionId)
+  return rows.map((row) => row.transactionId)
 }
 
-export function getApprovedSuggestionCategoryId(
-  db: Database,
-  transactionId: number
-): string | null {
-  const row = db.prepare(`
+export function getApprovedSuggestionCategoryId(db: Database, transactionId: number): string | null {
+  const row = db
+    .prepare(
+      `
     SELECT category_id FROM transaction_category_suggestions
     WHERE transaction_id = ? AND status = 'approved'
-  `).get(transactionId) as { category_id: string } | null
+  `,
+    )
+    .get(transactionId) as { category_id: string } | null
 
   return row?.category_id ?? null
 }
 
-export function getSuggestionStatusByTransactionId(
-  db: Database,
-  transactionId: number
-): string | null {
-  const row = db.prepare(
-    'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
-  ).get(transactionId) as { status: string } | null
+export function getSuggestionStatusByTransactionId(db: Database, transactionId: number): string | null {
+  const row = db
+    .prepare('SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?')
+    .get(transactionId) as { status: string } | null
 
   return row?.status ?? null
 }

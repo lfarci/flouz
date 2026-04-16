@@ -3,10 +3,7 @@ import { Database } from 'bun:sqlite'
 import { initDb } from '@/db/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { insertTransaction } from '@/db/transactions/mutations'
-import {
-  upsertTransactionCategorySuggestion,
-  approveTransactionCategorySuggestion,
-} from './mutations'
+import { upsertTransactionCategorySuggestion, approveTransactionCategorySuggestion } from './mutations'
 import { applyApprovedCategorySuggestions } from './apply'
 import type { NewTransaction } from '@/types'
 
@@ -43,9 +40,9 @@ function getTransactionCategoryId(db: Database, id: number): string | null {
 }
 
 function getSuggestionStatus(db: Database, transactionId: number): string | null {
-  const row = db.prepare(
-    'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
-  ).get(transactionId) as { status: string } | null
+  const row = db
+    .prepare('SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?')
+    .get(transactionId) as { status: string } | null
   return row?.status ?? null
 }
 

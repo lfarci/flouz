@@ -16,9 +16,7 @@ interface BaseFilterOptions {
   limit?: string
 }
 
-export function toBaseFilters(
-  options: BaseFilterOptions
-): Pick<SuggestionFilters, 'from' | 'to' | 'search' | 'limit'> {
+export function toBaseFilters(options: BaseFilterOptions): Pick<SuggestionFilters, 'from' | 'to' | 'search' | 'limit'> {
   return {
     from: options.from,
     to: options.to,

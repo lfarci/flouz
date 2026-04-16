@@ -31,3 +31,11 @@ export function insertTransaction(db: Database, transaction: NewTransaction): nu
 export function updateCategory(db: Database, id: number, categoryId: string): void {
   db.prepare('UPDATE transactions SET category_id = ? WHERE id = ?').run(categoryId, id)
 }
+
+export function applyTransactionCategory(db: Database, id: number, categoryId: string): number {
+  const result = db
+    .prepare('UPDATE transactions SET category_id = ? WHERE id = ? AND category_id IS NULL')
+    .run(categoryId, id)
+
+  return result.changes
+}
