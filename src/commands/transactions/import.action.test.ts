@@ -13,7 +13,7 @@ import { createAccountsTable } from '@/db/accounts/schema'
 import { createTransactionsTable } from '@/db/transactions/schema'
 import { createTransactionCategorySuggestionsTable } from '@/db/transaction_category_suggestions/schema'
 import { insertAccount } from '@/db/accounts/mutations'
-import type { createImportCommand as CreateImportCommand } from './import'
+import type { Command } from 'commander'
 
 const FIXTURE = `${import.meta.dir}/../../parsers/__fixtures__/minimal.csv`
 const FIXTURES_DIR = `${import.meta.dir}/../../parsers/__fixtures__`
@@ -63,7 +63,7 @@ void mock.module('@clack/prompts', () => ({
 }))
 
 const processExitMock = createProcessExitMock()
-let createImportCommand: typeof CreateImportCommand
+let createImportCommand: (defaultDb: string) => Command
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {

@@ -15,7 +15,7 @@ import { createAccountsTable } from '@/db/accounts/schema'
 import { createTransactionsTable } from '@/db/transactions/schema'
 import { createTransactionCategorySuggestionsTable } from '@/db/transaction_category_suggestions/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
-import type { createCategorizeCommand as CreateCategorizeCommand } from './categorize'
+import type { Command } from 'commander'
 
 const categorizeTransactionMock = mock(() =>
   Promise.resolve({
@@ -62,7 +62,7 @@ void mock.module('@clack/prompts', () => ({
 }))
 
 const processExitMock = createProcessExitMock()
-let createCategorizeCommand: typeof CreateCategorizeCommand
+let createCategorizeCommand: (defaultDb: string) => Command
 let originalProcessExit: typeof process.exit
 
 const baseTransaction = {

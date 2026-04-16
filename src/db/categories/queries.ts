@@ -1,6 +1,12 @@
 import { type Database } from 'bun:sqlite'
 import type { Category } from '@/types'
 
+export function findCategoryIdBySlug(db: Database, slug: string): string {
+  const row = db.prepare('SELECT id FROM categories WHERE slug = ?').get(slug) as { id: string } | null
+  if (!row) throw new Error(`Category not found: ${slug}`)
+  return row.id
+}
+
 export function getCategories(db: Database): Category[] {
   const rows = db
     .prepare('SELECT id, name, slug, parent_id FROM categories ORDER BY parent_id NULLS FIRST, name')

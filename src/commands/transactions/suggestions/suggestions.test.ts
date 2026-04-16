@@ -18,7 +18,7 @@ import {
   upsertTransactionCategorySuggestion,
   approveTransactionCategorySuggestion,
 } from '@/db/transaction_category_suggestions/mutations'
-import type { createSuggestionsCommand as CreateSuggestionsCommand } from './index'
+import type { Command } from 'commander'
 
 const CATEGORY_ID = '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f'
 
@@ -58,7 +58,7 @@ void mock.module('@/cli/stdout', () => ({
 }))
 
 const processExitMock = createProcessExitMock()
-let createSuggestionsCommand: typeof CreateSuggestionsCommand
+let createSuggestionsCommand: (defaultDb: string) => Command
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {

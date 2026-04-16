@@ -46,19 +46,49 @@ export interface TransactionFilters {
   uncategorized?: boolean
 }
 
+export type TransactionCategorySuggestionStatus = 'pending' | 'approved' | 'applied'
+
 export interface TransactionCategorySuggestion {
   transactionId: number
   categoryId: string
   confidence: number
   model: string
   suggestedAt: string
+  status: TransactionCategorySuggestionStatus
+  reviewedAt?: string
+  appliedAt?: string
 }
 
-export type NewTransactionCategorySuggestion = Omit<TransactionCategorySuggestion, 'suggestedAt'>
+export type NewTransactionCategorySuggestion = Omit<
+  TransactionCategorySuggestion,
+  'suggestedAt' | 'status' | 'reviewedAt' | 'appliedAt'
+>
 
 export interface CategorizeTransactionsFilters {
   from?: string
   to?: string
   search?: string
   limit?: number
+}
+
+export interface SuggestionFilters {
+  from?: string
+  to?: string
+  search?: string
+  limit?: number
+  status?: TransactionCategorySuggestionStatus
+}
+
+export interface SuggestionWithContext {
+  transactionId: number
+  transactionDate: string
+  counterparty: string
+  amount: number
+  categoryId: string
+  categoryName: string
+  confidence: number
+  status: TransactionCategorySuggestionStatus
+  suggestedAt: string
+  reviewedAt?: string
+  appliedAt?: string
 }

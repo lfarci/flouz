@@ -22,9 +22,7 @@ const baseTransaction: NewTransaction = {
 }
 
 function getLastInsertedId(db: Database): number {
-  const row = db.prepare('SELECT last_insert_rowid() AS id').get() as {
-    id: number
-  }
+  const row = db.prepare('SELECT last_insert_rowid() AS id').get() as { id: number }
   return row.id
 }
 

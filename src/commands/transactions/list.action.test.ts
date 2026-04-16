@@ -13,7 +13,7 @@ import { createAccountsTable } from '@/db/accounts/schema'
 import { createTransactionsTable } from '@/db/transactions/schema'
 import { createTransactionCategorySuggestionsTable } from '@/db/transaction_category_suggestions/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
-import type { createListCommand as CreateListCommand } from './list'
+import type { Command } from 'commander'
 
 // Use an existing file as db path so ensureDatabaseExists does not throw.
 const EXISTING_PATH = `${import.meta.dir}/../../parsers/__fixtures__/minimal.csv`
@@ -45,7 +45,7 @@ void mock.module('@/cli/stdout', () => ({
 }))
 
 const processExitMock = createProcessExitMock()
-let createListCommand: typeof CreateListCommand
+let createListCommand: (defaultDb: string) => Command
 let originalProcessExit: typeof process.exit
 
 const baseTransaction = {
