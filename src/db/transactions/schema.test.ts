@@ -20,10 +20,7 @@ describe('createTransactionsTable', () => {
     createTransactionsTable(db)
 
     const row = db
-      .query<
-        { name: string },
-        []
-      >("SELECT name FROM sqlite_master WHERE type='table' AND name='transactions'")
+      .query<{ name: string }, []>("SELECT name FROM sqlite_master WHERE type='table' AND name='transactions'")
       .get()
     expect(row?.name).toBe('transactions')
   })
@@ -68,10 +65,7 @@ describe('createTransactionsTable', () => {
     createTransactionsTable(db)
 
     const row = db
-      .query<
-        { name: string },
-        []
-      >("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_transactions_hash'")
+      .query<{ name: string }, []>("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_transactions_hash'")
       .get()
     expect(row?.name).toBe('idx_transactions_hash')
   })

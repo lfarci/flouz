@@ -5,9 +5,7 @@ describe('createAccountsCommand', () => {
     const { createAccountsCommand } = await import('.')
 
     const command = await createAccountsCommand()
-    const subcommandNames = command.commands.map((subcommand) =>
-      subcommand.name(),
-    )
+    const subcommandNames = command.commands.map((subcommand) => subcommand.name())
 
     expect(subcommandNames).toEqual(['add', 'delete', 'list'])
   })

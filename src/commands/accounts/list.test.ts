@@ -1,12 +1,4 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-} from 'bun:test'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { type Database } from 'bun:sqlite'
 import {
   collectCommandOutcome,
@@ -26,12 +18,10 @@ import type {
 } from './list'
 
 const infoLogMock = mock((message: string) => message)
-const messageLogMock = mock(
-  (
-    message: string[] | string,
-    options?: { spacing?: number; withGuide?: boolean },
-  ) => ({ message, options }),
-)
+const messageLogMock = mock((message: string[] | string, options?: { spacing?: number; withGuide?: boolean }) => ({
+  message,
+  options,
+}))
 const errorLogMock = mock((message: string) => message)
 
 const openDatabaseMock = createOpenDatabaseMock()
@@ -66,15 +56,10 @@ function createInMemoryDatabase() {
 }
 
 async function runListCommand(argumentsList: string[]): Promise<void> {
-  await runCommandSilently(
-    createListAccountsCommand('default.db'),
-    argumentsList,
-  )
+  await runCommandSilently(createListAccountsCommand('default.db'), argumentsList)
 }
 
-async function collectListCommandOutcome(
-  argumentsList: string[],
-): Promise<ListSummary> {
+async function collectListCommandOutcome(argumentsList: string[]): Promise<ListSummary> {
   return await collectCommandOutcome<ListSummary>(
     () => runListCommand(argumentsList),
     () => ({ status: 'resolved' }),

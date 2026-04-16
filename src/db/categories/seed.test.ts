@@ -14,9 +14,7 @@ describe('seedCategories', () => {
 
   it('inserts all 24 categories', () => {
     seedCategories(db)
-    const row = db
-      .query<{ count: number }, []>('SELECT COUNT(*) as count FROM categories')
-      .get()
+    const row = db.query<{ count: number }, []>('SELECT COUNT(*) as count FROM categories').get()
     expect(row?.count).toBe(24)
   })
 
@@ -36,20 +34,14 @@ describe('seedCategories', () => {
 
   it('L2 categories have valid parent_id', () => {
     seedCategories(db)
-    const rootIds = CATEGORIES.filter(
-      (category) => category.parentId === null,
-    ).map((category) => category.id)
+    const rootIds = CATEGORIES.filter((category) => category.parentId === null).map((category) => category.id)
     const l2Categories = CATEGORIES.filter(
-      (category) =>
-        category.parentId !== null && rootIds.includes(category.parentId),
+      (category) => category.parentId !== null && rootIds.includes(category.parentId),
     )
 
     for (const category of l2Categories) {
       const row = db
-        .query<
-          { parent_id: string },
-          [string]
-        >('SELECT parent_id FROM categories WHERE id = ?')
+        .query<{ parent_id: string }, [string]>('SELECT parent_id FROM categories WHERE id = ?')
         .get(category.id)
       expect(row?.parent_id).toBe(category.parentId ?? undefined)
     }
@@ -57,27 +49,17 @@ describe('seedCategories', () => {
 
   it('L3 categories have valid parent_id', () => {
     seedCategories(db)
-    const rootIds = new Set(
-      CATEGORIES.filter((category) => category.parentId === null).map(
+    const rootIds = new Set(CATEGORIES.filter((category) => category.parentId === null).map((category) => category.id))
+    const l2Ids = new Set(
+      CATEGORIES.filter((category) => category.parentId !== null && rootIds.has(category.parentId)).map(
         (category) => category.id,
       ),
     )
-    const l2Ids = new Set(
-      CATEGORIES.filter(
-        (category) =>
-          category.parentId !== null && rootIds.has(category.parentId),
-      ).map((category) => category.id),
-    )
-    const l3Categories = CATEGORIES.filter(
-      (category) => category.parentId !== null && l2Ids.has(category.parentId),
-    )
+    const l3Categories = CATEGORIES.filter((category) => category.parentId !== null && l2Ids.has(category.parentId))
 
     for (const category of l3Categories) {
       const row = db
-        .query<
-          { parent_id: string },
-          [string]
-        >('SELECT parent_id FROM categories WHERE id = ?')
+        .query<{ parent_id: string }, [string]>('SELECT parent_id FROM categories WHERE id = ?')
         .get(category.id)
       expect(row?.parent_id).toBe(category.parentId ?? undefined)
     }
@@ -85,9 +67,7 @@ describe('seedCategories', () => {
 
   it('slugs are unique', () => {
     seedCategories(db)
-    const rows = db
-      .query<{ slug: string }, []>('SELECT slug FROM categories')
-      .all()
+    const rows = db.query<{ slug: string }, []>('SELECT slug FROM categories').all()
     const slugs = rows.map((row) => row.slug)
     const uniqueSlugs = new Set(slugs)
     expect(uniqueSlugs.size).toBe(slugs.length)
@@ -96,9 +76,7 @@ describe('seedCategories', () => {
   it('is idempotent (INSERT OR IGNORE)', () => {
     seedCategories(db)
     seedCategories(db)
-    const row = db
-      .query<{ count: number }, []>('SELECT COUNT(*) as count FROM categories')
-      .get()
+    const row = db.query<{ count: number }, []>('SELECT COUNT(*) as count FROM categories').get()
     expect(row?.count).toBe(24)
   })
 })

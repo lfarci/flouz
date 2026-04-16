@@ -54,10 +54,7 @@ export interface TransactionCategorySuggestion {
   suggestedAt: string
 }
 
-export type NewTransactionCategorySuggestion = Omit<
-  TransactionCategorySuggestion,
-  'suggestedAt'
->
+export type NewTransactionCategorySuggestion = Omit<TransactionCategorySuggestion, 'suggestedAt'>
 
 export interface CategorizeTransactionsFilters {
   from?: string

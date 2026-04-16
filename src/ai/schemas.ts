@@ -8,6 +8,4 @@ export const TransactionCategorizationResultSchema = z.object({
   confidence: z.number().min(0).max(1),
 })
 
-export type TransactionCategorizationResult = z.infer<
-  typeof TransactionCategorizationResultSchema
->
+export type TransactionCategorizationResult = z.infer<typeof TransactionCategorizationResultSchema>

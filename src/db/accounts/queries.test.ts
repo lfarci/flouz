@@ -1,12 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { insertAccount } from './mutations'
-import {
-  countAccounts,
-  getAccountByKey,
-  getAccounts,
-  getFirstAccount,
-} from './queries'
+import { countAccounts, getAccountByKey, getAccounts, getFirstAccount } from './queries'
 import { createAccountsTable } from './schema'
 
 let db: Database
@@ -31,10 +26,7 @@ describe('getAccounts', () => {
 
     const accounts = getAccounts(db)
 
-    expect(accounts.map((account) => account.key)).toEqual([
-      'checking',
-      'wallet',
-    ])
+    expect(accounts.map((account) => account.key)).toEqual(['checking', 'wallet'])
   })
 })
 

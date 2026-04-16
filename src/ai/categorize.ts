@@ -25,9 +25,7 @@ export async function categorizeTransaction(
 
   const validCategoryIds = new Set(categories.map((category) => category.id))
   if (!validCategoryIds.has(result.output.categoryId)) {
-    throw new Error(
-      `AI returned invalid categoryId: ${result.output.categoryId}`,
-    )
+    throw new Error(`AI returned invalid categoryId: ${result.output.categoryId}`)
   }
 
   return {

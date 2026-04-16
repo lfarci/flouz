@@ -1,12 +1,4 @@
-import {
-  mock,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from 'bun:test'
+import { mock, afterEach, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 import {
   collectCommandOutcome,
   createCommandTestDatabase,
@@ -113,9 +105,7 @@ afterEach(() => {
   restoreProcessExit(originalProcessExit)
 })
 
-type ImportOutcome =
-  | { status: 'resolved' }
-  | { status: 'rejected'; errorCode: number | undefined }
+type ImportOutcome = { status: 'resolved' } | { status: 'rejected'; errorCode: number | undefined }
 
 describe('importAction — non-existent path', () => {
   it('logs an error and exits with code 1 for a missing path', async () => {

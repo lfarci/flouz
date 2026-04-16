@@ -1,12 +1,4 @@
-import {
-  mock,
-  spyOn,
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-} from 'bun:test'
+import { mock, spyOn, describe, it, expect, beforeEach, afterEach } from 'bun:test'
 import * as configModule from '@/config'
 
 const chatMock = mock(() => 'mock-chat-model')
@@ -16,12 +8,7 @@ void mock.module('@ai-sdk/openai', () => ({
   createOpenAI: createOpenAIMock,
 }))
 
-import {
-  resolveModelName,
-  getModel,
-  DEFAULT_MODEL,
-  DEFAULT_BASE_URL,
-} from '@/ai/client'
+import { resolveModelName, getModel, DEFAULT_MODEL, DEFAULT_BASE_URL } from '@/ai/client'
 
 const originalAiModel = Bun.env.AI_MODEL
 const originalGithubToken = Bun.env.GITHUB_TOKEN
@@ -40,8 +27,7 @@ beforeEach(() => {
 afterEach(() => {
   if (originalAiModel !== undefined) Bun.env.AI_MODEL = originalAiModel
   else delete Bun.env.AI_MODEL
-  if (originalGithubToken !== undefined)
-    Bun.env.GITHUB_TOKEN = originalGithubToken
+  if (originalGithubToken !== undefined) Bun.env.GITHUB_TOKEN = originalGithubToken
   else delete Bun.env.GITHUB_TOKEN
   if (originalAiBaseUrl !== undefined) Bun.env.AI_BASE_URL = originalAiBaseUrl
   else delete Bun.env.AI_BASE_URL

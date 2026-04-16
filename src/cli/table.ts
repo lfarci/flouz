@@ -50,22 +50,15 @@ export function renderCliTable(config: TableConfig): string[] {
       truncate: 24,
     },
     columns: Object.fromEntries(
-      config.columns.map((column, index) => [
-        index,
-        buildColumnConfig(column, columnWidths[index]),
-      ]),
+      config.columns.map((column, index) => [index, buildColumnConfig(column, columnWidths[index])]),
     ),
-    drawHorizontalLine: (index, size) =>
-      index === 0 || index === 1 || index === size,
+    drawHorizontalLine: (index, size) => index === 0 || index === 1 || index === size,
   }
 
   return table(data, tableConfig).trimEnd().split('\n')
 }
 
-function buildColumnConfig(
-  column: TableColumn,
-  width: number,
-): TableColumnConfig {
+function buildColumnConfig(column: TableColumn, width: number): TableColumnConfig {
   const config = {
     alignment: column.alignment ?? 'left',
     width,
@@ -80,16 +73,11 @@ function buildColumnConfig(
   }
 }
 
-function fitColumnWidths(
-  columns: TableColumn[],
-  terminalWidth: number | undefined,
-): number[] {
+function fitColumnWidths(columns: TableColumn[], terminalWidth: number | undefined): number[] {
   const fallbackWidth = 100
   const availableWidth = terminalWidth ?? fallbackWidth
   const widths = columns.map((column) => column.width)
-  const minimumWidths = columns.map(
-    (column) => column.minWidth ?? Math.min(column.width, 8),
-  )
+  const minimumWidths = columns.map((column) => column.minWidth ?? Math.min(column.width, 8))
   const overflow = totalTableWidth(widths) - availableWidth
 
   if (overflow <= 0) return widths
@@ -105,10 +93,7 @@ function fitColumnWidths(
   for (const column of shrinkOrder) {
     if (remainingOverflow <= 0) break
 
-    const nextWidth = Math.max(
-      minimumWidths[column.index],
-      widths[column.index] - remainingOverflow,
-    )
+    const nextWidth = Math.max(minimumWidths[column.index], widths[column.index] - remainingOverflow)
     remainingOverflow -= widths[column.index] - nextWidth
     widths[column.index] = nextWidth
   }

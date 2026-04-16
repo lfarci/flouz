@@ -12,9 +12,7 @@ interface AccountRow {
 
 export function getAccounts(db: Database): Account[] {
   const rows = db
-    .prepare(
-      'SELECT id, key, company, name, description, iban FROM accounts ORDER BY key ASC',
-    )
+    .prepare('SELECT id, key, company, name, description, iban FROM accounts ORDER BY key ASC')
     .all() as AccountRow[]
 
   return rows.map(toAccount)
@@ -22,23 +20,16 @@ export function getAccounts(db: Database): Account[] {
 
 export function getFirstAccount(db: Database): Account | undefined {
   const row = db
-    .prepare(
-      'SELECT id, key, company, name, description, iban FROM accounts ORDER BY id ASC LIMIT 1',
-    )
+    .prepare('SELECT id, key, company, name, description, iban FROM accounts ORDER BY id ASC LIMIT 1')
     .get() as AccountRow | null
 
   if (row === null) return undefined
   return toAccount(row)
 }
 
-export function getAccountByKey(
-  db: Database,
-  key: string,
-): Account | undefined {
+export function getAccountByKey(db: Database, key: string): Account | undefined {
   const row = db
-    .prepare(
-      'SELECT id, key, company, name, description, iban FROM accounts WHERE key = ?',
-    )
+    .prepare('SELECT id, key, company, name, description, iban FROM accounts WHERE key = ?')
     .get(key) as AccountRow | null
 
   if (row === null) return undefined

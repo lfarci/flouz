@@ -1,12 +1,4 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-} from 'bun:test'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { type Database } from 'bun:sqlite'
 import {
   collectCommandOutcome,
@@ -54,15 +46,11 @@ interface DeleteSummary {
 
 type DeleteOutcomeFactory = () => DeleteSummary
 
-type RejectedDeleteOutcomeFactory = (
-  errorCode: number | undefined,
-) => DeleteSummary
+type RejectedDeleteOutcomeFactory = (errorCode: number | undefined) => DeleteSummary
 
 type LogMessage = [message?: string, ...details: unknown[]]
 
-function getLoggedMessages(logMock: {
-  mock: { calls: LogMessage[] }
-}): string[] {
+function getLoggedMessages(logMock: { mock: { calls: LogMessage[] } }): string[] {
   return logMock.mock.calls.flatMap((call) => {
     const [message] = call
     return typeof message === 'string' ? [message] : []
@@ -81,10 +69,7 @@ function createInMemoryDatabase() {
 }
 
 async function runDeleteCommand(argumentsList: string[]): Promise<void> {
-  await runCommandSilently(
-    createDeleteAccountsCommand('default.db'),
-    argumentsList,
-  )
+  await runCommandSilently(createDeleteAccountsCommand('default.db'), argumentsList)
 }
 
 async function collectDeleteCommandOutcome(
@@ -92,8 +77,7 @@ async function collectDeleteCommandOutcome(
   argumentsList: string[],
   accountKey?: string,
 ): Promise<DeleteSummary> {
-  const account = () =>
-    accountKey === undefined ? undefined : getAccountByKey(database, accountKey)
+  const account = () => (accountKey === undefined ? undefined : getAccountByKey(database, accountKey))
 
   return await collectCommandOutcome(
     () => runDeleteCommand(argumentsList),
@@ -224,11 +208,7 @@ describe('deleteAccountAction', () => {
       importedAt: '2026-01-15T10:00:00.000Z',
     })
 
-    const summary = await collectDeleteCommandOutcome(
-      database,
-      ['checking'],
-      'checking',
-    )
+    const summary = await collectDeleteCommandOutcome(database, ['checking'], 'checking')
 
     expect({
       summary,
@@ -246,9 +226,7 @@ describe('deleteAccountAction', () => {
         },
         accountCount: 1,
       },
-      errorMessages: [
-        'Cannot delete account checking: it is referenced by transactions.',
-      ],
+      errorMessages: ['Cannot delete account checking: it is referenced by transactions.'],
       closeCalls: 1,
     })
   })
@@ -262,11 +240,7 @@ describe('deleteAccountAction', () => {
       name: 'Main account',
     })
 
-    const summary = await collectDeleteCommandOutcome(
-      database,
-      ['checking'],
-      'checking',
-    )
+    const summary = await collectDeleteCommandOutcome(database, ['checking'], 'checking')
 
     expect({
       summary,
@@ -292,11 +266,7 @@ describe('deleteAccountAction', () => {
       name: 'Main account',
     })
 
-    const summary = await collectDeleteCommandOutcome(
-      database,
-      ['  checking  '],
-      'checking',
-    )
+    const summary = await collectDeleteCommandOutcome(database, ['  checking  '], 'checking')
 
     expect(summary).toEqual({
       status: 'resolved',

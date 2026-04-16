@@ -32,9 +32,7 @@ function deleteAccountAction(key: string, options: DeleteAccountOptions): void {
     }
 
     if (hasTransactionsForAccount(database, account.id)) {
-      throw new Error(
-        `Cannot delete account ${normalizedKey}: it is referenced by transactions.`,
-      )
+      throw new Error(`Cannot delete account ${normalizedKey}: it is referenced by transactions.`)
     }
 
     deleteAccountByKey(database, normalizedKey)

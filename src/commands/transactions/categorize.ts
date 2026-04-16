@@ -34,9 +34,7 @@ function parseLimit(limit: string | undefined): number | undefined {
   return parsedLimit
 }
 
-function toCategorizeTransactionsFilters(
-  options: CategorizeOptions,
-): CategorizeTransactionsFilters {
+function toCategorizeTransactionsFilters(options: CategorizeOptions): CategorizeTransactionsFilters {
   return {
     from: options.from,
     to: options.to,
@@ -45,18 +43,12 @@ function toCategorizeTransactionsFilters(
   }
 }
 
-function loadEligibleTransactions(
-  db: Database,
-  options: CategorizeOptions,
-): Transaction[] {
+function loadEligibleTransactions(db: Database, options: CategorizeOptions): Transaction[] {
   const filters = toCategorizeTransactionsFilters(options)
   return getTransactionsMissingCategoryForCategorization(db, filters)
 }
 
-async function categorizeTransactions(
-  db: Database,
-  transactions: Transaction[],
-): Promise<CategorizeResult> {
+async function categorizeTransactions(db: Database, transactions: Transaction[]): Promise<CategorizeResult> {
   const categories = getCategories(db)
 
   if (categories.length === 0) {
@@ -74,9 +66,7 @@ async function categorizeTransactions(
   for (const transaction of transactions) {
     if (transaction.id === undefined) {
       skipped++
-      categorizationSpinner.message(
-        `Categorizing ${suggested + skipped} / ${transactions.length}`,
-      )
+      categorizationSpinner.message(`Categorizing ${suggested + skipped} / ${transactions.length}`)
       continue
     }
 
@@ -94,14 +84,10 @@ async function categorizeTransactions(
       firstError ??= error instanceof Error ? error.message : String(error)
     }
 
-    categorizationSpinner.message(
-      `Categorizing ${suggested + skipped} / ${transactions.length}`,
-    )
+    categorizationSpinner.message(`Categorizing ${suggested + skipped} / ${transactions.length}`)
   }
 
-  categorizationSpinner.stop(
-    `Categorized ${suggested} / ${transactions.length}`,
-  )
+  categorizationSpinner.stop(`Categorized ${suggested} / ${transactions.length}`)
   return { suggested, skipped, firstError }
 }
 
@@ -130,10 +116,7 @@ async function categorizeAction(options: CategorizeOptions): Promise<void> {
       return
     }
 
-    const { suggested, firstError } = await categorizeTransactions(
-      database,
-      transactions,
-    )
+    const { suggested, firstError } = await categorizeTransactions(database, transactions)
 
     process.removeListener('SIGINT', onCancel)
     database.close()
@@ -154,9 +137,7 @@ async function categorizeAction(options: CategorizeOptions): Promise<void> {
 
 export function createCategorizeCommand(defaultDb: string): Command {
   return new Command('categorize')
-    .description(
-      'AI-categorize uncategorized transactions without an existing suggestion',
-    )
+    .description('AI-categorize uncategorized transactions without an existing suggestion')
     .option('-f, --from <date>', 'filter from date (YYYY-MM-DD)')
     .option('-t, --to <date>', 'filter to date (YYYY-MM-DD)')
     .option('-s, --search <text>', 'search counterparty')

@@ -21,10 +21,7 @@ interface InsertResult {
   allErrors: (ParseError & { file: string })[]
 }
 
-export function resolveImportedTransaction(
-  db: Database,
-  transaction: ImportedTransaction,
-): NewTransaction {
+export function resolveImportedTransaction(db: Database, transaction: ImportedTransaction): NewTransaction {
   const accountId = resolveAccountId(db, transaction.accountKey)
   return {
     date: transaction.date,
@@ -43,9 +40,7 @@ export function resolveImportedTransaction(
 export async function findCsvFiles(dirPath: string): Promise<string[]> {
   const entries = await readdir(dirPath, { withFileTypes: true })
   return entries
-    .filter(
-      (entry) => entry.isFile() && extname(entry.name).toLowerCase() === '.csv',
-    )
+    .filter((entry) => entry.isFile() && extname(entry.name).toLowerCase() === '.csv')
     .map((entry) => join(dirPath, entry.name))
 }
 
@@ -57,10 +52,7 @@ async function resolveCsvFiles(path: string): Promise<string[] | null> {
 }
 
 async function parseAllFiles(files: string[]): Promise<ParsedFile[]> {
-  const label =
-    files.length === 1
-      ? `Reading ${basename(files[0])}`
-      : `Reading ${files.length} files`
+  const label = files.length === 1 ? `Reading ${basename(files[0])}` : `Reading ${files.length} files`
   const fileSpinner = spinner()
   fileSpinner.start(label)
   const parsed: ParsedFile[] = []
@@ -70,24 +62,14 @@ async function parseAllFiles(files: string[]): Promise<ParsedFile[]> {
     const { transactions, errors } = parseCsv(content, file)
     parsed.push({ file, transactions, errors })
   }
-  const totalRows = parsed.reduce(
-    (sum, { transactions }) => sum + transactions.length,
-    0,
-  )
-  const fileLabel =
-    files.length === 1 ? basename(files[0]) : `${files.length} files`
+  const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
+  const fileLabel = files.length === 1 ? basename(files[0]) : `${files.length} files`
   fileSpinner.stop(`Importing ${fileLabel} (${totalRows} rows)`)
   return parsed
 }
 
-async function insertAllTransactions(
-  db: Database,
-  parsed: ParsedFile[],
-): Promise<InsertResult> {
-  const totalRows = parsed.reduce(
-    (sum, { transactions }) => sum + transactions.length,
-    0,
-  )
+async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promise<InsertResult> {
+  const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
   const insertProgress = progress({
     max: Math.max(1, totalRows),
     style: 'heavy',
@@ -99,18 +81,12 @@ async function insertAllTransactions(
     for (const { file, transactions, errors } of parsed) {
       db.transaction(() => {
         for (const transaction of transactions) {
-          const resolvedTransaction = resolveImportedTransaction(
-            db,
-            transaction,
-          )
+          const resolvedTransaction = resolveImportedTransaction(db, transaction)
           insertTransaction(db, resolvedTransaction)
         }
       })()
       totalImported += transactions.length
-      insertProgress.advance(
-        transactions.length,
-        `${basename(file)} — ${totalImported} / ${totalRows}`,
-      )
+      insertProgress.advance(transactions.length, `${basename(file)} — ${totalImported} / ${totalRows}`)
       await Bun.sleep(0)
       allErrors.push(...errors.map((parseError) => ({ ...parseError, file })))
     }
@@ -122,10 +98,7 @@ async function insertAllTransactions(
   return { totalImported, allErrors }
 }
 
-function resolveAccountId(
-  db: Database,
-  accountKey: string | undefined,
-): number | undefined {
+function resolveAccountId(db: Database, accountKey: string | undefined): number | undefined {
   if (accountKey === undefined) return undefined
 
   const normalizedKey = normalizeAccountKey(accountKey)
@@ -134,27 +107,18 @@ function resolveAccountId(
   const account = getAccountByKey(db, normalizedKey)
   if (account !== undefined) return account.id
 
-  throw new Error(
-    `Unknown account key: ${normalizedKey}. Create it first with \`flouz accounts add\`.`,
-  )
+  throw new Error(`Unknown account key: ${normalizedKey}. Create it first with \`flouz accounts add\`.`)
 }
 
-function reportResults(
-  totalImported: number,
-  allErrors: (ParseError & { file: string })[],
-): void {
+function reportResults(totalImported: number, allErrors: (ParseError & { file: string })[]): void {
   for (const { file, row, message } of allErrors) {
     log.warn(`${file} line ${row}: ${message}`)
   }
-  const errorSuffix =
-    allErrors.length > 0 ? `, ${allErrors.length} invalid row(s) skipped` : ''
+  const errorSuffix = allErrors.length > 0 ? `, ${allErrors.length} invalid row(s) skipped` : ''
   outro(`✓ ${totalImported} imported${errorSuffix}`)
 }
 
-async function importAction(
-  path: string,
-  options: { db: string },
-): Promise<void> {
+async function importAction(path: string, options: { db: string }): Promise<void> {
   intro('flouz transactions import')
 
   const files = await resolveCsvFiles(path)
@@ -182,10 +146,7 @@ async function importAction(
 
   try {
     const parsed = await parseAllFiles(files)
-    const { totalImported, allErrors } = await insertAllTransactions(
-      database,
-      parsed,
-    )
+    const { totalImported, allErrors } = await insertAllTransactions(database, parsed)
     process.removeListener('SIGINT', onCancel)
     database.close()
     reportResults(totalImported, allErrors)
@@ -199,9 +160,7 @@ async function importAction(
 
 export function createImportCommand(defaultDb: string): Command {
   return new Command('import')
-    .description(
-      'Import transactions from a CSV file or directory of CSV files',
-    )
+    .description('Import transactions from a CSV file or directory of CSV files')
     .argument('<path>', 'path to CSV file or directory')
     .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(importAction)

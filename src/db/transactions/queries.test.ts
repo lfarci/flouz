@@ -79,17 +79,13 @@ describe('getTransactions', () => {
   it('filters by from date', () => {
     const transactions = getTransactions(db, { from: '2026-01-15' })
     expect(transactions.length).toBe(2)
-    expect(
-      transactions.every((transaction) => transaction.date >= '2026-01-15'),
-    ).toBe(true)
+    expect(transactions.every((transaction) => transaction.date >= '2026-01-15')).toBe(true)
   })
 
   it('filters by to date', () => {
     const transactions = getTransactions(db, { to: '2026-01-25' })
     expect(transactions.length).toBe(2)
-    expect(
-      transactions.every((transaction) => transaction.date <= '2026-01-25'),
-    ).toBe(true)
+    expect(transactions.every((transaction) => transaction.date <= '2026-01-25')).toBe(true)
   })
 
   it('filters by search (counterparty LIKE)', () => {
@@ -192,9 +188,7 @@ describe('getTransactions with uncategorized filter', () => {
       date: '2026-02-01',
     })
     const allTransactions = getTransactions(db)
-    const categorized = allTransactions.find(
-      (t) => t.counterparty === 'Has Category',
-    )!
+    const categorized = allTransactions.find((t) => t.counterparty === 'Has Category')!
     updateCategory(db, categorized.id!, CATEGORY_ID)
   })
 

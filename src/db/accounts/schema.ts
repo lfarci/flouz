@@ -18,7 +18,5 @@ export function createAccountsTable(db: Database): void {
 }
 
 function createAccountsKeyIndex(db: Database): void {
-  db.run(
-    `CREATE UNIQUE INDEX IF NOT EXISTS ${ACCOUNTS_KEY_INDEX} ON accounts (key)`,
-  )
+  db.run(`CREATE UNIQUE INDEX IF NOT EXISTS ${ACCOUNTS_KEY_INDEX} ON accounts (key)`)
 }

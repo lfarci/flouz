@@ -1,12 +1,4 @@
-import {
-  mock,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from 'bun:test'
+import { mock, afterEach, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 import type { Database } from 'bun:sqlite'
 import {
   collectCommandOutcome,
@@ -91,10 +83,7 @@ function createInMemoryDatabase() {
   })
 }
 
-async function runCategorizeCommand(
-  database: Database,
-  argumentsList: string[],
-): Promise<void> {
+async function runCategorizeCommand(database: Database, argumentsList: string[]): Promise<void> {
   openDatabaseMock.mockReturnValue(database)
   await runCommandSilently(createCategorizeCommand('default.db'), argumentsList)
 }
@@ -134,16 +123,12 @@ describe('createCategorizeCommand', () => {
 
   it('registers the --from option', () => {
     const command = createCategorizeCommand('flouz.db')
-    expect(command.options.some((option) => option.long === '--from')).toBe(
-      true,
-    )
+    expect(command.options.some((option) => option.long === '--from')).toBe(true)
   })
 
   it('registers the --limit option', () => {
     const command = createCategorizeCommand('flouz.db')
-    expect(command.options.some((option) => option.long === '--limit')).toBe(
-      true,
-    )
+    expect(command.options.some((option) => option.long === '--limit')).toBe(true)
   })
 
   it('registers the --db option with the default path', () => {
@@ -168,9 +153,7 @@ describe('categorizeAction — no eligible transactions', () => {
   })
 })
 
-type CategorizeOutcome =
-  | { status: 'resolved' }
-  | { status: 'rejected'; errorCode: number | undefined }
+type CategorizeOutcome = { status: 'resolved' } | { status: 'rejected'; errorCode: number | undefined }
 
 describe('categorizeAction — with eligible transactions', () => {
   it('categorizes eligible transactions and reports the count', async () => {
@@ -224,11 +207,7 @@ describe('categorizeAction — invalid --limit option', () => {
     openDatabaseMock.mockReturnValue(handle)
 
     const summary = await collectCommandOutcome<CategorizeOutcome>(
-      () =>
-        runCommandSilently(createCategorizeCommand('default.db'), [
-          '--limit',
-          'abc',
-        ]),
+      () => runCommandSilently(createCategorizeCommand('default.db'), ['--limit', 'abc']),
       () => ({ status: 'resolved' }),
       (errorCode) => ({ status: 'rejected', errorCode }),
     )

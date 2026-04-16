@@ -2,32 +2,22 @@ import { Command } from 'commander'
 import { log } from '@clack/prompts'
 import { readConfig, writeConfig } from '@/config'
 
-const SUPPORTED_KEYS = [
-  'db-path',
-  'github-token',
-  'ai-model',
-  'ai-base-url',
-] as const
+const SUPPORTED_KEYS = ['db-path', 'github-token', 'ai-model', 'ai-base-url'] as const
 
 type SupportedKey = (typeof SUPPORTED_KEYS)[number]
 
 const KEY_DESCRIPTIONS: Record<SupportedKey, string> = {
-  'db-path':
-    'Path to the SQLite database file (default: ~/.config/flouz/flouz.db)',
-  'github-token':
-    'GitHub personal access token — required for AI categorization',
+  'db-path': 'Path to the SQLite database file (default: ~/.config/flouz/flouz.db)',
+  'github-token': 'GitHub personal access token — required for AI categorization',
   'ai-model': 'AI model name to use (default: openai/gpt-4o-mini)',
-  'ai-base-url':
-    'AI provider base URL (default: https://models.github.ai/inference)',
+  'ai-base-url': 'AI provider base URL (default: https://models.github.ai/inference)',
 }
 
 export function isSupportedKey(key: string): key is SupportedKey {
   return SUPPORTED_KEYS.includes(key as SupportedKey)
 }
 
-export function toConfigFieldName(
-  key: SupportedKey,
-): 'dbPath' | 'githubToken' | 'aiModel' | 'aiBaseUrl' {
+export function toConfigFieldName(key: SupportedKey): 'dbPath' | 'githubToken' | 'aiModel' | 'aiBaseUrl' {
   const keyMap = {
     'db-path': 'dbPath',
     'github-token': 'githubToken',
@@ -63,10 +53,7 @@ async function getConfigAction(key: string | undefined): Promise<void> {
     if (key === undefined) {
       const lines = [
         formatConfigValueLine('db-path', config.dbPath),
-        formatConfigValueLine(
-          'github-token',
-          config.githubToken ? '***' : undefined,
-        ),
+        formatConfigValueLine('github-token', config.githubToken ? '***' : undefined),
         formatConfigValueLine('ai-model', config.aiModel),
         formatConfigValueLine('ai-base-url', config.aiBaseUrl),
       ]
@@ -75,29 +62,19 @@ async function getConfigAction(key: string | undefined): Promise<void> {
     }
 
     const supportedKey = validateSupportedKey(key)
-    log.info(
-      formatConfigValueLine(
-        supportedKey,
-        config[toConfigFieldName(supportedKey)],
-      ),
-    )
+    log.info(formatConfigValueLine(supportedKey, config[toConfigFieldName(supportedKey)]))
   } catch (error) {
     log.error(error instanceof Error ? error.message : String(error))
     process.exit(1)
   }
 }
 
-export function formatConfigValueLine(
-  key: SupportedKey,
-  value: string | undefined,
-): string {
+export function formatConfigValueLine(key: SupportedKey, value: string | undefined): string {
   return `${key} = ${value ?? '(not set)'}`
 }
 
 function buildKeysHelpText(): string {
-  const lines = SUPPORTED_KEYS.map(
-    (key) => `  ${key.padEnd(16)}${KEY_DESCRIPTIONS[key]}`,
-  )
+  const lines = SUPPORTED_KEYS.map((key) => `  ${key.padEnd(16)}${KEY_DESCRIPTIONS[key]}`)
   return `\nAvailable keys:\n${lines.join('\n')}`
 }
 
@@ -119,9 +96,7 @@ function createGetConfigCommand(): Command {
 }
 
 export function createConfigCommand(): Command {
-  const configCommand = new Command('config').description(
-    'Manage flouz configuration',
-  )
+  const configCommand = new Command('config').description('Manage flouz configuration')
   configCommand.addCommand(createSetConfigCommand())
   configCommand.addCommand(createGetConfigCommand())
   return configCommand

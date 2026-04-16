@@ -36,9 +36,7 @@ describe('insertTransaction', () => {
   it('stores the computed hash', () => {
     insertTransaction(db, fakeTransaction)
 
-    const row = db
-      .query<{ hash: string }, []>('SELECT hash FROM transactions LIMIT 1')
-      .get()
+    const row = db.query<{ hash: string }, []>('SELECT hash FROM transactions LIMIT 1').get()
 
     expect(row?.hash).toBe(computeTransactionHash(fakeTransaction))
   })

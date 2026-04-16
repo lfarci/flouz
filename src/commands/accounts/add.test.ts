@@ -1,12 +1,4 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-} from 'bun:test'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { type Database } from 'bun:sqlite'
 import {
   collectCommandOutcome,
@@ -51,9 +43,7 @@ interface ActionSummary {
 
 type ActionOutcomeFactory = () => ActionSummary
 
-type RejectedActionOutcomeFactory = (
-  errorCode: number | undefined,
-) => ActionSummary
+type RejectedActionOutcomeFactory = (errorCode: number | undefined) => ActionSummary
 
 let createAddAccountsCommand: typeof CreateAddAccountsCommand
 let originalProcessExit: typeof process.exit
@@ -65,10 +55,7 @@ function createInMemoryDatabase() {
 }
 
 async function runAddCommand(argumentsList: string[]): Promise<void> {
-  await runCommandSilently(
-    createAddAccountsCommand('default.db'),
-    argumentsList,
-  )
+  await runCommandSilently(createAddAccountsCommand('default.db'), argumentsList)
 }
 
 async function collectAddCommandOutcome(
@@ -76,8 +63,7 @@ async function collectAddCommandOutcome(
   argumentsList: string[],
   accountKey?: string,
 ): Promise<ActionSummary> {
-  const account = () =>
-    accountKey === undefined ? undefined : getAccountByKey(database, accountKey)
+  const account = () => (accountKey === undefined ? undefined : getAccountByKey(database, accountKey))
 
   return await collectCommandOutcome(
     () => runAddCommand(argumentsList),
@@ -188,9 +174,7 @@ describe('addAccountAction', () => {
   })
 
   it('rejects a missing company argument', async () => {
-    await expect(
-      runAddCommand(['checking', 'Main account']),
-    ).rejects.toMatchObject({
+    await expect(runAddCommand(['checking', 'Main account'])).rejects.toMatchObject({
       code: 1,
       message: 'process.exit(1)',
     })
@@ -200,11 +184,7 @@ describe('addAccountAction', () => {
     const { database, handle } = createInMemoryDatabase()
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['checking', 'Main account', 'Provider One'],
-      'checking',
-    )
+    const summary = await collectAddCommandOutcome(database, ['checking', 'Main account', 'Provider One'], 'checking')
 
     expect(summary).toEqual({
       status: 'resolved',
@@ -287,11 +267,7 @@ describe('addAccountAction', () => {
     })
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['checking', 'Other account', 'Provider Two'],
-      'checking',
-    )
+    const summary = await collectAddCommandOutcome(database, ['checking', 'Other account', 'Provider Two'], 'checking')
 
     expect(summary).toEqual({
       status: 'rejected',
@@ -338,11 +314,7 @@ describe('addAccountAction', () => {
     const { database, handle } = createInMemoryDatabase()
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['   ', 'Main account', 'Provider One'],
-      'checking',
-    )
+    const summary = await collectAddCommandOutcome(database, ['   ', 'Main account', 'Provider One'], 'checking')
 
     expect(summary).toEqual({
       status: 'rejected',
@@ -356,11 +328,7 @@ describe('addAccountAction', () => {
     const { database, handle } = createInMemoryDatabase()
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['checking', '   ', 'Provider One'],
-      'checking',
-    )
+    const summary = await collectAddCommandOutcome(database, ['checking', '   ', 'Provider One'], 'checking')
 
     expect(summary).toEqual({
       status: 'rejected',
@@ -374,11 +342,7 @@ describe('addAccountAction', () => {
     const { database, handle } = createInMemoryDatabase()
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['checking', 'Main account', '   '],
-      'checking',
-    )
+    const summary = await collectAddCommandOutcome(database, ['checking', 'Main account', '   '], 'checking')
 
     expect(summary).toEqual({
       status: 'rejected',
@@ -394,13 +358,7 @@ describe('addAccountAction', () => {
 
     const summary = await collectAddCommandOutcome(
       database,
-      [
-        'savings',
-        'Savings account',
-        'Provider One',
-        '--description',
-        '  Employer meal card  ',
-      ],
+      ['savings', 'Savings account', 'Provider One', '--description', '  Employer meal card  '],
       'savings',
     )
 
@@ -448,13 +406,7 @@ describe('addAccountAction', () => {
 
     const summary = await collectAddCommandOutcome(
       database,
-      [
-        'wallet',
-        'Wallet account',
-        'Provider Two',
-        '--iban',
-        '  BE00 0000 0000 0000  ',
-      ],
+      ['wallet', 'Wallet account', 'Provider Two', '--iban', '  BE00 0000 0000 0000  '],
       'wallet',
     )
 

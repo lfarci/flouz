@@ -33,12 +33,7 @@ function normalizeOptionalField(value?: string): string | undefined {
   return normalizedValue
 }
 
-function addAccountAction(
-  key: string,
-  name: string,
-  company: string,
-  options: AddAccountOptions,
-): void {
+function addAccountAction(key: string, name: string, company: string, options: AddAccountOptions): void {
   const database = openDatabase(resolve(options.db))
 
   try {

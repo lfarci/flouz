@@ -39,9 +39,7 @@ describe('findCategoryId', () => {
   it('throws when the category slug is unknown', () => {
     const categories = getCategories(db)
 
-    expect(() => findCategoryId(categories, 'missing')).toThrow(
-      'Unknown category slug: missing',
-    )
+    expect(() => findCategoryId(categories, 'missing')).toThrow('Unknown category slug: missing')
   })
 })
 
@@ -89,9 +87,7 @@ describe('parseOutputFormat', () => {
   })
 
   it('throws on unsupported formats', () => {
-    expect(() => parseOutputFormat('yaml')).toThrow(
-      'Invalid output format: yaml. Use table, csv, or json.',
-    )
+    expect(() => parseOutputFormat('yaml')).toThrow('Invalid output format: yaml. Use table, csv, or json.')
   })
 })
 
@@ -188,9 +184,7 @@ describe('getTransactions uncategorized filter (used by --uncategorized flag)', 
       date: '2026-02-01',
     })
     const allTransactions = getTransactions(db)
-    const categorized = allTransactions.find(
-      (t) => t.counterparty === 'Has Category',
-    )!
+    const categorized = allTransactions.find((t) => t.counterparty === 'Has Category')!
     updateCategory(db, categorized.id!, CATEGORY_ID)
   })
 
@@ -219,15 +213,7 @@ describe('createListCommand --category and --uncategorized conflict', () => {
 
     let exited = false
     try {
-      await command.parseAsync([
-        'node',
-        'list',
-        '--category',
-        'groceries',
-        '--uncategorized',
-        '--db',
-        ':memory:',
-      ])
+      await command.parseAsync(['node', 'list', '--category', 'groceries', '--uncategorized', '--db', ':memory:'])
     } catch {
       exited = true
     }

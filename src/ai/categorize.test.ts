@@ -69,8 +69,7 @@ afterEach(() => {
   else delete Bun.env.AI_MODEL
   if (originalAiBaseUrl !== undefined) Bun.env.AI_BASE_URL = originalAiBaseUrl
   else delete Bun.env.AI_BASE_URL
-  if (originalGithubToken !== undefined)
-    Bun.env.GITHUB_TOKEN = originalGithubToken
+  if (originalGithubToken !== undefined) Bun.env.GITHUB_TOKEN = originalGithubToken
   else delete Bun.env.GITHUB_TOKEN
 })
 
@@ -91,9 +90,7 @@ describe('categorizeTransaction', () => {
       },
     })
 
-    await expect(
-      categorizeTransaction(fakeTransaction, fakeCategories),
-    ).rejects.toThrow(
+    await expect(categorizeTransaction(fakeTransaction, fakeCategories)).rejects.toThrow(
       'AI returned invalid categoryId: aaaaaaaa-0000-0000-0000-000000000000',
     )
   })
@@ -101,9 +98,7 @@ describe('categorizeTransaction', () => {
   it('throws when generateText rejects (simulating an AI error)', async () => {
     generateTextMock.mockRejectedValue(new Error('AI service unavailable'))
 
-    await expect(
-      categorizeTransaction(fakeTransaction, fakeCategories),
-    ).rejects.toThrow('AI service unavailable')
+    await expect(categorizeTransaction(fakeTransaction, fakeCategories)).rejects.toThrow('AI service unavailable')
   })
 })
 

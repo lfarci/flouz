@@ -1,12 +1,4 @@
-import {
-  mock,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from 'bun:test'
+import { mock, afterEach, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 import {
   collectCommandOutcome,
   createCommandTestDatabase,
@@ -93,9 +85,7 @@ afterEach(() => {
   restoreProcessExit(originalProcessExit)
 })
 
-type ListOutcome =
-  | { status: 'resolved' }
-  | { status: 'rejected'; errorCode: number | undefined }
+type ListOutcome = { status: 'resolved' } | { status: 'rejected'; errorCode: number | undefined }
 
 function parseJsonArrayOutput(output: string): unknown[] {
   const parsed: unknown = JSON.parse(output)
@@ -230,10 +220,7 @@ describe('listAction — --limit option', () => {
       async () => {
         const command = createListCommand(EXISTING_PATH)
         command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
-        await command.parseAsync(
-          ['--limit', '1', '--output', 'json', '--db', EXISTING_PATH],
-          { from: 'user' },
-        )
+        await command.parseAsync(['--limit', '1', '--output', 'json', '--db', EXISTING_PATH], { from: 'user' })
       },
       () => undefined,
       () => undefined,

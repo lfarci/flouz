@@ -18,12 +18,7 @@ export function formatAccountsTable(accounts: Account[]): string[] {
       { header: 'Company', width: 20, minWidth: 12, truncate: 20 },
       { header: 'IBAN', width: 22, minWidth: 14, truncate: 22 },
     ],
-    rows: accounts.map((account) => [
-      account.key,
-      account.name,
-      account.company,
-      account.iban ?? '—',
-    ]),
+    rows: accounts.map((account) => [account.key, account.name, account.company, account.iban ?? '—']),
   })
 }
 

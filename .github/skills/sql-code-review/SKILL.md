@@ -65,12 +65,8 @@ class TransactionQueries {
   private readonly getAll: Statement
 
   constructor(db: Database) {
-    this.insert = db.prepare(
-      'INSERT OR IGNORE INTO transactions (date, amount, counterparty) VALUES (?, ?, ?)',
-    )
-    this.getAll = db.prepare(
-      'SELECT id, date, amount, counterparty FROM transactions',
-    )
+    this.insert = db.prepare('INSERT OR IGNORE INTO transactions (date, amount, counterparty) VALUES (?, ?, ?)')
+    this.getAll = db.prepare('SELECT id, date, amount, counterparty FROM transactions')
   }
 
   insertTransaction(date: string, amount: number, counterparty: string) {

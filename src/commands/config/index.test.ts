@@ -1,17 +1,5 @@
-import {
-  mock,
-  spyOn,
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from 'bun:test'
-import {
-  createProcessExitMock,
-  restoreProcessExit,
-  setProcessExit,
-} from '@/commands/test-helpers'
+import { mock, spyOn, afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import { createProcessExitMock, restoreProcessExit, setProcessExit } from '@/commands/test-helpers'
 import * as configModule from '@/config'
 
 const logSuccessMock = mock((_message: string) => {})
@@ -26,12 +14,7 @@ void mock.module('@clack/prompts', () => ({
   },
 }))
 
-import {
-  createConfigCommand,
-  formatConfigValueLine,
-  isSupportedKey,
-  toConfigFieldName,
-} from '.'
+import { createConfigCommand, formatConfigValueLine, isSupportedKey, toConfigFieldName } from '.'
 
 const processExitMock = createProcessExitMock()
 let originalProcessExit: typeof process.exit
@@ -78,15 +61,11 @@ describe('toConfigFieldName', () => {
 
 describe('formatConfigValueLine', () => {
   it('formats configured values', () => {
-    expect(formatConfigValueLine('db-path', '/tmp/flouz.db')).toBe(
-      'db-path = /tmp/flouz.db',
-    )
+    expect(formatConfigValueLine('db-path', '/tmp/flouz.db')).toBe('db-path = /tmp/flouz.db')
   })
 
   it('formats missing values', () => {
-    expect(formatConfigValueLine('db-path', undefined)).toBe(
-      'db-path = (not set)',
-    )
+    expect(formatConfigValueLine('db-path', undefined)).toBe('db-path = (not set)')
   })
 })
 
@@ -110,24 +89,18 @@ describe('createConfigCommand', () => {
 
   it('registers the set subcommand', () => {
     const command = createConfigCommand()
-    expect(
-      command.commands.some((subcommand) => subcommand.name() === 'set'),
-    ).toBe(true)
+    expect(command.commands.some((subcommand) => subcommand.name() === 'set')).toBe(true)
   })
 
   it('registers the get subcommand', () => {
     const command = createConfigCommand()
-    expect(
-      command.commands.some((subcommand) => subcommand.name() === 'get'),
-    ).toBe(true)
+    expect(command.commands.some((subcommand) => subcommand.name() === 'get')).toBe(true)
   })
 })
 
 describe('setConfigAction', () => {
   it('writes the config value and logs success', async () => {
-    const writeConfigSpy = spyOn(configModule, 'writeConfig').mockResolvedValue(
-      undefined,
-    )
+    const writeConfigSpy = spyOn(configModule, 'writeConfig').mockResolvedValue(undefined)
     const command = createConfigCommand()
     command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
 
@@ -144,9 +117,7 @@ describe('setConfigAction', () => {
     const command = createConfigCommand()
     command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
 
-    await expect(
-      command.parseAsync(['set', 'not-a-key', 'value'], { from: 'user' }),
-    ).rejects.toThrow()
+    await expect(command.parseAsync(['set', 'not-a-key', 'value'], { from: 'user' })).rejects.toThrow()
 
     expect(logErrorMock).toHaveBeenCalled()
     expect(processExitMock).toHaveBeenCalledWith(1)
@@ -190,9 +161,7 @@ describe('getConfigAction', () => {
     const command = createConfigCommand()
     command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
 
-    await expect(
-      command.parseAsync(['get', 'bad-key'], { from: 'user' }),
-    ).rejects.toThrow()
+    await expect(command.parseAsync(['get', 'bad-key'], { from: 'user' })).rejects.toThrow()
 
     expect(logErrorMock).toHaveBeenCalled()
     expect(processExitMock).toHaveBeenCalledWith(1)

@@ -25,10 +25,7 @@ function getSuggestionRow(
     .prepare(
       'SELECT category_id AS categoryId, confidence, model, suggested_at AS suggestedAt FROM transaction_category_suggestions WHERE transaction_id = ?',
     )
-    .get(transactionId) as Omit<
-    TransactionCategorySuggestion,
-    'transactionId'
-  > | null
+    .get(transactionId) as Omit<TransactionCategorySuggestion, 'transactionId'> | null
 }
 
 let db: Database

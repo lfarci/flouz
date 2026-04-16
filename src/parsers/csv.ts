@@ -46,9 +46,7 @@ function parseRow(row: RawRow, sourceFile?: string): ImportedTransaction {
   const data = result.data
   const counterparty = data.counterparty || data.note
   if (!counterparty) {
-    throw new Error(
-      'counterparty and note are both empty — cannot identify transaction',
-    )
+    throw new Error('counterparty and note are both empty — cannot identify transaction')
   }
 
   return {

@@ -1,10 +1,7 @@
 import { type Database } from 'bun:sqlite'
 import type { NewTransactionCategorySuggestion } from '@/types'
 
-export function upsertTransactionCategorySuggestion(
-  db: Database,
-  suggestion: NewTransactionCategorySuggestion,
-): void {
+export function upsertTransactionCategorySuggestion(db: Database, suggestion: NewTransactionCategorySuggestion): void {
   const suggestedAt = new Date().toISOString()
 
   db.prepare(

@@ -12,10 +12,7 @@ import { findCsvFiles, resolveImportedTransaction } from './import'
 const FIXTURE = `${import.meta.dir}/../../parsers/__fixtures__/minimal.csv`
 const FIXTURES_DIR = `${import.meta.dir}/../../parsers/__fixtures__`
 
-async function importAll(
-  db: Database,
-  sourceFile: string,
-): Promise<{ imported: number; errors: number }> {
+async function importAll(db: Database, sourceFile: string): Promise<{ imported: number; errors: number }> {
   const content = await Bun.file(sourceFile).text()
   const { transactions, errors } = parseCsv(content, sourceFile)
   for (const transaction of transactions) {
@@ -81,16 +78,10 @@ describe('import pipeline', () => {
     await importAll(db, FIXTURE)
 
     const transactions = getTransactions(db)
-    const transactionsWithAccount = transactions.filter(
-      (transaction) => transaction.accountId !== undefined,
-    )
+    const transactionsWithAccount = transactions.filter((transaction) => transaction.accountId !== undefined)
 
     expect(transactionsWithAccount.length).toBe(3)
-    expect(
-      transactionsWithAccount.every(
-        (transaction) => transaction.accountId === 1,
-      ),
-    ).toBe(true)
+    expect(transactionsWithAccount.every((transaction) => transaction.accountId === 1)).toBe(true)
   })
 
   it('imports valid rows and reports invalid rows without throwing', () => {
@@ -109,13 +100,9 @@ not-a-date,-10.00,Bad Row
   })
 
   it('throws when an account key is unknown', () => {
-    const { transactions } = parseCsv(
-      'date,amount,counterparty,account\n2026-01-15,-42.50,ACME Shop,missing',
-    )
+    const { transactions } = parseCsv('date,amount,counterparty,account\n2026-01-15,-42.50,ACME Shop,missing')
 
-    expect(() => resolveImportedTransaction(db, transactions[0])).toThrow(
-      'Unknown account key: missing',
-    )
+    expect(() => resolveImportedTransaction(db, transactions[0])).toThrow('Unknown account key: missing')
   })
 })
 

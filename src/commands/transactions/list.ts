@@ -41,31 +41,20 @@ async function ensureDatabaseExists(dbPath: string): Promise<void> {
   )
 }
 
-function resolveCategoryId(
-  db: Database,
-  categorySlug: string | undefined,
-): string | undefined {
+function resolveCategoryId(db: Database, categorySlug: string | undefined): string | undefined {
   if (categorySlug === undefined) return undefined
 
   const categories = getCategories(db)
   return findCategoryId(categories, categorySlug)
 }
 
-export function findCategoryId(
-  categories: Category[],
-  categorySlug: string,
-): string {
-  const category = categories.find(
-    (candidate) => candidate.slug === categorySlug,
-  )
+export function findCategoryId(categories: Category[], categorySlug: string): string {
+  const category = categories.find((candidate) => candidate.slug === categorySlug)
   if (category !== undefined) return category.id
   throw new Error(`Unknown category slug: ${categorySlug}`)
 }
 
-function toTransactionFilters(
-  options: ListOptions,
-  categoryId: string | undefined,
-): TransactionFilters {
+function toTransactionFilters(options: ListOptions, categoryId: string | undefined): TransactionFilters {
   return {
     from: options.from,
     to: options.to,
@@ -100,10 +89,7 @@ function createCategorySlugById(db: Database): Map<string, string> {
   return new Map(categories.map((category) => [category.id, category.slug]))
 }
 
-function toListRows(
-  transactions: Transaction[],
-  categorySlugById: Map<string, string>,
-): ListRow[] {
+function toListRows(transactions: Transaction[], categorySlugById: Map<string, string>): ListRow[] {
   return transactions.map((transaction) => ({
     date: transaction.date,
     amount: formatAmount(transaction.amount),
@@ -113,10 +99,7 @@ function toListRows(
   }))
 }
 
-function resolveCategorySlug(
-  categoryId: string | undefined,
-  categorySlugById: Map<string, string>,
-): string {
+function resolveCategorySlug(categoryId: string | undefined, categorySlugById: Map<string, string>): string {
   if (categoryId === undefined) return '—'
   return categorySlugById.get(categoryId) ?? categoryId
 }
@@ -136,13 +119,7 @@ export function formatTransactionTable(rows: ListRow[]): string[] {
       { header: 'Note', width: 30, minWidth: 14, wrapWord: true },
       { header: 'Category', width: 18, minWidth: 10, wrapWord: true },
     ],
-    rows: rows.map((row) => [
-      row.date,
-      row.amount,
-      row.counterparty,
-      row.note,
-      row.category,
-    ]),
+    rows: rows.map((row) => [row.date, row.amount, row.counterparty, row.note, row.category]),
   })
 }
 
@@ -159,9 +136,7 @@ export function parseOutputFormat(value: string): OutputFormat {
 export function buildCsv(rows: ListRow[]): string {
   const header = 'date,amount,counterparty,note,category'
   const dataRows = rows.map((row) =>
-    [row.date, row.amount, row.counterparty, row.note, row.category]
-      .map(escapeCsvField)
-      .join(','),
+    [row.date, row.amount, row.counterparty, row.note, row.category].map(escapeCsvField).join(','),
   )
   return [header, ...dataRows].join('\n')
 }
@@ -234,16 +209,8 @@ export function createListCommand(defaultDb: string): Command {
     .option('-c, --category <slug>', 'filter by category slug')
     .option('-s, --search <text>', 'search counterparty')
     .option('-l, --limit <n>', 'max results')
-    .option(
-      '--uncategorized',
-      'show only transactions without a manual category',
-    )
-    .option(
-      '-o, --output <format>',
-      'output format (table, csv, json)',
-      parseOutputFormat,
-      'table',
-    )
+    .option('--uncategorized', 'show only transactions without a manual category')
+    .option('-o, --output <format>', 'output format (table, csv, json)', parseOutputFormat, 'table')
     .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(listAction)
 }

@@ -41,9 +41,7 @@ describe('writeStdout', () => {
       callback?: ((error: Error | null | undefined) => void) | string,
     ) => {
       if (typeof callback === 'function') {
-        queueMicrotask(() =>
-          process.stdout.emit('error', new Error('broken pipe')),
-        )
+        queueMicrotask(() => process.stdout.emit('error', new Error('broken pipe')))
       }
       return true
     }) as typeof process.stdout.write)

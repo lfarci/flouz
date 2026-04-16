@@ -16,10 +16,7 @@ describe('createAccountsTable', () => {
     createAccountsTable(db)
 
     const row = db
-      .query<
-        { name: string },
-        []
-      >("SELECT name FROM sqlite_master WHERE type='table' AND name='accounts'")
+      .query<{ name: string }, []>("SELECT name FROM sqlite_master WHERE type='table' AND name='accounts'")
       .get()
     expect(row?.name).toBe('accounts')
   })
@@ -38,14 +35,7 @@ describe('createAccountsTable', () => {
 
     createAccountsTable(db)
 
-    expect(getColumnNames(db)).toEqual([
-      'id',
-      'key',
-      'company',
-      'name',
-      'description',
-      'iban',
-    ])
+    expect(getColumnNames(db)).toEqual(['id', 'key', 'company', 'name', 'description', 'iban'])
   })
 
   it('creates a unique key index', () => {
@@ -54,10 +44,7 @@ describe('createAccountsTable', () => {
     createAccountsTable(db)
 
     const row = db
-      .query<
-        { name: string },
-        []
-      >("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_accounts_key'")
+      .query<{ name: string }, []>("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_accounts_key'")
       .get()
     expect(row?.name).toBe('idx_accounts_key')
   })

@@ -49,9 +49,7 @@ const model = createOpenAI({
 
 // Anthropic
 import { createAnthropic } from '@ai-sdk/anthropic'
-const model = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY })(
-  'claude-3-5-haiku-20241022',
-)
+const model = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY })('claude-3-5-haiku-20241022')
 
 // Ollama (local)
 import { createOllama } from 'ollama-ai-provider'

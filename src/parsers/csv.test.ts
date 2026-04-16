@@ -75,8 +75,7 @@ describe('parseCsv', () => {
     })
 
     it('uses note as counterparty when counterparty column is empty', () => {
-      const content =
-        'date,amount,counterparty,note\n2026-01-15,-20.00,,RETRAIT ESPECES ATM BRUSSELS'
+      const content = 'date,amount,counterparty,note\n2026-01-15,-20.00,,RETRAIT ESPECES ATM BRUSSELS'
       const { transactions, errors } = parseCsv(content)
       expect(errors).toHaveLength(0)
       expect(transactions).toHaveLength(1)
@@ -84,8 +83,7 @@ describe('parseCsv', () => {
     })
 
     it('preserves note field when note is used as counterparty fallback', () => {
-      const content =
-        'date,amount,counterparty,note\n2026-01-15,-20.00,,PAIEMENT MAESTRO DELHAIZE'
+      const content = 'date,amount,counterparty,note\n2026-01-15,-20.00,,PAIEMENT MAESTRO DELHAIZE'
       const {
         transactions: [tx],
       } = parseCsv(content)
@@ -112,16 +110,12 @@ describe('parseCsv', () => {
 
     it('throws when amount column is missing', () => {
       const content = 'date,counterparty\n2026-01-15,ACME Shop'
-      expect(() => parseCsv(content)).toThrow(
-        'Missing required column: "amount"',
-      )
+      expect(() => parseCsv(content)).toThrow('Missing required column: "amount"')
     })
 
     it('throws when counterparty column is missing', () => {
       const content = 'date,amount\n2026-01-15,-10.00'
-      expect(() => parseCsv(content)).toThrow(
-        'Missing required column: "counterparty"',
-      )
+      expect(() => parseCsv(content)).toThrow('Missing required column: "counterparty"')
     })
 
     it('collects invalid date format in errors', () => {
@@ -146,9 +140,7 @@ describe('parseCsv', () => {
       const { transactions, errors } = parseCsv(content)
       expect(transactions).toHaveLength(0)
       expect(errors).toHaveLength(1)
-      expect(errors[0].message).toContain(
-        'counterparty and note are both empty',
-      )
+      expect(errors[0].message).toContain('counterparty and note are both empty')
     })
 
     it('collects row with all fields empty in errors', () => {
@@ -172,8 +164,7 @@ describe('parseCsv', () => {
 
   describe('RFC 4180 compliance', () => {
     it('handles quoted fields containing commas', () => {
-      const content =
-        'date,amount,counterparty\n2026-01-15,-10.00,"Smith, John"'
+      const content = 'date,amount,counterparty\n2026-01-15,-10.00,"Smith, John"'
       const {
         transactions: [tx],
       } = parseCsv(content)
@@ -181,8 +172,7 @@ describe('parseCsv', () => {
     })
 
     it('handles doubled quotes inside quoted fields', () => {
-      const content =
-        'date,amount,counterparty\n2026-01-15,-10.00,"O\'Brien""s Shop"'
+      const content = 'date,amount,counterparty\n2026-01-15,-10.00,"O\'Brien""s Shop"'
       const {
         transactions: [tx],
       } = parseCsv(content)

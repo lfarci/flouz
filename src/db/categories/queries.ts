@@ -3,9 +3,7 @@ import type { Category } from '@/types'
 
 export function getCategories(db: Database): Category[] {
   const rows = db
-    .prepare(
-      'SELECT id, name, slug, parent_id FROM categories ORDER BY parent_id NULLS FIRST, name',
-    )
+    .prepare('SELECT id, name, slug, parent_id FROM categories ORDER BY parent_id NULLS FIRST, name')
     .all() as Record<string, unknown>[]
 
   return rows.map((row) => ({
