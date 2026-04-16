@@ -6,14 +6,16 @@ import { initDb } from '@/db/schema'
 import { insertTransaction , updateCategory } from '@/db/transactions/mutations'
 import { getTransactions } from '@/db/transactions/queries'
 import {
-  buildCsv,
-  buildJson,
-  escapeCsvField,
   findCategoryId,
-  formatTransactionTable,
   parseOutputFormat,
   createListCommand,
 } from './list'
+import {
+  buildCsv,
+  buildJson,
+  escapeCsvField,
+  formatTransactionTable,
+} from './format'
 import { isBrokenPipeError } from '@/cli/stdout'
 
 describe('findCategoryId', () => {

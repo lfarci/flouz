@@ -48,6 +48,49 @@ describe('transaction_category_suggestions table creation', () => {
   })
 })
 
+describe('transaction_category_suggestions lifecycle columns', () => {
+  it('defaults status to pending on insert', () => {
+    insertTransaction(db, baseTransaction)
+    const { id } = db.prepare('SELECT id FROM transactions LIMIT 1').get() as { id: number }
+    insertSuggestion(db, id, VALID_CATEGORY_ID, 0.5)
+
+    const row = db.prepare(
+      'SELECT status, reviewed_at, applied_at FROM transaction_category_suggestions WHERE transaction_id = ?'
+    ).get(id) as { status: string; reviewed_at: string | null; applied_at: string | null } | null
+
+    expect(row).not.toBeNull()
+    expect(row?.status).toBe('pending')
+    expect(row?.reviewed_at).toBeNull()
+    expect(row?.applied_at).toBeNull()
+  })
+
+  it('rejects an invalid status value', () => {
+    insertTransaction(db, baseTransaction)
+    const { id } = db.prepare('SELECT id FROM transactions LIMIT 1').get() as { id: number }
+    insertSuggestion(db, id, VALID_CATEGORY_ID, 0.5)
+
+    expect(() =>
+      db.prepare(
+        "UPDATE transaction_category_suggestions SET status = 'invalid' WHERE transaction_id = ?"
+      ).run(id)
+    ).toThrow()
+  })
+
+  it('allows all valid status values', () => {
+    for (const status of ['pending', 'approved', 'applied'] as const) {
+      insertTransaction(db, { ...baseTransaction, counterparty: `Shop ${status}` })
+      const { id } = db.prepare('SELECT id FROM transactions ORDER BY id DESC LIMIT 1').get() as { id: number }
+      insertSuggestion(db, id, VALID_CATEGORY_ID, 0.5)
+
+      expect(() =>
+        db.prepare(
+          'UPDATE transaction_category_suggestions SET status = ? WHERE transaction_id = ?'
+        ).run(status, id)
+      ).not.toThrow()
+    }
+  })
+})
+
 describe('transaction_category_suggestions foreign key constraints', () => {
   it('throws when transaction_id does not reference an existing transaction', () => {
     expect(() => insertSuggestion(db, 99999, VALID_CATEGORY_ID, 0.5)).toThrow()
