@@ -102,17 +102,35 @@ Options:
 
 ### AI categorization
 
-flouz can suggest categories for uncategorized transactions using an AI model. Suggestions are stored separately from user-assigned categories and never silently overwrite them.
+flouz can suggest categories for uncategorized transactions using an AI model. Suggestions are stored in a separate table and go through an explicit review lifecycle before being written to `transactions.category_id`.
 
-**Recommended workflow — inspect then categorize:**
+**Suggestion lifecycle: `pending → approved → applied`**
+
+Rejection deletes the suggestion row and re-opens that transaction to future categorization runs.
+
+**Canonical workflow:**
 
 ```bash
-# 1. See what still needs categorizing
-flouz transactions list --uncategorized
+# 1. Generate suggestions for uncategorized transactions
+flouz transactions categorize --limit 20
 
-# 2. Run AI categorization on a bounded set
-flouz transactions categorize --limit 10
+# 2. Inspect pending suggestions
+flouz transactions suggestions list
+
+# 3a. Reject incorrect ones (re-opens those transactions for re-categorization)
+flouz transactions suggestions reject --search "Suspicious Merchant"
+
+# 3b. Approve the rest
+flouz transactions suggestions approve
+
+# 4. Apply approved suggestions to transactions
+flouz transactions suggestions apply
+
+# 5. Verify
+flouz transactions list
 ```
+
+#### `transactions categorize`
 
 Options:
 - `-f, --from <date>` — process only transactions from this date (YYYY-MM-DD)
@@ -120,6 +138,36 @@ Options:
 - `-s, --search <text>` — filter by counterparty name
 - `-l, --limit <n>` — max transactions to process in one run
 - `-d, --db <path>` — SQLite database path
+
+#### `transactions suggestions list`
+
+```bash
+flouz transactions suggestions list [--status pending|approved|applied] [filters]
+```
+
+#### `transactions suggestions approve`
+
+Marks matching pending suggestions as approved. Does not write to `transactions.category_id`.
+
+```bash
+flouz transactions suggestions approve [filters]
+```
+
+#### `transactions suggestions reject`
+
+Deletes pending or approved suggestions. Re-opens those transactions to future categorization.
+
+```bash
+flouz transactions suggestions reject [--status pending|approved] [filters]
+```
+
+#### `transactions suggestions apply`
+
+Copies the approved category into `transactions.category_id` only where it is still NULL. Idempotent.
+
+```bash
+flouz transactions suggestions apply [filters]
+```
 
 ### Manage accounts
 

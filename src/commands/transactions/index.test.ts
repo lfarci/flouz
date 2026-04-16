@@ -7,6 +7,6 @@ describe('createTransactionsCommand', () => {
     const command = await createTransactionsCommand()
     const subcommandNames = command.commands.map(subcommand => subcommand.name())
 
-    expect(subcommandNames).toEqual(['import', 'categorize', 'list'])
+    expect(subcommandNames).toEqual(['import', 'categorize', 'list', 'categories', 'suggestions'])
   })
 })

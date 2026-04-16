@@ -3,7 +3,10 @@ import { createAccountsTable } from '@/db/accounts/schema'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { createTransactionsTable } from '@/db/transactions/schema'
-import { createTransactionCategorySuggestionsTable } from '@/db/transaction_category_suggestions/schema'
+import {
+  createTransactionCategorySuggestionsTable,
+  migrateTransactionCategorySuggestionsTable,
+} from '@/db/transaction_category_suggestions/schema'
 
 export function openDatabase(dbPath: string): Database {
   const db = new Database(dbPath)
@@ -18,4 +21,5 @@ export function initDb(db: Database): void {
   createAccountsTable(db)
   createTransactionsTable(db)
   createTransactionCategorySuggestionsTable(db)
+  migrateTransactionCategorySuggestionsTable(db)
 }

@@ -28,6 +28,12 @@ export const CATEGORIES: Category[] = [
   { id: '0a1b2c3d-4e5f-4a6b-7c8d-9e0f1a2b3c4d', name: 'Gifts & Charity', slug: 'gifts-and-charity', parentId: 'e7c4a2b1-1f3d-4d9a-8b7c-2a1f5c6d7e8f' },
   { id: '1b2c3d4e-5f6a-4b7c-8d9e-0f1a2b3c4d5e', name: 'Subscriptions',   slug: 'subscriptions',    parentId: 'e7c4a2b1-1f3d-4d9a-8b7c-2a1f5c6d7e8f' },
 
+  // L3 under Transport
+  { id: '6a7b8c9d-0e1f-4a2b-3c4d-5e6f7a8b9c0d', name: 'Public Transport', slug: 'public-transport', parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a' },
+  { id: '7b8c9d0e-1f2a-4b3c-4d5e-6f7a8b9c0d1e', name: 'Parking',          slug: 'parking',          parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a' },
+  { id: '8c9d0e1f-2a3b-4c4d-5e6f-7a8b9c0d1e2f', name: 'Car',              slug: 'car',              parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a' },
+  { id: '9d0e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a', name: 'Bicycle',          slug: 'bicycle',          parentId: '4d5e6f7a-8b9c-4d0e-1f2a-3b4c5d6e7f8a' },
+
   // L3 under Utilities
   { id: '3d4e5f6a-7b8c-4d9e-0f1a-2b3c4d5e6f7a', name: 'Energy',          slug: 'energy',           parentId: '2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e' },
   { id: '4e5f6a7b-8c9d-4e0f-1a2b-3c4d5e6f7a8b', name: 'Utilities',       slug: 'utilities-sub',    parentId: '2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e' },
