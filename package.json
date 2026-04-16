@@ -1,6 +1,13 @@
 {
   "name": "flouz",
   "version": "2.2.0",
+  "description": "AI-powered personal finance CLI for analyzing bank transactions",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lfarci/flouz.git"
+  },
+  "keywords": ["finance", "cli", "transactions", "ai", "sqlite", "bun"],
   "module": "src/index.ts",
   "type": "module",
   "private": true,
