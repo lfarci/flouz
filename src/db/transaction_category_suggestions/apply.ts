@@ -11,10 +11,7 @@ export interface ApplyResult {
   firstError?: string
 }
 
-export function applyApprovedCategorySuggestions(
-  db: Database,
-  filters: SuggestionFilters = {}
-): ApplyResult {
+export function applyApprovedCategorySuggestions(db: Database, filters: SuggestionFilters = {}): ApplyResult {
   const transactionIds = getApprovedSuggestionTransactionIds(db, filters)
   const selected = transactionIds.length
 

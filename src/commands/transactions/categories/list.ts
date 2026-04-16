@@ -20,11 +20,14 @@ function formatCategoriesTable(categories: Category[]): string[] {
       { header: 'Name', width: 32, minWidth: 16, wrapWord: true },
       { header: 'ID', width: 36, minWidth: 36, truncate: 36 },
     ],
-    rows: categories.map(category => [category.slug, category.name, category.id]),
+    rows: categories.map((category) => [category.slug, category.name, category.id]),
   })
 }
 
-interface TreeEntry { label: string; slug: string }
+interface TreeEntry {
+  label: string
+  slug: string
+}
 
 function buildChildrenMap(categories: Category[]): Map<string | null, Category[]> {
   const childrenById = new Map<string | null, Category[]>()
@@ -55,8 +58,8 @@ function formatCategoriesTree(categories: Category[]): string {
     renderNode(roots[i], '', i === roots.length - 1)
   }
 
-  const maxLabelLength = Math.max(...entries.map(entry => entry.label.length))
-  return entries.map(entry => `${entry.label.padEnd(maxLabelLength)}  ${entry.slug}`).join('\n')
+  const maxLabelLength = Math.max(...entries.map((entry) => entry.label.length))
+  return entries.map((entry) => `${entry.label.padEnd(maxLabelLength)}  ${entry.slug}`).join('\n')
 }
 
 async function listCategoriesAction(options: ListCategoriesOptions): Promise<void> {

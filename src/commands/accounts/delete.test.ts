@@ -25,6 +25,20 @@ const errorLogMock = mock(() => {})
 const openDatabaseMock = createOpenDatabaseMock()
 
 void mock.module('@clack/prompts', () => ({
+  intro: mock((_message: string) => {}),
+  outro: mock((_message: string) => {}),
+  cancel: mock((_message: string) => {}),
+  spinner: mock(() => ({
+    start: mock((_: string) => {}),
+    message: mock((_: string) => {}),
+    stop: mock((_: string) => {}),
+  })),
+  progress: mock(() => ({
+    start: mock((_: string) => {}),
+    advance: mock(() => {}),
+    stop: mock((_: string) => {}),
+    error: mock((_: string) => {}),
+  })),
   log: {
     success: successLogMock,
     error: errorLogMock,
@@ -51,7 +65,7 @@ type RejectedDeleteOutcomeFactory = (errorCode: number | undefined) => DeleteSum
 type LogMessage = [message?: string, ...details: unknown[]]
 
 function getLoggedMessages(logMock: { mock: { calls: LogMessage[] } }): string[] {
-  return logMock.mock.calls.flatMap(call => {
+  return logMock.mock.calls.flatMap((call) => {
     const [message] = call
     return typeof message === 'string' ? [message] : []
   })
@@ -61,7 +75,7 @@ let createDeleteAccountsCommand: typeof CreateDeleteAccountsCommand
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createCategoriesTable(database)
     createAccountsTable(database)
     createTransactionsTable(database)
@@ -75,7 +89,7 @@ async function runDeleteCommand(argumentsList: string[]): Promise<void> {
 async function collectDeleteCommandOutcome(
   database: Database,
   argumentsList: string[],
-  accountKey?: string
+  accountKey?: string,
 ): Promise<DeleteSummary> {
   const account = () => (accountKey === undefined ? undefined : getAccountByKey(database, accountKey))
 
@@ -91,7 +105,7 @@ async function collectDeleteCommandOutcome(
       errorCode,
       account: account(),
       accountCount: countAccounts(database),
-    })) as RejectedDeleteOutcomeFactory
+    })) as RejectedDeleteOutcomeFactory,
   )
 }
 

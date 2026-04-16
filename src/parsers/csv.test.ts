@@ -13,7 +13,9 @@ describe('parseCsv', () => {
 
     it('maps required fields correctly', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const { transactions: [first] } = parseCsv(content)
+      const {
+        transactions: [first],
+      } = parseCsv(content)
       expect(first.date).toBe('2026-01-15')
       expect(first.amount).toBe(-42.5)
       expect(first.counterparty).toBe('ACME Shop')
@@ -21,7 +23,9 @@ describe('parseCsv', () => {
 
     it('maps optional fields when present', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const { transactions: [first] } = parseCsv(content)
+      const {
+        transactions: [first],
+      } = parseCsv(content)
       expect(first.counterpartyIban).toBe('BE00 0000 0000 0001')
       expect(first.currency).toBe('EUR')
       expect(first.accountKey).toBe('checking')
@@ -53,7 +57,9 @@ describe('parseCsv', () => {
 
     it('sets importedAt to an ISO timestamp', async () => {
       const content = await Bun.file(FIXTURE_PATH).text()
-      const { transactions: [first] } = parseCsv(content)
+      const {
+        transactions: [first],
+      } = parseCsv(content)
       expect(first.importedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/)
     })
 
@@ -62,7 +68,10 @@ describe('parseCsv', () => {
     })
 
     it('returns empty arrays for header-only content', () => {
-      expect(parseCsv('date,amount,counterparty')).toEqual({ transactions: [], errors: [] })
+      expect(parseCsv('date,amount,counterparty')).toEqual({
+        transactions: [],
+        errors: [],
+      })
     })
 
     it('uses note as counterparty when counterparty column is empty', () => {
@@ -75,7 +84,9 @@ describe('parseCsv', () => {
 
     it('preserves note field when note is used as counterparty fallback', () => {
       const content = 'date,amount,counterparty,note\n2026-01-15,-20.00,,PAIEMENT MAESTRO DELHAIZE'
-      const { transactions: [tx] } = parseCsv(content)
+      const {
+        transactions: [tx],
+      } = parseCsv(content)
       expect(tx.counterparty).toBe('PAIEMENT MAESTRO DELHAIZE')
       expect(tx.note).toBe('PAIEMENT MAESTRO DELHAIZE')
     })
@@ -154,14 +165,18 @@ describe('parseCsv', () => {
   describe('RFC 4180 compliance', () => {
     it('handles quoted fields containing commas', () => {
       const content = 'date,amount,counterparty\n2026-01-15,-10.00,"Smith, John"'
-      const { transactions: [tx] } = parseCsv(content)
+      const {
+        transactions: [tx],
+      } = parseCsv(content)
       expect(tx.counterparty).toBe('Smith, John')
     })
 
     it('handles doubled quotes inside quoted fields', () => {
       const content = 'date,amount,counterparty\n2026-01-15,-10.00,"O\'Brien""s Shop"'
-      const { transactions: [tx] } = parseCsv(content)
-      expect(tx.counterparty).toBe("O'Brien\"s Shop")
+      const {
+        transactions: [tx],
+      } = parseCsv(content)
+      expect(tx.counterparty).toBe('O\'Brien"s Shop')
     })
   })
 })

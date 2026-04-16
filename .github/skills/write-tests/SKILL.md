@@ -34,21 +34,21 @@ describe("<unit>", () => {
 Always use an in-memory SQLite database. Set up schema in `beforeEach`.
 
 ```ts
-import { describe, it, expect, beforeEach } from "bun:test";
-import { Database } from "bun:sqlite";
+import { describe, it, expect, beforeEach } from 'bun:test'
+import { Database } from 'bun:sqlite'
 
-describe("db query", () => {
-  let db: Database;
+describe('db query', () => {
+  let db: Database
 
   beforeEach(() => {
-    db = new Database(":memory:");
-    db.run(`CREATE TABLE ...`);
-  });
+    db = new Database(':memory:')
+    db.run(`CREATE TABLE ...`)
+  })
 
-  it("should ...", () => {
+  it('should ...', () => {
     // ...
-  });
-});
+  })
+})
 ```
 
 ## AI / `ai` module tests

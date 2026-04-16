@@ -43,7 +43,7 @@ function formatSuggestionsTable(suggestions: SuggestionWithContext[]): string[] 
       { header: 'Conf.', width: 6, minWidth: 6, truncate: 6 },
       { header: 'Status', width: 10, minWidth: 8, truncate: 10 },
     ],
-    rows: suggestions.map(suggestion => [
+    rows: suggestions.map((suggestion) => [
       String(suggestion.transactionId),
       suggestion.transactionDate,
       formatAmount(suggestion.amount),

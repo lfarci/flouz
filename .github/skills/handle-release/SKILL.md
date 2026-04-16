@@ -29,12 +29,12 @@ GitHub Release created + tag pushed
 
 ## Version Bump Rules
 
-| Commit type         | Version bump       |
-| ------------------- | ------------------ |
-| `fix:`              | patch (0.0.x)      |
-| `feat:`             | minor (0.x.0)      |
+| Commit type                   | Version bump  |
+| ----------------------------- | ------------- |
+| `fix:`                        | patch (0.0.x) |
+| `feat:`                       | minor (0.x.0) |
 | `feat!:` or `BREAKING CHANGE` | major (x.0.0) |
-| `chore:`, `docs:`, `ci:` | no bump       |
+| `chore:`, `docs:`, `ci:`      | no bump       |
 
 ## Workflow
 

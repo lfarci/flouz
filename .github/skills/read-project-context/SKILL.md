@@ -3,6 +3,7 @@
 ## Activation
 
 Use this skill when the user says any of the following:
+
 - "understand the project"
 - "read the docs"
 - "project context"
@@ -45,6 +46,7 @@ gh issue list --repo lfarci/flouz
 ### Step 4 — Summarize
 
 Provide a concise summary covering:
+
 - **Stack**: languages, runtimes, frameworks, and tools in use
 - **Current phase**: what stage of development the project is in
 - **Already implemented**: modules or features that exist in `src/`

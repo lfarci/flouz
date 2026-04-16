@@ -15,14 +15,14 @@ import { createAccountsTable } from '@/db/accounts/schema'
 import { createTransactionsTable } from '@/db/transactions/schema'
 import { createTransactionCategorySuggestionsTable } from '@/db/transaction_category_suggestions/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
-import type { createCategorizeCommand as CreateCategorizeCommand } from './categorize'
+import type { Command } from 'commander'
 
 const categorizeTransactionMock = mock(() =>
   Promise.resolve({
     categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
     confidence: 0.9,
     model: 'openai/gpt-4o-mini',
-  })
+  }),
 )
 
 void mock.module('@/ai/categorize', () => ({
@@ -62,7 +62,7 @@ void mock.module('@clack/prompts', () => ({
 }))
 
 const processExitMock = createProcessExitMock()
-let createCategorizeCommand: typeof CreateCategorizeCommand
+let createCategorizeCommand: (defaultDb: string) => Command
 let originalProcessExit: typeof process.exit
 
 const baseTransaction = {
@@ -74,7 +74,7 @@ const baseTransaction = {
 }
 
 function createInMemoryDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createCategoriesTable(database)
     createAccountsTable(database)
     createTransactionsTable(database)
@@ -83,10 +83,7 @@ function createInMemoryDatabase() {
   })
 }
 
-async function runCategorizeCommand(
-  database: Database,
-  argumentsList: string[]
-): Promise<void> {
+async function runCategorizeCommand(database: Database, argumentsList: string[]): Promise<void> {
   openDatabaseMock.mockReturnValue(database)
   await runCommandSilently(createCategorizeCommand('default.db'), argumentsList)
 }
@@ -126,17 +123,17 @@ describe('createCategorizeCommand', () => {
 
   it('registers the --from option', () => {
     const command = createCategorizeCommand('flouz.db')
-    expect(command.options.some(option => option.long === '--from')).toBe(true)
+    expect(command.options.some((option) => option.long === '--from')).toBe(true)
   })
 
   it('registers the --limit option', () => {
     const command = createCategorizeCommand('flouz.db')
-    expect(command.options.some(option => option.long === '--limit')).toBe(true)
+    expect(command.options.some((option) => option.long === '--limit')).toBe(true)
   })
 
   it('registers the --db option with the default path', () => {
     const command = createCategorizeCommand('my.db')
-    const dbOption = command.options.find(option => option.long === '--db')
+    const dbOption = command.options.find((option) => option.long === '--db')
     expect(dbOption?.defaultValue).toBe('my.db')
   })
 })
@@ -148,7 +145,7 @@ describe('categorizeAction — no eligible transactions', () => {
     await collectCommandOutcome(
       () => runCategorizeCommand(handle, []),
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(logInfoMock).toHaveBeenCalled()
@@ -166,7 +163,7 @@ describe('categorizeAction — with eligible transactions', () => {
     await collectCommandOutcome(
       () => runCategorizeCommand(handle, []),
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(categorizeTransactionMock).toHaveBeenCalledTimes(1)
@@ -181,7 +178,7 @@ describe('categorizeAction — with eligible transactions', () => {
     await collectCommandOutcome(
       () => runCategorizeCommand(handle, []),
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(logWarnMock).toHaveBeenCalled()
@@ -197,7 +194,7 @@ describe('categorizeAction — with eligible transactions', () => {
     const summary = await collectCommandOutcome<CategorizeOutcome>(
       () => runCommandSilently(createCategorizeCommand('default.db'), []),
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(summary).toEqual({ status: 'rejected', errorCode: 1 })
@@ -212,7 +209,7 @@ describe('categorizeAction — invalid --limit option', () => {
     const summary = await collectCommandOutcome<CategorizeOutcome>(
       () => runCommandSilently(createCategorizeCommand('default.db'), ['--limit', 'abc']),
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(summary).toEqual({ status: 'rejected', errorCode: 1 })
@@ -221,12 +218,16 @@ describe('categorizeAction — invalid --limit option', () => {
   it('respects a valid --limit and processes only that many transactions', async () => {
     const { database, handle } = createInMemoryDatabase()
     insertTransaction(database, baseTransaction)
-    insertTransaction(database, { ...baseTransaction, date: '2026-01-16', counterparty: 'Second Shop' })
+    insertTransaction(database, {
+      ...baseTransaction,
+      date: '2026-01-16',
+      counterparty: 'Second Shop',
+    })
 
     await collectCommandOutcome(
       () => runCategorizeCommand(handle, ['--limit', '1']),
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(categorizeTransactionMock).toHaveBeenCalledTimes(1)
@@ -235,7 +236,7 @@ describe('categorizeAction — invalid --limit option', () => {
 
 describe('categorizeAction — no categories available', () => {
   it('warns and skips all transactions when no categories are seeded', async () => {
-    const { database, handle } = createCommandTestDatabase(database => {
+    const { database, handle } = createCommandTestDatabase((database) => {
       createCategoriesTable(database)
       createAccountsTable(database)
       createTransactionsTable(database)
@@ -247,7 +248,7 @@ describe('categorizeAction — no categories available', () => {
     await collectCommandOutcome(
       () => runCommandSilently(createCategorizeCommand('default.db'), []),
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(logWarnMock).toHaveBeenCalled()

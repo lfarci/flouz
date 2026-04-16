@@ -4,6 +4,7 @@ import globals from 'globals'
 import importPlugin from 'eslint-plugin-import'
 import tseslint from 'typescript-eslint'
 import sonarjs from 'eslint-plugin-sonarjs'
+import eslintConfigPrettier from 'eslint-config-prettier'
 
 const typeCheckedRules = {
   '@typescript-eslint/consistent-type-imports': [
@@ -84,5 +85,6 @@ export default defineConfig(
       // anchored regexes (^) don't have ReDoS risk
       'sonarjs/slow-regex': 'off',
     },
-  }
+  },
+  eslintConfigPrettier,
 )

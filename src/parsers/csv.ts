@@ -1,21 +1,35 @@
 import { z } from 'zod'
 import type { ImportedTransaction } from '@/types'
 
-export interface ParseError { row: number; message: string }
-export interface ParseResult { transactions: ImportedTransaction[]; errors: ParseError[] }
+export interface ParseError {
+  row: number
+  message: string
+}
+export interface ParseResult {
+  transactions: ImportedTransaction[]
+  errors: ParseError[]
+}
 
 const rowSchema = z.object({
-  date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD'),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be YYYY-MM-DD'),
   amount: z
     .string()
-    .refine(rawValue => !isNaN(parseFloat(rawValue)), { message: 'amount must be a decimal number' })
-    .transform(rawValue => parseFloat(rawValue)),
+    .refine((v) => !isNaN(parseFloat(v)), {
+      message: 'amount must be a decimal number',
+    })
+    .transform((v) => parseFloat(v)),
   counterparty: z.string().optional().default(''),
   counterparty_iban: z.string().optional().default(''),
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-  currency: z.string().optional().transform(rawValue => rawValue || 'EUR'),
+  currency: z
+    .string()
+    .optional()
+    .transform((value) => {
+      if (value === undefined || value === '') {
+        return 'EUR'
+      }
+
+      return value
+    }),
   account: z.string().optional().default(''),
   note: z.string().optional().default(''),
 })
@@ -25,7 +39,7 @@ type RawRow = Record<string, string>
 function parseRow(row: RawRow, sourceFile?: string): ImportedTransaction {
   const result = rowSchema.safeParse(row)
   if (!result.success) {
-    const messages = result.error.issues.map(issue => issue.message).join('; ')
+    const messages = result.error.issues.map((i) => i.message).join('; ')
     throw new Error(messages)
   }
 
@@ -49,10 +63,13 @@ function parseRow(row: RawRow, sourceFile?: string): ImportedTransaction {
 }
 
 export function parseCsv(content: string, sourceFile?: string): ParseResult {
-  const lines = content.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0)
+  const lines = content
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
   if (lines.length === 0) return { transactions: [], errors: [] }
 
-  const headers = lines[0].split(',').map(header => header.trim())
+  const headers = lines[0].split(',').map((h) => h.trim())
   const required = ['date', 'amount', 'counterparty']
   for (const field of required) {
     if (!headers.includes(field)) {
@@ -72,15 +89,14 @@ export function parseCsv(content: string, sourceFile?: string): ParseResult {
       }
       transactions.push(parseRow(row, sourceFile))
     } catch (error) {
-      errors.push({ row: i + 1, message: error instanceof Error ? error.message : String(error) })
+      errors.push({
+        row: i + 1,
+        message: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 
   return { transactions, errors }
-}
-
-function isEscapedQuote(line: string, index: number, inQuotes: boolean): boolean {
-  return inQuotes && line[index + 1] === '"'
 }
 
 function splitCsvLine(line: string): string[] {
@@ -89,26 +105,20 @@ function splitCsvLine(line: string): string[] {
   let inQuotes = false
 
   for (let i = 0; i < line.length; i++) {
-    const character = line[i]
-
-    if (character === '"' && isEscapedQuote(line, i, inQuotes)) {
-      current += '"'
-      i++
-      continue
-    }
-
-    if (character === '"') {
-      inQuotes = !inQuotes
-      continue
-    }
-
-    if (character === ',' && !inQuotes) {
+    const ch = line[i]
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"'
+        i++
+      } else {
+        inQuotes = !inQuotes
+      }
+    } else if (ch === ',' && !inQuotes) {
       result.push(current)
       current = ''
-      continue
+    } else {
+      current += ch
     }
-
-    current += character
   }
   result.push(current)
   return result

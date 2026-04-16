@@ -16,15 +16,13 @@ export function createTransactionCategorySuggestionsTable(db: Database): void {
 }
 
 export function migrateTransactionCategorySuggestionsTable(db: Database): void {
-  const columns = db.prepare(
-    'PRAGMA table_info(transaction_category_suggestions)'
-  ).all() as { name: string }[]
+  const columns = db.prepare('PRAGMA table_info(transaction_category_suggestions)').all() as { name: string }[]
 
-  const names = new Set(columns.map(column => column.name))
+  const names = new Set(columns.map((column) => column.name))
 
   if (!names.has('status')) {
     db.run(
-      "ALTER TABLE transaction_category_suggestions ADD COLUMN status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','applied'))"
+      "ALTER TABLE transaction_category_suggestions ADD COLUMN status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','applied'))",
     )
   }
   if (!names.has('reviewed_at')) {

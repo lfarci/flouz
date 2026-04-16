@@ -29,16 +29,16 @@ Prints stored transactions. Supports filtering, searching, and multiple output f
 flouz transactions list [options]
 ```
 
-| Option | Description |
-|---|---|
-| `-f, --from <date>` | Filter from date (yyyy-MM-dd) |
-| `-t, --to <date>` | Filter to date (yyyy-MM-dd) |
-| `-c, --category <slug>` | Filter by category slug |
-| `-s, --search <text>` | Search counterparty name |
-| `-l, --limit <n>` | Max results |
-| `--uncategorized` | Show only transactions without a manual category |
+| Option                  | Description                                                 |
+| ----------------------- | ----------------------------------------------------------- |
+| `-f, --from <date>`     | Filter from date (yyyy-MM-dd)                               |
+| `-t, --to <date>`       | Filter to date (yyyy-MM-dd)                                 |
+| `-c, --category <slug>` | Filter by category slug                                     |
+| `-s, --search <text>`   | Search counterparty name                                    |
+| `-l, --limit <n>`       | Max results                                                 |
+| `--uncategorized`       | Show only transactions without a manual category            |
 | `-o, --output <format>` | Output format: `table`, `csv`, or `json` (default: `table`) |
-| `-d, --db <path>` | SQLite database path |
+| `-d, --db <path>`       | SQLite database path                                        |
 
 `--category` and `--uncategorized` are mutually exclusive.
 
@@ -50,13 +50,13 @@ Uses an AI model to suggest categories for transactions that have no manual cate
 flouz transactions categorize [options]
 ```
 
-| Option | Description |
-|---|---|
-| `-f, --from <date>` | Process only transactions from this date (YYYY-MM-DD) |
-| `-t, --to <date>` | Process only transactions up to this date (YYYY-MM-DD) |
-| `-s, --search <text>` | Filter by counterparty name |
-| `-l, --limit <n>` | Max transactions to process in one run |
-| `-d, --db <path>` | SQLite database path |
+| Option                | Description                                            |
+| --------------------- | ------------------------------------------------------ |
+| `-f, --from <date>`   | Process only transactions from this date (YYYY-MM-DD)  |
+| `-t, --to <date>`     | Process only transactions up to this date (YYYY-MM-DD) |
+| `-s, --search <text>` | Filter by counterparty name                            |
+| `-l, --limit <n>`     | Max transactions to process in one run                 |
+| `-d, --db <path>`     | SQLite database path                                   |
 
 ### `suggestions`
 
@@ -70,14 +70,14 @@ Lists pending suggestions by default. Pass `--status` to view approved or applie
 flouz transactions suggestions list [options]
 ```
 
-| Option | Description |
-|---|---|
-| `--status <status>` | Filter by status: `pending`, `approved`, or `applied` (default: `pending`) |
-| `-f, --from <date>` | Filter from date (YYYY-MM-DD) |
-| `-t, --to <date>` | Filter to date (YYYY-MM-DD) |
-| `-s, --search <text>` | Search counterparty name |
-| `-l, --limit <n>` | Max results |
-| `-d, --db <path>` | SQLite database path |
+| Option                | Description                                                                |
+| --------------------- | -------------------------------------------------------------------------- |
+| `--status <status>`   | Filter by status: `pending`, `approved`, or `applied` (default: `pending`) |
+| `-f, --from <date>`   | Filter from date (YYYY-MM-DD)                                              |
+| `-t, --to <date>`     | Filter to date (YYYY-MM-DD)                                                |
+| `-s, --search <text>` | Search counterparty name                                                   |
+| `-l, --limit <n>`     | Max results                                                                |
+| `-d, --db <path>`     | SQLite database path                                                       |
 
 #### `suggestions approve`
 
@@ -95,10 +95,10 @@ Deletes matching `pending` or `approved` suggestions. The deleted transactions b
 flouz transactions suggestions reject [options]
 ```
 
-| Option | Description |
-|---|---|
+| Option              | Description                                                    |
+| ------------------- | -------------------------------------------------------------- |
 | `--status <status>` | Status to reject: `pending` or `approved` (default: `pending`) |
-| (common filters) | `--from`, `--to`, `--search`, `--limit`, `--db` |
+| (common filters)    | `--from`, `--to`, `--search`, `--limit`, `--db`                |
 
 #### `suggestions apply`
 

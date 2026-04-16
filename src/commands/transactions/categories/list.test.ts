@@ -21,6 +21,20 @@ const logInfoMock = mock((_message: string) => {})
 const logErrorMock = mock((_message: string) => {})
 
 void mock.module('@clack/prompts', () => ({
+  intro: mock((_message: string) => {}),
+  outro: mock((_message: string) => {}),
+  cancel: mock((_message: string) => {}),
+  spinner: mock(() => ({
+    start: mock((_: string) => {}),
+    message: mock((_: string) => {}),
+    stop: mock((_: string) => {}),
+  })),
+  progress: mock(() => ({
+    start: mock((_: string) => {}),
+    advance: mock(() => {}),
+    stop: mock((_: string) => {}),
+    error: mock((_: string) => {}),
+  })),
   log: {
     info: logInfoMock,
     error: logErrorMock,
@@ -39,24 +53,25 @@ const processExitMock = createProcessExitMock()
 let createListCategoriesCommand: typeof CreateListCategoriesCommand
 let originalProcessExit: typeof process.exit
 
-type ListCategoriesOutcome =
-  | { status: 'resolved' }
-  | { status: 'rejected'; errorCode: number | undefined }
+type ListCategoriesOutcome = { status: 'resolved' } | { status: 'rejected'; errorCode: number | undefined }
 
 function createInMemoryDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createCategoriesTable(database)
     seedCategories(database)
   })
 }
 
 function createEmptyDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createCategoriesTable(database)
   })
 }
 
-async function runListCategories(handle: ReturnType<typeof createInMemoryDatabase>['handle'], args: string[]): Promise<void> {
+async function runListCategories(
+  handle: ReturnType<typeof createInMemoryDatabase>['handle'],
+  args: string[],
+): Promise<void> {
   openDatabaseMock.mockReturnValue(handle)
   const command = createListCategoriesCommand('default.db')
   command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
@@ -89,14 +104,14 @@ describe('createListCategoriesCommand', () => {
 
   it('has a --tree option defaulting to false', () => {
     const command = createListCategoriesCommand('flouz.db')
-    const treeOption = command.options.find(option => option.long === '--tree')
+    const treeOption = command.options.find((option) => option.long === '--tree')
     expect(treeOption).toBeDefined()
     expect(treeOption?.defaultValue).toBe(false)
   })
 
   it('has a --db option', () => {
     const command = createListCategoriesCommand('flouz.db')
-    const dbOption = command.options.find(option => option.long === '--db')
+    const dbOption = command.options.find((option) => option.long === '--db')
     expect(dbOption).toBeDefined()
   })
 })
@@ -205,7 +220,7 @@ describe('listCategoriesAction — error handling', () => {
         await command.parseAsync([], { from: 'user' })
       },
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(outcome).toEqual({ status: 'rejected', errorCode: 1 })
@@ -223,7 +238,7 @@ describe('listCategoriesAction — error handling', () => {
         await command.parseAsync([], { from: 'user' })
       },
       () => undefined,
-      () => undefined
+      () => undefined,
     )
 
     expect(logErrorMock).toHaveBeenCalledWith('DB open failed')
@@ -231,7 +246,9 @@ describe('listCategoriesAction — error handling', () => {
 
   it('exits with code 0 on EPIPE error', async () => {
     const epipeError = Object.assign(new Error('write EPIPE'), { code: 'EPIPE' })
-    openDatabaseMock.mockImplementation(() => { throw epipeError })
+    openDatabaseMock.mockImplementation(() => {
+      throw epipeError
+    })
 
     const outcome = await collectCommandOutcome<ListCategoriesOutcome>(
       async () => {
@@ -240,7 +257,7 @@ describe('listCategoriesAction — error handling', () => {
         await command.parseAsync([], { from: 'user' })
       },
       () => ({ status: 'resolved' }),
-      errorCode => ({ status: 'rejected', errorCode })
+      (errorCode) => ({ status: 'rejected', errorCode }),
     )
 
     expect(outcome).toEqual({ status: 'rejected', errorCode: 0 })

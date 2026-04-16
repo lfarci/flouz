@@ -14,24 +14,24 @@ date,amount,counterparty,counterparty_iban,currency,account,note
 
 ## Format Details
 
-| Property | Value |
-|---|---|
-| Separator | `,` (comma) |
-| Decimal separator | `.` (dot) |
-| Date format | `yyyy-MM-dd` |
-| Header row | Required |
+| Property          | Value        |
+| ----------------- | ------------ |
+| Separator         | `,` (comma)  |
+| Decimal separator | `.` (dot)    |
+| Date format       | `yyyy-MM-dd` |
+| Header row        | Required     |
 
 ## Columns
 
-| CSV column | Required | Meaning |
-|---|---|---|
-| `date` | Yes | Transaction date in `yyyy-MM-dd` format |
-| `amount` | Yes | Signed decimal amount |
-| `counterparty` | Yes | Merchant, sender, or other party name |
-| `counterparty_iban` | No | IBAN of the other party |
-| `currency` | No | Currency code, defaults to `EUR` when empty |
-| `account` | No | Configured account key |
-| `note` | No | Free-text note |
+| CSV column          | Required | Meaning                                     |
+| ------------------- | -------- | ------------------------------------------- |
+| `date`              | Yes      | Transaction date in `yyyy-MM-dd` format     |
+| `amount`            | Yes      | Signed decimal amount                       |
+| `counterparty`      | Yes      | Merchant, sender, or other party name       |
+| `counterparty_iban` | No       | IBAN of the other party                     |
+| `currency`          | No       | Currency code, defaults to `EUR` when empty |
+| `account`           | No       | Configured account key                      |
+| `note`              | No       | Free-text note                              |
 
 ## Account Column
 

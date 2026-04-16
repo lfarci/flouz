@@ -14,7 +14,7 @@ export async function getModel() {
   const token = Bun.env.GITHUB_TOKEN ?? config.githubToken
   if (!token) {
     throw new Error(
-      'GitHub token is required for AI categorization. Set GITHUB_TOKEN env var or run: flouz config set github-token <token>'
+      'GitHub token is required for AI categorization. Set GITHUB_TOKEN env var or run: flouz config set github-token <token>',
     )
   }
   const baseURL = Bun.env.AI_BASE_URL ?? config.aiBaseUrl ?? DEFAULT_BASE_URL

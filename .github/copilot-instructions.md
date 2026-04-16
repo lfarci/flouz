@@ -14,6 +14,7 @@ Initialize with a README, then clone locally to `~/Documents/finance-cli/`.
 See `.github/instructions/data-privacy.instructions.md` for full rules.
 
 Key rules at a glance:
+
 - No real IBANs, account numbers, or transaction amounts anywhere in the repo
 - No `.csv`, `.db`, or `.env` files — they are gitignored
 - Test fixtures must use invented data only (e.g. `BE00 0000 0000 0000`, `ACME Shop`)
@@ -21,41 +22,45 @@ Key rules at a glance:
 
 ## Stack
 
-| Concern | Choice |
-|---|---|
-| Runtime | **Bun** — use Bun APIs, never Node.js equivalents |
-| Language | **TypeScript strict mode** |
-| CLI | **Commander.js** — parent command groups use `index.ts`; leaf subcommands live in sibling files in `src/commands/` |
-| Prompts | **@clack/prompts** — all user-facing output goes through this |
-| Database | **`bun:sqlite`** — built-in, no ORM, prepared statements only |
-| CSV parsing | **`csv-parse`** |
-| AI | **Vercel AI SDK** (`ai`) — `generateObject`, `generateText`, `streamText` |
-| AI provider | **GitHub Models** (default) via `@ai-sdk/openai` with custom `baseURL` |
-| Validation | **Zod** — all external data and LLM output validated with Zod schemas |
-| Testing | **`bun test`** — Jest-compatible API, no extra test runner |
+| Concern     | Choice                                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| Runtime     | **Bun** — use Bun APIs, never Node.js equivalents                                                                  |
+| Language    | **TypeScript strict mode**                                                                                         |
+| CLI         | **Commander.js** — parent command groups use `index.ts`; leaf subcommands live in sibling files in `src/commands/` |
+| Prompts     | **@clack/prompts** — all user-facing output goes through this                                                      |
+| Database    | **`bun:sqlite`** — built-in, no ORM, prepared statements only                                                      |
+| CSV parsing | **`csv-parse`**                                                                                                    |
+| AI          | **Vercel AI SDK** (`ai`) — `generateObject`, `generateText`, `streamText`                                          |
+| AI provider | **GitHub Models** (default) via `@ai-sdk/openai` with custom `baseURL`                                             |
+| Validation  | **Zod** — all external data and LLM output validated with Zod schemas                                              |
+| Testing     | **`bun test`** — Jest-compatible API, no extra test runner                                                         |
 
 ## Code Rules
 
 > TypeScript and Bun-specific rules are in `.github/instructions/typescript.instructions.md`.
 
 ### AI
+
 - Never call LLM APIs directly with `fetch` — always use Vercel AI SDK functions
 - Always use `generateObject` with a Zod schema for structured output — never parse JSON manually
 - Store AI suggestions in `ai_category_id` — never silently overwrite user-set `category_id`
 - Model is injected via `getModel()` from `src/ai/client.ts` — never hardcode a model name
 
 ### Error Handling
+
 - Commands: catch errors at the top level, display via `@clack/prompts` `cancel()`, exit with code 1
 - Internal functions: throw typed `Error` with descriptive messages — no silent failures
 - Validate file existence before processing; validate CSV format early with a clear error
 
 ### Style
+
 - Comment only non-obvious logic — no JSDoc on trivial functions
 - Prefer early returns over nested conditionals
 - Max function length: ~40 lines — extract helpers freely
 - Commit messages: imperative mood, `feat:`, `fix:`, `test:`, `chore:` prefixes
 
 ### Testing
+
 - Test files live next to source: `source.ts` → `source.test.ts`
 - DB tests always use `new Database(':memory:')` — never a file on disk
 - Mock LLM calls via `mock.module('ai', ...)` from `bun:test` — no real API calls in tests
@@ -86,6 +91,7 @@ src/
 ## Design Principles
 
 ### SOLID
+
 - **Single Responsibility** — each module does one thing: `parsers/source.ts` parses CSVs, `ai/client.ts` creates the model. Never mix concerns.
 - **Open/Closed** — extend behavior via new files/functions, not by modifying stable ones. Adding a new leaf subcommand should usually mean a new file inside its command group rather than expanding a parent `index.ts`.
 - **Liskov Substitution** — AI provider adapters must be interchangeable. Swapping `@ai-sdk/openai` for `@ai-sdk/anthropic` must require zero changes outside `ai/client.ts`.
@@ -93,12 +99,14 @@ src/
 - **Dependency Inversion** — commands depend on abstractions (`getModel()`, query helpers), not on concrete SDKs or `Database` instances directly. Inject `db` as a parameter, never import a global instance.
 
 ### KISS — Keep It Simple
+
 - Solve the problem at hand, not the hypothetical future problem.
 - Prefer a plain `for` loop over a clever `reduce` when it reads more clearly.
 - Prefer a single SQL query over an in-memory aggregation when SQL is simpler.
 - No design patterns for their own sake — only introduce abstraction when it removes real duplication.
 
 ### DRY — Don't Repeat Yourself
+
 - Date parsing, amount parsing, and counterparty cleanup live in `parsers/source.ts` only — never duplicated in tests or commands (tests import the same function).
 - Prompt templates live in `ai/prompts.ts` — no inline prompt strings in commands.
 - Zod schemas that are reused across modules live in a shared `src/types.ts`.

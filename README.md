@@ -23,6 +23,7 @@ flouz config set github-token ghp_your_personal_access_token
 ```
 
 Get a token at [github.com/settings/tokens](https://github.com/settings/tokens):
+
 - **Fine-grained PAT** — enable the **Models: Read** permission (under "Account permissions")
 - **Classic PAT** — no scopes required
 
@@ -58,17 +59,18 @@ flouz expects a **generic CSV format** — not tied to any specific bank. Conver
 date,amount,counterparty,counterparty_iban,currency,account,note
 ```
 
-| Column | Required | Format |
-|---|---|---|
-| `date` | ✅ | ISO 8601: `YYYY-MM-DD` |
-| `amount` | ✅ | Dot-decimal; negative = expense, positive = income |
-| `counterparty` | ✅ | Free text (merchant or sender name) |
-| `counterparty_iban` | ❌ | IBAN of the other party |
-| `currency` | ❌ | 3-letter code, defaults to `EUR` |
-| `account` | ❌ | Configured account key created with `flouz accounts add` |
-| `note` | ❌ | Free text memo |
+| Column              | Required | Format                                                   |
+| ------------------- | -------- | -------------------------------------------------------- |
+| `date`              | ✅       | ISO 8601: `YYYY-MM-DD`                                   |
+| `amount`            | ✅       | Dot-decimal; negative = expense, positive = income       |
+| `counterparty`      | ✅       | Free text (merchant or sender name)                      |
+| `counterparty_iban` | ❌       | IBAN of the other party                                  |
+| `currency`          | ❌       | 3-letter code, defaults to `EUR`                         |
+| `account`           | ❌       | Configured account key created with `flouz accounts add` |
+| `note`              | ❌       | Free text memo                                           |
 
 Example:
+
 ```csv
 date,amount,counterparty,counterparty_iban,currency,account,note
 2026-01-15,-42.50,ACME Shop,BE00 0000 0000 0000,EUR,checking,Invoice 42
@@ -82,6 +84,7 @@ bun run src/index.ts accounts add checking "Main account" Belfius --iban "BE00 0
 ```
 
 Options:
+
 - `-d, --db <path>` — SQLite database path (default: `./flouz.db`, or `$DB_PATH`)
 
 ### List transactions
@@ -91,6 +94,7 @@ bun run src/index.ts transactions list
 ```
 
 Options:
+
 - `-f, --from <yyyy-MM-dd>` — filter from date
 - `-t, --to <yyyy-MM-dd>` — filter to date
 - `-c, --category <slug>` — filter by category (e.g. `groceries`, `food-and-drink`)
@@ -133,6 +137,7 @@ flouz transactions list
 #### `transactions categorize`
 
 Options:
+
 - `-f, --from <date>` — process only transactions from this date (YYYY-MM-DD)
 - `-t, --to <date>` — process only transactions up to this date (YYYY-MM-DD)
 - `-s, --search <text>` — filter by counterparty name
@@ -183,6 +188,13 @@ bun run src/index.ts accounts list
 bun test
 ```
 
+## Formatting
+
+```bash
+bun run format
+bun run format:check
+```
+
 ## Type checking
 
 ```bash
@@ -218,12 +230,12 @@ flouz config get ai-model    # show a single key
 
 Environment variables take precedence over the config file — useful for CI/CD or scripting:
 
-| Variable | Config key | Default |
-|---|---|---|
-| `GITHUB_TOKEN` | `github-token` | — (required for AI) |
-| `AI_MODEL` | `ai-model` | `openai/gpt-4o-mini` |
-| `AI_BASE_URL` | `ai-base-url` | `https://models.github.ai/inference` |
-| `DB_PATH` | `db-path` | `~/.config/flouz/flouz.db` |
+| Variable       | Config key     | Default                              |
+| -------------- | -------------- | ------------------------------------ |
+| `GITHUB_TOKEN` | `github-token` | — (required for AI)                  |
+| `AI_MODEL`     | `ai-model`     | `openai/gpt-4o-mini`                 |
+| `AI_BASE_URL`  | `ai-base-url`  | `https://models.github.ai/inference` |
+| `DB_PATH`      | `db-path`      | `~/.config/flouz/flouz.db`           |
 
 See `docs/ai-providers.md` to switch to Anthropic or Ollama.
 

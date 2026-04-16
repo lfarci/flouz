@@ -26,7 +26,7 @@ describe('getAccounts', () => {
 
     const accounts = getAccounts(db)
 
-    expect(accounts.map(account => account.key)).toEqual(['checking', 'wallet'])
+    expect(accounts.map((account) => account.key)).toEqual(['checking', 'wallet'])
   })
 })
 

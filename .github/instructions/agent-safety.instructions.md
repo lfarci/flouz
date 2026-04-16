@@ -44,24 +44,26 @@ applyTo: '**'
 ## Code Patterns
 
 When writing agent tool functions:
+
 ```typescript
 // Good: Tool with explicit allowlist and read-only access
 const tools = {
   query_transactions: tool({
     description: 'Query transactions — read-only, no mutations',
     parameters: z.object({ filter: z.string().optional() }),
-    execute: async ({ filter }) => queryTransactions(filter)
-  })
+    execute: async ({ filter }) => queryTransactions(filter),
+  }),
   // Never expose: execute_sql, delete_transaction, update_category
 }
 
 // Bad: Unrestricted SQL execution
 const tools = {
-  execute_sql: tool({ execute: async ({ sql }) => db.run(sql) })
+  execute_sql: tool({ execute: async ({ sql }) => db.run(sql) }),
 }
 ```
 
 When defining AI command tools:
+
 ```typescript
 // finance-cli chat command: SQL tool is READ-ONLY
 const allowedTools = ['query_transactions', 'get_categories', 'get_summary']
@@ -69,7 +71,7 @@ const blockedPatterns = [/DROP|DELETE|UPDATE|INSERT|CREATE|ALTER/i]
 
 // Validate every AI-generated SQL before execution
 function validateSql(sql: string): void {
-  if (blockedPatterns.some(p => p.test(sql))) {
+  if (blockedPatterns.some((p) => p.test(sql))) {
     throw new Error('AI attempted a mutating SQL operation — blocked')
   }
 }
@@ -80,6 +82,6 @@ function validateSql(sql: string): void {
 - Relying only on output guardrails (post-generation) instead of pre-execution governance
 - Hardcoding policy rules instead of loading from configuration
 - Allowing agents to self-modify their own governance policies
-- Forgetting to governance-check tool *arguments*, not just tool *names*
+- Forgetting to governance-check tool _arguments_, not just tool _names_
 - Not decaying trust scores over time — stale trust is dangerous
 - Logging prompts in audit trails — log decisions and metadata, not user content

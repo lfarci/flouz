@@ -5,12 +5,14 @@ import { TransactionCategorizationResultSchema } from '@/ai/schemas'
 const chatMock = mock(() => 'mock-chat-model')
 const createOpenAIMock = mock(() => ({ chat: chatMock }))
 
-const generateTextMock = mock(() => Promise.resolve({
-  output: {
-    categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
-    confidence: 0.8,
-  },
-}))
+const generateTextMock = mock(() =>
+  Promise.resolve({
+    output: {
+      categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
+      confidence: 0.8,
+    },
+  }),
+)
 
 void mock.module('ai', () => ({
   generateText: generateTextMock,
@@ -40,7 +42,12 @@ const fakeTransaction: Transaction = {
 }
 
 const fakeCategories: Category[] = [
-  { id: VALID_CATEGORY_ID, name: 'Groceries', slug: 'groceries', parentId: null },
+  {
+    id: VALID_CATEGORY_ID,
+    name: 'Groceries',
+    slug: 'groceries',
+    parentId: null,
+  },
 ]
 
 beforeEach(() => {
@@ -77,20 +84,21 @@ describe('categorizeTransaction', () => {
 
   it('throws when the returned categoryId is not in the provided categories list', async () => {
     generateTextMock.mockResolvedValue({
-      output: { categoryId: 'aaaaaaaa-0000-0000-0000-000000000000', confidence: 0.8 },
+      output: {
+        categoryId: 'aaaaaaaa-0000-0000-0000-000000000000',
+        confidence: 0.8,
+      },
     })
 
-    await expect(
-      categorizeTransaction(fakeTransaction, fakeCategories)
-    ).rejects.toThrow('AI returned invalid categoryId: aaaaaaaa-0000-0000-0000-000000000000')
+    await expect(categorizeTransaction(fakeTransaction, fakeCategories)).rejects.toThrow(
+      'AI returned invalid categoryId: aaaaaaaa-0000-0000-0000-000000000000',
+    )
   })
 
   it('throws when generateText rejects (simulating an AI error)', async () => {
     generateTextMock.mockRejectedValue(new Error('AI service unavailable'))
 
-    await expect(
-      categorizeTransaction(fakeTransaction, fakeCategories)
-    ).rejects.toThrow('AI service unavailable')
+    await expect(categorizeTransaction(fakeTransaction, fakeCategories)).rejects.toThrow('AI service unavailable')
   })
 })
 

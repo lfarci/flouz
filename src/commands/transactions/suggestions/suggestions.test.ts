@@ -18,7 +18,7 @@ import {
   upsertTransactionCategorySuggestion,
   approveTransactionCategorySuggestion,
 } from '@/db/transaction_category_suggestions/mutations'
-import type { createSuggestionsCommand as CreateSuggestionsCommand } from './index'
+import type { Command } from 'commander'
 
 const CATEGORY_ID = '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f'
 
@@ -58,11 +58,11 @@ void mock.module('@/cli/stdout', () => ({
 }))
 
 const processExitMock = createProcessExitMock()
-let createSuggestionsCommand: typeof CreateSuggestionsCommand
+let createSuggestionsCommand: (defaultDb: string) => Command
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createCategoriesTable(database)
     createAccountsTable(database)
     createTransactionsTable(database)
@@ -127,7 +127,7 @@ describe('createSuggestionsCommand', () => {
 
   it('registers list, approve, reject, fix, apply subcommands', () => {
     const command = createSuggestionsCommand('flouz.db')
-    const names = command.commands.map(c => c.name())
+    const names = command.commands.map((c) => c.name())
     expect(names).toContain('list')
     expect(names).toContain('approve')
     expect(names).toContain('reject')
@@ -151,9 +151,9 @@ describe('suggestions list', () => {
 
     await runSuggestionsCommand(handle, ['list'])
 
-    const row = database.prepare(
-      'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(id) as { status: string } | null
+    const row = database
+      .prepare('SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(id) as { status: string } | null
     expect(row?.status).toBe('pending')
   })
 
@@ -166,9 +166,9 @@ describe('suggestions list', () => {
 
     await runSuggestionsCommand(handle, ['list', '--status', 'approved'])
 
-    const row = database.prepare(
-      'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(id) as { status: string } | null
+    const row = database
+      .prepare('SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(id) as { status: string } | null
     expect(row?.status).toBe('approved')
   })
 })
@@ -188,9 +188,9 @@ describe('suggestions approve', () => {
 
     await runSuggestionsCommand(handle, ['approve'])
 
-    const row = database.prepare(
-      'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(id) as { status: string } | null
+    const row = database
+      .prepare('SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(id) as { status: string } | null
     expect(row?.status).toBe('approved')
   })
 })
@@ -210,9 +210,7 @@ describe('suggestions reject', () => {
 
     await runSuggestionsCommand(handle, ['reject'])
 
-    const row = database.prepare(
-      'SELECT * FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(id)
+    const row = database.prepare('SELECT * FROM transaction_category_suggestions WHERE transaction_id = ?').get(id)
     expect(row).toBeNull()
   })
 
@@ -271,9 +269,9 @@ describe('suggestions apply', () => {
     } | null
     expect(tx?.category_id).toBe(CATEGORY_ID)
 
-    const suggestion = database.prepare(
-      'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(id) as { status: string } | null
+    const suggestion = database
+      .prepare('SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(id) as { status: string } | null
     expect(suggestion?.status).toBe('applied')
   })
 })
@@ -281,7 +279,7 @@ describe('suggestions apply', () => {
 describe('suggestions fix', () => {
   it('registers the fix subcommand', () => {
     const command = createSuggestionsCommand('flouz.db')
-    const names = command.commands.map(c => c.name())
+    const names = command.commands.map((c) => c.name())
     expect(names).toContain('fix')
   })
 
@@ -289,7 +287,7 @@ describe('suggestions fix', () => {
     const { handle } = createInMemoryDatabase()
 
     const outcome = await collectOutcome(() =>
-      runSuggestionsCommand(handle, ['fix', '--id', '99999', '--category', 'groceries'])
+      runSuggestionsCommand(handle, ['fix', '--id', '99999', '--category', 'groceries']),
     )
 
     expect(outcome).toBe('rejected')
@@ -302,7 +300,7 @@ describe('suggestions fix', () => {
     seedSuggestion(database, id)
 
     const outcome = await collectOutcome(() =>
-      runSuggestionsCommand(handle, ['fix', '--id', String(id), '--category', 'nonexistent-slug'])
+      runSuggestionsCommand(handle, ['fix', '--id', String(id), '--category', 'nonexistent-slug']),
     )
 
     expect(outcome).toBe('rejected')
@@ -314,19 +312,21 @@ describe('suggestions fix', () => {
     const id = getLastId(database)
     seedSuggestion(database, id)
     approveTransactionCategorySuggestion(database, id)
-    database.prepare(
-      "UPDATE transaction_category_suggestions SET status = 'applied', applied_at = ? WHERE transaction_id = ?"
-    ).run(new Date().toISOString(), id)
+    database
+      .prepare(
+        "UPDATE transaction_category_suggestions SET status = 'applied', applied_at = ? WHERE transaction_id = ?",
+      )
+      .run(new Date().toISOString(), id)
 
     const outcome = await collectOutcome(() =>
-      runSuggestionsCommand(handle, ['fix', '--id', String(id), '--category', 'groceries'])
+      runSuggestionsCommand(handle, ['fix', '--id', String(id), '--category', 'groceries']),
     )
 
     expect(outcome).toBe('rejected')
 
-    const row = database.prepare(
-      'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(id) as { status: string } | null
+    const row = database
+      .prepare('SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(id) as { status: string } | null
     expect(row?.status).toBe('applied')
   })
 
@@ -339,13 +339,13 @@ describe('suggestions fix', () => {
 
     await runSuggestionsCommand(handle, ['fix', '--id', String(id), '--category', 'groceries'])
 
-    const groceriesCategory = database.prepare(
-      "SELECT id FROM categories WHERE slug = 'groceries'"
-    ).get() as { id: string } | null
+    const groceriesCategory = database.prepare("SELECT id FROM categories WHERE slug = 'groceries'").get() as {
+      id: string
+    } | null
 
-    const row = database.prepare(
-      'SELECT status, category_id FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(id) as { status: string; category_id: string } | null
+    const row = database
+      .prepare('SELECT status, category_id FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(id) as { status: string; category_id: string } | null
     expect(row?.status).toBe('pending')
     expect(row?.category_id).toBe(groceriesCategory?.id)
   })
@@ -366,9 +366,9 @@ describe('end-to-end: categorize -> approve -> apply', () => {
     openDatabaseMock.mockReturnValue(handle)
     await runCommandSilently(createSuggestionsCommand('default.db'), ['reject', '--search', 'Discard'])
 
-    const discardRow = database.prepare(
-      'SELECT * FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(discardId)
+    const discardRow = database
+      .prepare('SELECT * FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(discardId)
     expect(discardRow).toBeNull()
 
     openDatabaseMock.mockReturnValue(handle)
@@ -382,9 +382,9 @@ describe('end-to-end: categorize -> approve -> apply', () => {
     } | null
     expect(keepTx?.category_id).toBe(CATEGORY_ID)
 
-    const keepSuggestion = database.prepare(
-      'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
-    ).get(keepId) as { status: string } | null
+    const keepSuggestion = database
+      .prepare('SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(keepId) as { status: string } | null
     expect(keepSuggestion?.status).toBe('applied')
   })
 })

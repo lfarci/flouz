@@ -48,7 +48,9 @@ describe('resolveModelName', () => {
   })
 
   it('returns the config aiModel when AI_MODEL env var is not set', async () => {
-    const spy = spyOn(configModule, 'readConfig').mockResolvedValue({ aiModel: 'config/model' })
+    const spy = spyOn(configModule, 'readConfig').mockResolvedValue({
+      aiModel: 'config/model',
+    })
     const name = await resolveModelName()
     spy.mockRestore()
     expect(name).toBe('config/model')
@@ -72,7 +74,9 @@ describe('getModel', () => {
   })
 
   it('creates the provider with the githubToken from config', async () => {
-    const spy = spyOn(configModule, 'readConfig').mockResolvedValue({ githubToken: 'config_token_123' })
+    const spy = spyOn(configModule, 'readConfig').mockResolvedValue({
+      githubToken: 'config_token_123',
+    })
     await getModel()
     spy.mockRestore()
     expect(createOpenAIMock).toHaveBeenCalledWith({
@@ -97,4 +101,3 @@ describe('getModel', () => {
     expect(chatMock).toHaveBeenCalledWith(DEFAULT_MODEL)
   })
 })
-

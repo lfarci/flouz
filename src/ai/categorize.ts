@@ -12,7 +12,7 @@ interface CategorizationResult {
 
 export async function categorizeTransaction(
   transaction: Transaction,
-  categories: Category[]
+  categories: Category[],
 ): Promise<CategorizationResult> {
   const prompt = buildTransactionCategorizationPrompt(transaction, categories)
   const model = await getModel()
@@ -23,7 +23,7 @@ export async function categorizeTransaction(
     prompt,
   })
 
-  const validCategoryIds = new Set(categories.map(category => category.id))
+  const validCategoryIds = new Set(categories.map((category) => category.id))
   if (!validCategoryIds.has(result.output.categoryId)) {
     throw new Error(`AI returned invalid categoryId: ${result.output.categoryId}`)
   }

@@ -7,10 +7,10 @@ const SUPPORTED_KEYS = ['db-path', 'github-token', 'ai-model', 'ai-base-url'] as
 type SupportedKey = (typeof SUPPORTED_KEYS)[number]
 
 const KEY_DESCRIPTIONS: Record<SupportedKey, string> = {
-  'db-path':      'Path to the SQLite database file (default: ~/.config/flouz/flouz.db)',
+  'db-path': 'Path to the SQLite database file (default: ~/.config/flouz/flouz.db)',
   'github-token': 'GitHub personal access token — required for AI categorization',
-  'ai-model':     'AI model name to use (default: openai/gpt-4o-mini)',
-  'ai-base-url':  'AI provider base URL (default: https://models.github.ai/inference)',
+  'ai-model': 'AI model name to use (default: openai/gpt-4o-mini)',
+  'ai-base-url': 'AI provider base URL (default: https://models.github.ai/inference)',
 }
 
 export function isSupportedKey(key: string): key is SupportedKey {
@@ -74,7 +74,7 @@ export function formatConfigValueLine(key: SupportedKey, value: string | undefin
 }
 
 function buildKeysHelpText(): string {
-  const lines = SUPPORTED_KEYS.map(key => `  ${key.padEnd(16)}${KEY_DESCRIPTIONS[key]}`)
+  const lines = SUPPORTED_KEYS.map((key) => `  ${key.padEnd(16)}${KEY_DESCRIPTIONS[key]}`)
   return `\nAvailable keys:\n${lines.join('\n')}`
 }
 

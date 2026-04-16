@@ -7,7 +7,6 @@ import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import { upsertTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
 import { getTransactionsMissingCategoryForCategorization } from '@/db/transactions/queries'
-import { parseLimit } from './parse-options'
 import type { CategorizeTransactionsFilters, Transaction } from '@/types'
 
 interface CategorizeOptions {
@@ -24,6 +23,17 @@ interface CategorizeResult {
   firstError?: string
 }
 
+function parseLimit(limit: string | undefined): number | undefined {
+  if (limit === undefined) return undefined
+
+  const parsedLimit = Number.parseInt(limit, 10)
+  if (Number.isNaN(parsedLimit) || parsedLimit <= 0) {
+    throw new Error(`Invalid limit: ${limit}. Use a positive integer.`)
+  }
+
+  return parsedLimit
+}
+
 function toCategorizeTransactionsFilters(options: CategorizeOptions): CategorizeTransactionsFilters {
   return {
     from: options.from,
@@ -38,10 +48,7 @@ function loadEligibleTransactions(db: Database, options: CategorizeOptions): Tra
   return getTransactionsMissingCategoryForCategorization(db, filters)
 }
 
-async function categorizeTransactions(
-  db: Database,
-  transactions: Transaction[]
-): Promise<CategorizeResult> {
+async function categorizeTransactions(db: Database, transactions: Transaction[]): Promise<CategorizeResult> {
   const categories = getCategories(db)
 
   if (categories.length === 0) {
@@ -74,10 +81,7 @@ async function categorizeTransactions(
       suggested++
     } catch (error) {
       skipped++
-      firstError ??=
-        error instanceof Error
-          ? error.message
-          : String(error)
+      firstError ??= error instanceof Error ? error.message : String(error)
     }
 
     categorizationSpinner.message(`Categorizing ${suggested + skipped} / ${transactions.length}`)

@@ -21,10 +21,7 @@ interface InsertResult {
   allErrors: (ParseError & { file: string })[]
 }
 
-export function resolveImportedTransaction(
-  db: Database,
-  transaction: ImportedTransaction
-): NewTransaction {
+export function resolveImportedTransaction(db: Database, transaction: ImportedTransaction): NewTransaction {
   const accountId = resolveAccountId(db, transaction.accountKey)
   return {
     date: transaction.date,
@@ -43,8 +40,8 @@ export function resolveImportedTransaction(
 export async function findCsvFiles(dirPath: string): Promise<string[]> {
   const entries = await readdir(dirPath, { withFileTypes: true })
   return entries
-    .filter(entry => entry.isFile() && extname(entry.name).toLowerCase() === '.csv')
-    .map(entry => join(dirPath, entry.name))
+    .filter((entry) => entry.isFile() && extname(entry.name).toLowerCase() === '.csv')
+    .map((entry) => join(dirPath, entry.name))
 }
 
 async function resolveCsvFiles(path: string): Promise<string[] | null> {
@@ -73,7 +70,10 @@ async function parseAllFiles(files: string[]): Promise<ParsedFile[]> {
 
 async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promise<InsertResult> {
   const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
-  const insertProgress = progress({ max: Math.max(1, totalRows), style: 'heavy' })
+  const insertProgress = progress({
+    max: Math.max(1, totalRows),
+    style: 'heavy',
+  })
   insertProgress.start(`0 / ${totalRows}`)
   let totalImported = 0
   const allErrors: (ParseError & { file: string })[] = []
@@ -88,7 +88,7 @@ async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promis
       totalImported += transactions.length
       insertProgress.advance(transactions.length, `${basename(file)} — ${totalImported} / ${totalRows}`)
       await Bun.sleep(0)
-      allErrors.push(...errors.map(parseError => ({ ...parseError, file })))
+      allErrors.push(...errors.map((parseError) => ({ ...parseError, file })))
     }
   } catch (error) {
     insertProgress.error('Failed')
@@ -107,9 +107,7 @@ function resolveAccountId(db: Database, accountKey: string | undefined): number 
   const account = getAccountByKey(db, normalizedKey)
   if (account !== undefined) return account.id
 
-  throw new Error(
-    `Unknown account key: ${normalizedKey}. Create it first with \`flouz accounts add\`.`
-  )
+  throw new Error(`Unknown account key: ${normalizedKey}. Create it first with \`flouz accounts add\`.`)
 }
 
 function reportResults(totalImported: number, allErrors: (ParseError & { file: string })[]): void {

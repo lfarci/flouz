@@ -1,4 +1,4 @@
-import { type Database , type SQLQueryBindings } from 'bun:sqlite'
+import { type Database, type SQLQueryBindings } from 'bun:sqlite'
 import type { Transaction, TransactionFilters, CategorizeTransactionsFilters } from '@/types'
 
 function rowToTransaction(row: Record<string, unknown>): Transaction {
@@ -74,23 +74,24 @@ export function countTransactions(db: Database, filters: TransactionFilters = {}
 }
 
 export function getUncategorized(db: Database): Transaction[] {
-  const rows = db.prepare(
-    'SELECT * FROM transactions WHERE category_id IS NULL ORDER BY date DESC'
-  ).all() as Record<string, unknown>[]
+  const rows = db.prepare('SELECT * FROM transactions WHERE category_id IS NULL ORDER BY date DESC').all() as Record<
+    string,
+    unknown
+  >[]
   return rows.map(rowToTransaction)
 }
 
 export function hasTransactionsForAccount(db: Database, accountId: number): boolean {
-  const row = db.prepare(
-    'SELECT 1 AS found FROM transactions WHERE account_id = ? LIMIT 1'
-  ).get(accountId) as { found: number } | null
+  const row = db.prepare('SELECT 1 AS found FROM transactions WHERE account_id = ? LIMIT 1').get(accountId) as {
+    found: number
+  } | null
 
   return row !== null
 }
 
 export function getTransactionsMissingCategoryForCategorization(
   db: Database,
-  filters: CategorizeTransactionsFilters = {}
+  filters: CategorizeTransactionsFilters = {},
 ): Transaction[] {
   const conditions: string[] = [
     'category_id IS NULL',

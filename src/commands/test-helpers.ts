@@ -53,9 +53,7 @@ export function restoreProcessExit(originalProcessExit: typeof process.exit): vo
   })
 }
 
-export function createCommandTestDatabase(
-  initializeDatabase: (database: Database) => void
-): CommandTestDatabase {
+export function createCommandTestDatabase(initializeDatabase: (database: Database) => void): CommandTestDatabase {
   const database = new Database(':memory:')
   initializeDatabase(database)
   const closeMock = mock(() => {})
@@ -78,7 +76,7 @@ export async function runCommandSilently(command: Command, argumentsList: string
 export async function collectCommandOutcome<T>(
   runCommand: () => Promise<void>,
   createResolvedOutcome: () => T,
-  createRejectedOutcome: (errorCode: number | undefined) => T
+  createRejectedOutcome: (errorCode: number | undefined) => T,
 ): Promise<T> {
   try {
     await runCommand()

@@ -10,7 +10,13 @@ import { upsertTransactionCategorySuggestion } from '@/db/transaction_category_s
 import { createTransactionCategorySuggestionsTable } from '@/db/transaction_category_suggestions/schema'
 import { insertTransaction, updateCategory } from './mutations'
 import { createTransactionsTable } from './schema'
-import { countTransactions, getTransactions, getTransactionsMissingCategoryForCategorization, getUncategorized, hasTransactionsForAccount } from './queries'
+import {
+  countTransactions,
+  getTransactions,
+  getTransactionsMissingCategoryForCategorization,
+  getUncategorized,
+  hasTransactionsForAccount,
+} from './queries'
 
 const fakeTransaction: NewTransaction = {
   date: '2026-01-15',
@@ -66,20 +72,20 @@ describe('getTransactions', () => {
         amount: transaction.amount,
         counterparty: transaction.counterparty,
         note: transaction.note,
-      })
+      }),
     )
   })
 
   it('filters by from date', () => {
     const transactions = getTransactions(db, { from: '2026-01-15' })
     expect(transactions.length).toBe(2)
-    expect(transactions.every(transaction => transaction.date >= '2026-01-15')).toBe(true)
+    expect(transactions.every((transaction) => transaction.date >= '2026-01-15')).toBe(true)
   })
 
   it('filters by to date', () => {
     const transactions = getTransactions(db, { to: '2026-01-25' })
     expect(transactions.length).toBe(2)
-    expect(transactions.every(transaction => transaction.date <= '2026-01-25')).toBe(true)
+    expect(transactions.every((transaction) => transaction.date <= '2026-01-25')).toBe(true)
   })
 
   it('filters by search (counterparty LIKE)', () => {
@@ -176,9 +182,13 @@ const CATEGORY_ID = '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f'
 describe('getTransactions with uncategorized filter', () => {
   beforeEach(() => {
     insertTransaction(db, { ...fakeTransaction, counterparty: 'No Category' })
-    insertTransaction(db, { ...fakeTransaction, counterparty: 'Has Category', date: '2026-02-01' })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      counterparty: 'Has Category',
+      date: '2026-02-01',
+    })
     const allTransactions = getTransactions(db)
-    const categorized = allTransactions.find(t => t.counterparty === 'Has Category')!
+    const categorized = allTransactions.find((t) => t.counterparty === 'Has Category')!
     updateCategory(db, categorized.id!, CATEGORY_ID)
   })
 
@@ -193,7 +203,7 @@ describe('getTransactions with uncategorized filter', () => {
   it('excludes transactions that have a category_id set', () => {
     const transactions = getTransactions(db, { uncategorized: true })
 
-    expect(transactions.every(t => t.categoryId === undefined)).toBe(true)
+    expect(transactions.every((t) => t.categoryId === undefined)).toBe(true)
   })
 })
 
@@ -228,7 +238,10 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
   })
 
   it('excludes transactions that already have a suggestion', () => {
-    insertTransaction(db, { ...fakeTransaction, counterparty: 'Already Suggested' })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      counterparty: 'Already Suggested',
+    })
     const allTransactions = getTransactions(db)
     const transactionId = allTransactions[0].id!
 
@@ -245,41 +258,84 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
   })
 
   it('applies search filter as case-insensitive counterparty match', () => {
-    insertTransaction(db, { ...fakeTransaction, counterparty: 'Delhaize Market' })
-    insertTransaction(db, { ...fakeTransaction, counterparty: 'Colruyt Shop', date: '2026-02-01' })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      counterparty: 'Delhaize Market',
+    })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      counterparty: 'Colruyt Shop',
+      date: '2026-02-01',
+    })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db, { search: 'delhaize' })
+    const transactions = getTransactionsMissingCategoryForCategorization(db, {
+      search: 'delhaize',
+    })
 
     expect(transactions).toHaveLength(1)
     expect(transactions[0].counterparty).toBe('Delhaize Market')
   })
 
   it('applies from date filter', () => {
-    insertTransaction(db, { ...fakeTransaction, date: '2026-01-10', counterparty: 'Old' })
-    insertTransaction(db, { ...fakeTransaction, date: '2026-02-01', counterparty: 'New' })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      date: '2026-01-10',
+      counterparty: 'Old',
+    })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      date: '2026-02-01',
+      counterparty: 'New',
+    })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db, { from: '2026-01-20' })
+    const transactions = getTransactionsMissingCategoryForCategorization(db, {
+      from: '2026-01-20',
+    })
 
     expect(transactions).toHaveLength(1)
     expect(transactions[0].counterparty).toBe('New')
   })
 
   it('applies to date filter', () => {
-    insertTransaction(db, { ...fakeTransaction, date: '2026-01-10', counterparty: 'Old' })
-    insertTransaction(db, { ...fakeTransaction, date: '2026-02-01', counterparty: 'New' })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      date: '2026-01-10',
+      counterparty: 'Old',
+    })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      date: '2026-02-01',
+      counterparty: 'New',
+    })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db, { to: '2026-01-20' })
+    const transactions = getTransactionsMissingCategoryForCategorization(db, {
+      to: '2026-01-20',
+    })
 
     expect(transactions).toHaveLength(1)
     expect(transactions[0].counterparty).toBe('Old')
   })
 
   it('respects the limit filter', () => {
-    insertTransaction(db, { ...fakeTransaction, counterparty: 'Shop A', date: '2026-01-10' })
-    insertTransaction(db, { ...fakeTransaction, counterparty: 'Shop B', date: '2026-01-20' })
-    insertTransaction(db, { ...fakeTransaction, counterparty: 'Shop C', date: '2026-01-30' })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      counterparty: 'Shop A',
+      date: '2026-01-10',
+    })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      counterparty: 'Shop B',
+      date: '2026-01-20',
+    })
+    insertTransaction(db, {
+      ...fakeTransaction,
+      counterparty: 'Shop C',
+      date: '2026-01-30',
+    })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db, { limit: 2 })
+    const transactions = getTransactionsMissingCategoryForCategorization(db, {
+      limit: 2,
+    })
 
     expect(transactions).toHaveLength(2)
   })

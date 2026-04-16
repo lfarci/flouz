@@ -41,7 +41,7 @@ const roundedBorder = {
 
 export function renderCliTable(config: TableConfig): string[] {
   const columnWidths = fitColumnWidths(config.columns, process.stdout.columns)
-  const data = [config.columns.map(column => column.header), ...config.rows]
+  const data = [config.columns.map((column) => column.header), ...config.rows]
   const tableConfig: TableUserConfig = {
     border: roundedBorder,
     columnDefault: {
@@ -50,10 +50,7 @@ export function renderCliTable(config: TableConfig): string[] {
       truncate: 24,
     },
     columns: Object.fromEntries(
-      config.columns.map((column, index) => [
-        index,
-        buildColumnConfig(column, columnWidths[index]),
-      ])
+      config.columns.map((column, index) => [index, buildColumnConfig(column, columnWidths[index])]),
     ),
     drawHorizontalLine: (index, size) => index === 0 || index === 1 || index === size,
   }
@@ -79,8 +76,8 @@ function buildColumnConfig(column: TableColumn, width: number): TableColumnConfi
 function fitColumnWidths(columns: TableColumn[], terminalWidth: number | undefined): number[] {
   const fallbackWidth = 100
   const availableWidth = terminalWidth ?? fallbackWidth
-  const widths = columns.map(column => column.width)
-  const minimumWidths = columns.map(column => column.minWidth ?? Math.min(column.width, 8))
+  const widths = columns.map((column) => column.width)
+  const minimumWidths = columns.map((column) => column.minWidth ?? Math.min(column.width, 8))
   const overflow = totalTableWidth(widths) - availableWidth
 
   if (overflow <= 0) return widths

@@ -22,6 +22,20 @@ const errorLogMock = mock(() => {})
 const openDatabaseMock = createOpenDatabaseMock()
 
 void mock.module('@clack/prompts', () => ({
+  intro: mock((_message: string) => {}),
+  outro: mock((_message: string) => {}),
+  cancel: mock((_message: string) => {}),
+  spinner: mock(() => ({
+    start: mock((_: string) => {}),
+    message: mock((_: string) => {}),
+    stop: mock((_: string) => {}),
+  })),
+  progress: mock(() => ({
+    start: mock((_: string) => {}),
+    advance: mock(() => {}),
+    stop: mock((_: string) => {}),
+    error: mock((_: string) => {}),
+  })),
   log: {
     success: successLogMock,
     error: errorLogMock,
@@ -49,7 +63,7 @@ let createAddAccountsCommand: typeof CreateAddAccountsCommand
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createAccountsTable(database)
   })
 }
@@ -61,7 +75,7 @@ async function runAddCommand(argumentsList: string[]): Promise<void> {
 async function collectAddCommandOutcome(
   database: Database,
   argumentsList: string[],
-  accountKey?: string
+  accountKey?: string,
 ): Promise<ActionSummary> {
   const account = () => (accountKey === undefined ? undefined : getAccountByKey(database, accountKey))
 
@@ -77,7 +91,7 @@ async function collectAddCommandOutcome(
       errorCode,
       account: account(),
       accountCount: countAccounts(database),
-    })) as RejectedActionOutcomeFactory
+    })) as RejectedActionOutcomeFactory,
   )
 }
 
@@ -184,11 +198,7 @@ describe('addAccountAction', () => {
     const { database, handle } = createInMemoryDatabase()
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['checking', 'Main account', 'Provider One'],
-      'checking'
-    )
+    const summary = await collectAddCommandOutcome(database, ['checking', 'Main account', 'Provider One'], 'checking')
 
     expect(summary).toEqual({
       status: 'resolved',
@@ -245,7 +255,7 @@ describe('addAccountAction', () => {
     const summary = await collectAddCommandOutcome(
       database,
       ['  checking  ', '  Main account  ', '  Provider One  '],
-      'checking'
+      'checking',
     )
 
     expect(summary).toEqual({
@@ -271,11 +281,7 @@ describe('addAccountAction', () => {
     })
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['checking', 'Other account', 'Provider Two'],
-      'checking'
-    )
+    const summary = await collectAddCommandOutcome(database, ['checking', 'Other account', 'Provider Two'], 'checking')
 
     expect(summary).toEqual({
       status: 'rejected',
@@ -302,7 +308,7 @@ describe('addAccountAction', () => {
     const summary = await collectAddCommandOutcome(
       database,
       ['  checking  ', 'Other account', 'Provider Two'],
-      'checking'
+      'checking',
     )
 
     expect(summary).toEqual({
@@ -322,11 +328,7 @@ describe('addAccountAction', () => {
     const { database, handle } = createInMemoryDatabase()
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['   ', 'Main account', 'Provider One'] ,
-      'checking'
-    )
+    const summary = await collectAddCommandOutcome(database, ['   ', 'Main account', 'Provider One'], 'checking')
 
     expect(summary).toEqual({
       status: 'rejected',
@@ -340,11 +342,7 @@ describe('addAccountAction', () => {
     const { database, handle } = createInMemoryDatabase()
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['checking', '   ', 'Provider One'],
-      'checking'
-    )
+    const summary = await collectAddCommandOutcome(database, ['checking', '   ', 'Provider One'], 'checking')
 
     expect(summary).toEqual({
       status: 'rejected',
@@ -358,11 +356,7 @@ describe('addAccountAction', () => {
     const { database, handle } = createInMemoryDatabase()
     openDatabaseMock.mockReturnValue(handle)
 
-    const summary = await collectAddCommandOutcome(
-      database,
-      ['checking', 'Main account', '   '],
-      'checking'
-    )
+    const summary = await collectAddCommandOutcome(database, ['checking', 'Main account', '   '], 'checking')
 
     expect(summary).toEqual({
       status: 'rejected',
@@ -378,14 +372,8 @@ describe('addAccountAction', () => {
 
     const summary = await collectAddCommandOutcome(
       database,
-      [
-        'savings',
-        'Savings account',
-        'Provider One',
-        '--description',
-        '  Employer meal card  ',
-      ],
-      'savings'
+      ['savings', 'Savings account', 'Provider One', '--description', '  Employer meal card  '],
+      'savings',
     )
 
     expect(summary).toEqual({
@@ -408,14 +396,8 @@ describe('addAccountAction', () => {
 
     const summary = await collectAddCommandOutcome(
       database,
-      [
-        'savings',
-        'Savings account',
-        'Provider One',
-        '--description',
-        '   ',
-      ],
-      'savings'
+      ['savings', 'Savings account', 'Provider One', '--description', '   '],
+      'savings',
     )
 
     expect(summary).toEqual({
@@ -438,14 +420,8 @@ describe('addAccountAction', () => {
 
     const summary = await collectAddCommandOutcome(
       database,
-      [
-        'wallet',
-        'Wallet account',
-        'Provider Two',
-        '--iban',
-        '  BE00 0000 0000 0000  ',
-      ],
-      'wallet'
+      ['wallet', 'Wallet account', 'Provider Two', '--iban', '  BE00 0000 0000 0000  '],
+      'wallet',
     )
 
     expect(summary).toEqual({
@@ -468,14 +444,8 @@ describe('addAccountAction', () => {
 
     const summary = await collectAddCommandOutcome(
       database,
-      [
-        'wallet',
-        'Wallet account',
-        'Provider Two',
-        '--iban',
-        '   ',
-      ],
-      'wallet'
+      ['wallet', 'Wallet account', 'Provider Two', '--iban', '   '],
+      'wallet',
     )
 
     expect(summary).toEqual({

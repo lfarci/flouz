@@ -3,10 +3,7 @@ import { Database } from 'bun:sqlite'
 import { initDb } from '@/db/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { insertTransaction, updateCategory } from '@/db/transactions/mutations'
-import {
-  upsertTransactionCategorySuggestion,
-  approveTransactionCategorySuggestion,
-} from './mutations'
+import { upsertTransactionCategorySuggestion, approveTransactionCategorySuggestion } from './mutations'
 import {
   getSuggestedTransactionIds,
   getTransactionCategorySuggestions,

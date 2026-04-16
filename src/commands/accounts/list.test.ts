@@ -12,15 +12,35 @@ import {
 import { insertAccount } from '@/db/accounts/mutations'
 import { getAccounts } from '@/db/accounts/queries'
 import { createAccountsTable } from '@/db/accounts/schema'
-import type { createListAccountsCommand as CreateListAccountsCommand, formatAccountsTable as FormatAccountsTable } from './list'
+import type {
+  createListAccountsCommand as CreateListAccountsCommand,
+  formatAccountsTable as FormatAccountsTable,
+} from './list'
 
 const infoLogMock = mock((message: string) => message)
-const messageLogMock = mock((message: string[] | string, options?: { spacing?: number; withGuide?: boolean }) => ({ message, options }))
+const messageLogMock = mock((message: string[] | string, options?: { spacing?: number; withGuide?: boolean }) => ({
+  message,
+  options,
+}))
 const errorLogMock = mock((message: string) => message)
 
 const openDatabaseMock = createOpenDatabaseMock()
 
 void mock.module('@clack/prompts', () => ({
+  intro: mock((_message: string) => {}),
+  outro: mock((_message: string) => {}),
+  cancel: mock((_message: string) => {}),
+  spinner: mock(() => ({
+    start: mock((_: string) => {}),
+    message: mock((_: string) => {}),
+    stop: mock((_: string) => {}),
+  })),
+  progress: mock(() => ({
+    start: mock((_: string) => {}),
+    advance: mock(() => {}),
+    stop: mock((_: string) => {}),
+    error: mock((_: string) => {}),
+  })),
   log: {
     info: infoLogMock,
     message: messageLogMock,
@@ -44,7 +64,7 @@ let formatAccountsTable: typeof FormatAccountsTable
 let originalProcessExit: typeof process.exit
 
 function createInMemoryDatabase() {
-  return createCommandTestDatabase(database => {
+  return createCommandTestDatabase((database) => {
     createAccountsTable(database)
   })
 }
@@ -57,10 +77,10 @@ async function collectListCommandOutcome(argumentsList: string[]): Promise<ListS
   return await collectCommandOutcome<ListSummary>(
     () => runListCommand(argumentsList),
     () => ({ status: 'resolved' }),
-    errorCode => ({
+    (errorCode) => ({
       status: 'rejected',
       errorCode,
-    })
+    }),
   )
 }
 
@@ -161,8 +181,8 @@ describe('listAccountsAction', () => {
 
     expect({
       summary,
-      infoMessages: infoLogMock.mock.calls.map(call => call[0]),
-      tableLines: messageLogMock.mock.calls.map(call => call[0]),
+      infoMessages: infoLogMock.mock.calls.map((call) => call[0]),
+      tableLines: messageLogMock.mock.calls.map((call) => call[0]),
       closeCalls: closeMock.mock.calls.length,
     }).toEqual({
       summary: { status: 'resolved' },
@@ -192,8 +212,8 @@ describe('listAccountsAction', () => {
 
     expect({
       summary,
-      tableBlocks: messageLogMock.mock.calls.map(call => call[0]),
-      messageOptions: messageLogMock.mock.calls.map(call => call[1]),
+      tableBlocks: messageLogMock.mock.calls.map((call) => call[0]),
+      messageOptions: messageLogMock.mock.calls.map((call) => call[1]),
       closeCalls: closeMock.mock.calls.length,
     }).toEqual({
       summary: { status: 'resolved' },
@@ -217,7 +237,7 @@ describe('listAccountsAction', () => {
 
     expect({
       summary,
-      errorMessages: errorLogMock.mock.calls.map(call => call[0]),
+      errorMessages: errorLogMock.mock.calls.map((call) => call[0]),
       closeCalls: closeMock.mock.calls.length,
     }).toEqual({
       summary: {

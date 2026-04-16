@@ -18,7 +18,7 @@ export function writeStdout(output: string): Promise<void> {
     }
 
     process.stdout.once('error', onError)
-    process.stdout.write(output, error => {
+    process.stdout.write(output, (error) => {
       cleanup()
       if (error != null) {
         reject(error)

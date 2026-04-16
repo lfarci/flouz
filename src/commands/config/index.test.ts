@@ -1,9 +1,5 @@
 import { mock, spyOn, afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import {
-  createProcessExitMock,
-  restoreProcessExit,
-  setProcessExit,
-} from '@/commands/test-helpers'
+import { createProcessExitMock, restoreProcessExit, setProcessExit } from '@/commands/test-helpers'
 import * as configModule from '@/config'
 
 const logSuccessMock = mock((_message: string) => {})
@@ -11,6 +7,20 @@ const logErrorMock = mock((_message: string) => {})
 const logInfoMock = mock((_message: string) => {})
 
 void mock.module('@clack/prompts', () => ({
+  intro: mock((_message: string) => {}),
+  outro: mock((_message: string) => {}),
+  cancel: mock((_message: string) => {}),
+  spinner: mock(() => ({
+    start: mock((_: string) => {}),
+    message: mock((_: string) => {}),
+    stop: mock((_: string) => {}),
+  })),
+  progress: mock(() => ({
+    start: mock((_: string) => {}),
+    advance: mock(() => {}),
+    stop: mock((_: string) => {}),
+    error: mock((_: string) => {}),
+  })),
   log: {
     success: logSuccessMock,
     error: logErrorMock,
@@ -93,12 +103,12 @@ describe('createConfigCommand', () => {
 
   it('registers the set subcommand', () => {
     const command = createConfigCommand()
-    expect(command.commands.some(subcommand => subcommand.name() === 'set')).toBe(true)
+    expect(command.commands.some((subcommand) => subcommand.name() === 'set')).toBe(true)
   })
 
   it('registers the get subcommand', () => {
     const command = createConfigCommand()
-    expect(command.commands.some(subcommand => subcommand.name() === 'get')).toBe(true)
+    expect(command.commands.some((subcommand) => subcommand.name() === 'get')).toBe(true)
   })
 })
 
@@ -108,7 +118,9 @@ describe('setConfigAction', () => {
     const command = createConfigCommand()
     command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
 
-    await command.parseAsync(['set', 'db-path', '/tmp/test.db'], { from: 'user' })
+    await command.parseAsync(['set', 'db-path', '/tmp/test.db'], {
+      from: 'user',
+    })
 
     expect(writeConfigSpy).toHaveBeenCalledWith({ dbPath: '/tmp/test.db' })
     expect(logSuccessMock.mock.calls[0][0]).toContain('db-path')
@@ -119,9 +131,7 @@ describe('setConfigAction', () => {
     const command = createConfigCommand()
     command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
 
-    await expect(
-      command.parseAsync(['set', 'not-a-key', 'value'], { from: 'user' })
-    ).rejects.toThrow()
+    await expect(command.parseAsync(['set', 'not-a-key', 'value'], { from: 'user' })).rejects.toThrow()
 
     expect(logErrorMock).toHaveBeenCalled()
     expect(processExitMock).toHaveBeenCalledWith(1)
@@ -130,7 +140,9 @@ describe('setConfigAction', () => {
 
 describe('getConfigAction', () => {
   it('logs all config values when no key is given', async () => {
-    const readConfigSpy = spyOn(configModule, 'readConfig').mockResolvedValue({ dbPath: '/custom/path.db' })
+    const readConfigSpy = spyOn(configModule, 'readConfig').mockResolvedValue({
+      dbPath: '/custom/path.db',
+    })
     const command = createConfigCommand()
     command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
 
@@ -144,7 +156,9 @@ describe('getConfigAction', () => {
   })
 
   it('logs the value for a specific key', async () => {
-    const readConfigSpy = spyOn(configModule, 'readConfig').mockResolvedValue({ aiModel: 'openai/gpt-4o' })
+    const readConfigSpy = spyOn(configModule, 'readConfig').mockResolvedValue({
+      aiModel: 'openai/gpt-4o',
+    })
     const command = createConfigCommand()
     command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
 
@@ -161,16 +175,16 @@ describe('getConfigAction', () => {
     const command = createConfigCommand()
     command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
 
-    await expect(
-      command.parseAsync(['get', 'bad-key'], { from: 'user' })
-    ).rejects.toThrow()
+    await expect(command.parseAsync(['get', 'bad-key'], { from: 'user' })).rejects.toThrow()
 
     expect(logErrorMock).toHaveBeenCalled()
     expect(processExitMock).toHaveBeenCalledWith(1)
   })
 
   it('masks the github-token value when it is set', async () => {
-    const readConfigSpy = spyOn(configModule, 'readConfig').mockResolvedValue({ githubToken: 'ghp_super_secret' })
+    const readConfigSpy = spyOn(configModule, 'readConfig').mockResolvedValue({
+      githubToken: 'ghp_super_secret',
+    })
     const command = createConfigCommand()
     command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
 
