@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.0](https://github.com/lfarci/flouz/compare/v2.1.0...v2.2.0) (2026-04-16)
+
+
+### Features
+
+* **ci:** split CI into separate lint and test jobs, add coverage threshold ([#41](https://github.com/lfarci/flouz/issues/41)) ([0511ed0](https://github.com/lfarci/flouz/commit/0511ed0845d2a8cc845ff6712303ee149d7b4bd3))
+* set up ESLint with TypeScript type-checked rules ([#38](https://github.com/lfarci/flouz/issues/38)) ([97ec2f0](https://github.com/lfarci/flouz/commit/97ec2f0fa1d5bcab7afa8957412663c3ebf0315c))
+
+
+### Bug Fixes
+
+* use Promise.resolve in categorize mock to fix typecheck ([#40](https://github.com/lfarci/flouz/issues/40)) ([b2b76db](https://github.com/lfarci/flouz/commit/b2b76dbb9fb327a04b110434919bffe04e4eb22d))
+
 ## [2.1.0](https://github.com/lfarci/flouz/compare/v2.0.0...v2.1.0) (2026-04-14)
 
 ### Features
