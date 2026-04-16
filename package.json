@@ -10,8 +10,9 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
-    "format": "npm exec --yes prettier@3.8.3 -- --write . --ignore-unknown",
-    "format:check": "npm exec --yes prettier@3.8.3 -- --check . --ignore-unknown",
+    "prettier": "npm exec --yes prettier@3.8.3 --",
+    "format": "bun run prettier --write . --ignore-unknown",
+    "format:check": "bun run prettier --check . --ignore-unknown",
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
     "typecheck": "tsc --noEmit",

@@ -23,11 +23,15 @@ jobs:
         with:
           fetch-depth: 1
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Check formatting
         id: format
         run: |
           set -o pipefail
-          npm exec --yes prettier@3.8.3 -- --check . --ignore-unknown 2>&1 | tee /tmp/format-output.txt
+          bun run format:check 2>&1 | tee /tmp/format-output.txt
 
       - name: Job summary
         if: always()
