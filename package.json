@@ -10,9 +10,8 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
-    "prettier": "npm exec --yes prettier@3.8.3 --",
-    "format": "bun run prettier --write . --ignore-unknown",
-    "format:check": "bun run prettier --check . --ignore-unknown",
+    "format": "prettier --write . --ignore-unknown",
+    "format:check": "prettier --check . --ignore-unknown",
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "eslint src --fix",
     "typecheck": "tsc --noEmit",
@@ -28,6 +27,7 @@
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-sonarjs": "4.0.2",
     "globals": "17.5.0",
+    "prettier": "3.8.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "8.58.2"
   },
