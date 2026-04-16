@@ -20,42 +20,43 @@ function formatCategoriesTable(categories: Category[]): string[] {
       { header: 'Name', width: 32, minWidth: 16, wrapWord: true },
       { header: 'ID', width: 36, minWidth: 36, truncate: 36 },
     ],
-    rows: categories.map(c => [c.slug, c.name, c.id]),
+    rows: categories.map(category => [category.slug, category.name, category.id]),
   })
 }
 
-function formatCategoriesTree(categories: Category[]): string {
-  const childrenById = new Map<string | null, Category[]>()
+interface TreeEntry { label: string; slug: string }
 
+function buildChildrenMap(categories: Category[]): Map<string | null, Category[]> {
+  const childrenById = new Map<string | null, Category[]>()
   for (const category of categories) {
     const siblings = childrenById.get(category.parentId) ?? []
     siblings.push(category)
     childrenById.set(category.parentId, siblings)
   }
+  return childrenById
+}
 
-  const entries: { label: string; slug: string }[] = []
+function formatCategoriesTree(categories: Category[]): string {
+  const childrenById = buildChildrenMap(categories)
+  const entries: TreeEntry[] = []
 
   function renderNode(category: Category, prefix: string, isLast: boolean): void {
     const connector = isLast ? '└── ' : '├── '
     entries.push({ label: `${prefix}${connector}${category.name}`, slug: category.slug })
-
     const children = childrenById.get(category.id) ?? []
     const childPrefix = prefix + (isLast ? '    ' : '│   ')
-
     for (let i = 0; i < children.length; i++) {
       renderNode(children[i], childPrefix, i === children.length - 1)
     }
   }
 
   const roots = childrenById.get(null) ?? []
-
   for (let i = 0; i < roots.length; i++) {
     renderNode(roots[i], '', i === roots.length - 1)
   }
 
-  const maxLabelLength = Math.max(...entries.map(e => e.label.length))
-
-  return entries.map(e => `${e.label.padEnd(maxLabelLength)}  ${e.slug}`).join('\n')
+  const maxLabelLength = Math.max(...entries.map(entry => entry.label.length))
+  return entries.map(entry => `${entry.label.padEnd(maxLabelLength)}  ${entry.slug}`).join('\n')
 }
 
 async function listCategoriesAction(options: ListCategoriesOptions): Promise<void> {

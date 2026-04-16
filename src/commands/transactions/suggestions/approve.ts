@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
 import { getTransactionCategorySuggestions } from '@/db/transaction_category_suggestions/queries'
 import { approveTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
+import { toBaseFilters } from '@/commands/transactions/parse-options'
 import type { SuggestionFilters } from '@/types'
 
 interface ApproveOptions {
@@ -15,23 +16,8 @@ interface ApproveOptions {
   db: string
 }
 
-function parseLimit(limit: string | undefined): number | undefined {
-  if (limit === undefined) return undefined
-  const parsed = Number.parseInt(limit, 10)
-  if (Number.isNaN(parsed) || parsed <= 0) {
-    throw new Error(`Invalid limit: ${limit}. Use a positive integer.`)
-  }
-  return parsed
-}
-
 function toSuggestionFilters(options: ApproveOptions): SuggestionFilters {
-  return {
-    from: options.from,
-    to: options.to,
-    search: options.search,
-    limit: parseLimit(options.limit),
-    status: 'pending',
-  }
+  return { ...toBaseFilters(options), status: 'pending' }
 }
 
 function approveAction(options: ApproveOptions): void {

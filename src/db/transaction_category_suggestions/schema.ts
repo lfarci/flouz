@@ -20,7 +20,7 @@ export function migrateTransactionCategorySuggestionsTable(db: Database): void {
     'PRAGMA table_info(transaction_category_suggestions)'
   ).all() as { name: string }[]
 
-  const names = new Set(columns.map(c => c.name))
+  const names = new Set(columns.map(column => column.name))
 
   if (!names.has('status')) {
     db.run(

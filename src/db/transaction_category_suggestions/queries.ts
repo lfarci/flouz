@@ -132,3 +132,26 @@ export function getApprovedSuggestionTransactionIds(
   const rows = db.prepare(sql).all(...params) as { transactionId: number }[]
   return rows.map(row => row.transactionId)
 }
+
+export function getApprovedSuggestionCategoryId(
+  db: Database,
+  transactionId: number
+): string | null {
+  const row = db.prepare(`
+    SELECT category_id FROM transaction_category_suggestions
+    WHERE transaction_id = ? AND status = 'approved'
+  `).get(transactionId) as { category_id: string } | null
+
+  return row?.category_id ?? null
+}
+
+export function getSuggestionStatusByTransactionId(
+  db: Database,
+  transactionId: number
+): string | null {
+  const row = db.prepare(
+    'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
+  ).get(transactionId) as { status: string } | null
+
+  return row?.status ?? null
+}

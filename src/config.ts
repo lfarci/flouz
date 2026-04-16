@@ -1,4 +1,5 @@
 import { z } from 'zod'
+// Bun does not expose mkdir in the Bun namespace; node:fs/promises is the correct fallback.
 import { mkdir } from 'node:fs/promises'
 
 const xdgConfigHome = Bun.env.XDG_CONFIG_HOME ?? `${Bun.env.HOME}/.config`

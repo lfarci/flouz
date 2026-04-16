@@ -7,6 +7,7 @@ import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import { upsertTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
 import { getTransactionsMissingCategoryForCategorization } from '@/db/transactions/queries'
+import { parseLimit } from './parse-options'
 import type { CategorizeTransactionsFilters, Transaction } from '@/types'
 
 interface CategorizeOptions {
@@ -21,17 +22,6 @@ interface CategorizeResult {
   suggested: number
   skipped: number
   firstError?: string
-}
-
-function parseLimit(limit: string | undefined): number | undefined {
-  if (limit === undefined) return undefined
-
-  const parsedLimit = Number.parseInt(limit, 10)
-  if (Number.isNaN(parsedLimit) || parsedLimit <= 0) {
-    throw new Error(`Invalid limit: ${limit}. Use a positive integer.`)
-  }
-
-  return parsedLimit
 }
 
 function toCategorizeTransactionsFilters(options: CategorizeOptions): CategorizeTransactionsFilters {

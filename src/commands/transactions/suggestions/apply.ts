@@ -4,7 +4,7 @@ import { Command } from 'commander'
 import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
 import { applyApprovedCategorySuggestions } from '@/db/transaction_category_suggestions/apply'
-import { getApprovedSuggestionTransactionIds } from '@/db/transaction_category_suggestions/queries'
+import { toBaseFilters } from '@/commands/transactions/parse-options'
 import type { SuggestionFilters } from '@/types'
 
 interface ApplyOptions {
@@ -15,22 +15,8 @@ interface ApplyOptions {
   db: string
 }
 
-function parseLimit(limit: string | undefined): number | undefined {
-  if (limit === undefined) return undefined
-  const parsed = Number.parseInt(limit, 10)
-  if (Number.isNaN(parsed) || parsed <= 0) {
-    throw new Error(`Invalid limit: ${limit}. Use a positive integer.`)
-  }
-  return parsed
-}
-
 function toSuggestionFilters(options: ApplyOptions): SuggestionFilters {
-  return {
-    from: options.from,
-    to: options.to,
-    search: options.search,
-    limit: parseLimit(options.limit),
-  }
+  return toBaseFilters(options)
 }
 
 function applyAction(options: ApplyOptions): void {
@@ -41,17 +27,14 @@ function applyAction(options: ApplyOptions): void {
     database = openDatabase(dbPath)
 
     const filters = toSuggestionFilters(options)
-    const selected = getApprovedSuggestionTransactionIds(database, filters).length
+    const { selected, applied, skipped, firstError } = applyApprovedCategorySuggestions(database, filters)
+
+    database.close()
 
     if (selected === 0) {
-      database.close()
       log.info('No approved suggestions are ready to apply.')
       return
     }
-
-    const { applied, skipped, firstError } = applyApprovedCategorySuggestions(database, filters)
-
-    database.close()
 
     if (firstError !== undefined) {
       log.warn(`Some suggestions were skipped. First error: ${firstError}`)

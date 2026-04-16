@@ -4,6 +4,8 @@ import { Command } from 'commander'
 import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
 import { getTransactionCategorySuggestions } from '@/db/transaction_category_suggestions/queries'
+import { toBaseFilters } from '@/commands/transactions/parse-options'
+import { formatAmount } from '@/cli/format'
 import type { SuggestionFilters, SuggestionWithContext, TransactionCategorySuggestionStatus } from '@/types'
 import { renderCliTable } from '@/cli/table'
 import { isBrokenPipeError, writeStdout } from '@/cli/stdout'
@@ -22,28 +24,8 @@ function parseStatus(value: string): TransactionCategorySuggestionStatus {
   throw new Error(`Invalid status: ${value}. Use pending, approved, or applied.`)
 }
 
-function parseLimit(limit: string | undefined): number | undefined {
-  if (limit === undefined) return undefined
-  const parsed = Number.parseInt(limit, 10)
-  if (Number.isNaN(parsed) || parsed <= 0) {
-    throw new Error(`Invalid limit: ${limit}. Use a positive integer.`)
-  }
-  return parsed
-}
-
 function toSuggestionFilters(options: ListOptions): SuggestionFilters {
-  return {
-    from: options.from,
-    to: options.to,
-    search: options.search,
-    limit: parseLimit(options.limit),
-    status: parseStatus(options.status),
-  }
-}
-
-function formatAmount(amount: number): string {
-  const sign = amount >= 0 ? '+' : ''
-  return `${sign}${amount.toFixed(2)}`
+  return { ...toBaseFilters(options), status: parseStatus(options.status) }
 }
 
 function formatConfidence(confidence: number): string {
@@ -61,14 +43,14 @@ function formatSuggestionsTable(suggestions: SuggestionWithContext[]): string[] 
       { header: 'Conf.', width: 6, minWidth: 6, truncate: 6 },
       { header: 'Status', width: 10, minWidth: 8, truncate: 10 },
     ],
-    rows: suggestions.map(s => [
-      String(s.transactionId),
-      s.transactionDate,
-      formatAmount(s.amount),
-      s.counterparty,
-      s.categoryName,
-      formatConfidence(s.confidence),
-      s.status,
+    rows: suggestions.map(suggestion => [
+      String(suggestion.transactionId),
+      suggestion.transactionDate,
+      formatAmount(suggestion.amount),
+      suggestion.counterparty,
+      suggestion.categoryName,
+      formatConfidence(suggestion.confidence),
+      suggestion.status,
     ]),
   })
 }

@@ -2,9 +2,10 @@ import { log, outro } from '@clack/prompts'
 import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
-import { getCategories } from '@/db/categories/queries'
+import { findCategoryIdBySlug } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import { overrideTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
+import { getSuggestionStatusByTransactionId } from '@/db/transaction_category_suggestions/queries'
 
 interface FixOptions {
   id: string
@@ -20,23 +21,6 @@ function parseTransactionId(value: string): number {
   return parsed
 }
 
-function resolveCategoryId(db: Database, slug: string): string {
-  const categories = getCategories(db)
-  const match = categories.find(c => c.slug === slug)
-  if (match === undefined) {
-    const known = categories.map(c => c.slug).join(', ')
-    throw new Error(`Unknown category slug: "${slug}". Known slugs: ${known}`)
-  }
-  return match.id
-}
-
-function getSuggestionStatus(db: Database, transactionId: number): string | null {
-  const row = db.prepare(
-    'SELECT status FROM transaction_category_suggestions WHERE transaction_id = ?'
-  ).get(transactionId) as { status: string } | null
-  return row?.status ?? null
-}
-
 function fixAction(options: FixOptions): void {
   let database: Database | undefined
 
@@ -45,7 +29,7 @@ function fixAction(options: FixOptions): void {
     const dbPath = resolve(options.db)
     database = openDatabase(dbPath)
 
-    const status = getSuggestionStatus(database, transactionId)
+    const status = getSuggestionStatusByTransactionId(database, transactionId)
 
     if (status === null) {
       database.close()
@@ -59,7 +43,7 @@ function fixAction(options: FixOptions): void {
       process.exit(1)
     }
 
-    const categoryId = resolveCategoryId(database, options.category)
+    const categoryId = findCategoryIdBySlug(database, options.category)
 
     overrideTransactionCategorySuggestion(database, transactionId, categoryId)
 

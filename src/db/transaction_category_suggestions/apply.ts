@@ -1,9 +1,11 @@
 import { type Database } from 'bun:sqlite'
 import type { SuggestionFilters } from '@/types'
-import { getApprovedSuggestionTransactionIds } from './queries'
+import { getApprovedSuggestionCategoryId, getApprovedSuggestionTransactionIds } from './queries'
 import { markApprovedSuggestionApplied } from './mutations'
+import { applyTransactionCategory } from '@/db/transactions/mutations'
 
 export interface ApplyResult {
+  selected: number
   applied: number
   skipped: number
   firstError?: string
@@ -14,6 +16,7 @@ export function applyApprovedCategorySuggestions(
   filters: SuggestionFilters = {}
 ): ApplyResult {
   const transactionIds = getApprovedSuggestionTransactionIds(db, filters)
+  const selected = transactionIds.length
 
   let applied = 0
   let skipped = 0
@@ -22,22 +25,16 @@ export function applyApprovedCategorySuggestions(
   const run = db.transaction(() => {
     for (const transactionId of transactionIds) {
       try {
-        const suggestion = db.prepare(`
-          SELECT category_id FROM transaction_category_suggestions
-          WHERE transaction_id = ? AND status = 'approved'
-        `).get(transactionId) as { category_id: string } | null
+        const categoryId = getApprovedSuggestionCategoryId(db, transactionId)
 
-        if (suggestion === null) {
+        if (categoryId === null) {
           skipped++
           continue
         }
 
-        const result = db.prepare(`
-          UPDATE transactions SET category_id = ?
-          WHERE id = ? AND category_id IS NULL
-        `).run(suggestion.category_id, transactionId)
+        const changes = applyTransactionCategory(db, transactionId, categoryId)
 
-        if (result.changes === 0) {
+        if (changes === 0) {
           skipped++
           continue
         }
@@ -53,5 +50,5 @@ export function applyApprovedCategorySuggestions(
 
   run()
 
-  return { applied, skipped, firstError }
+  return { selected, applied, skipped, firstError }
 }

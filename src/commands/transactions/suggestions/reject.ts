@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
 import { getTransactionCategorySuggestions } from '@/db/transaction_category_suggestions/queries'
 import { deleteTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
+import { toBaseFilters } from '@/commands/transactions/parse-options'
 import type { SuggestionFilters, TransactionCategorySuggestionStatus } from '@/types'
 
 interface RejectOptions {
@@ -21,23 +22,8 @@ function parseRejectStatus(value: string): TransactionCategorySuggestionStatus {
   throw new Error(`Invalid status for reject: ${value}. Use pending or approved.`)
 }
 
-function parseLimit(limit: string | undefined): number | undefined {
-  if (limit === undefined) return undefined
-  const parsed = Number.parseInt(limit, 10)
-  if (Number.isNaN(parsed) || parsed <= 0) {
-    throw new Error(`Invalid limit: ${limit}. Use a positive integer.`)
-  }
-  return parsed
-}
-
 function toSuggestionFilters(options: RejectOptions): SuggestionFilters {
-  return {
-    from: options.from,
-    to: options.to,
-    search: options.search,
-    limit: parseLimit(options.limit),
-    status: parseRejectStatus(options.status),
-  }
+  return { ...toBaseFilters(options), status: parseRejectStatus(options.status) }
 }
 
 function rejectAction(options: RejectOptions): void {
