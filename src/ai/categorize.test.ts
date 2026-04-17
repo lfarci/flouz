@@ -5,7 +5,10 @@ import { TransactionCategorizationResultSchema } from '@/ai/schemas'
 import { initDb } from '@/db/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { insertTransaction } from '@/db/transactions/mutations'
-import { approveTransactionCategorySuggestion, upsertTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
+import {
+  approveTransactionCategorySuggestion,
+  upsertTransactionCategorySuggestion,
+} from '@/db/transaction_category_suggestions/mutations'
 
 const chatMock = mock(() => 'mock-chat-model')
 const createOpenAIMock = mock(() => ({ chat: chatMock }))
