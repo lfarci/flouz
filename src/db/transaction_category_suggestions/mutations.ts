@@ -7,9 +7,9 @@ export function upsertTransactionCategorySuggestion(db: Database, suggestion: Ne
   db.prepare(
     `
     INSERT INTO transaction_category_suggestions
-      (transaction_id, category_id, confidence, model, suggested_at, status, reviewed_at, applied_at)
+      (transaction_id, category_id, confidence, model, suggested_at, status, reviewed_at, applied_at, reasoning)
     VALUES
-      ($transactionId, $categoryId, $confidence, $model, $suggestedAt, 'pending', NULL, NULL)
+      ($transactionId, $categoryId, $confidence, $model, $suggestedAt, 'pending', NULL, NULL, $reasoning)
     ON CONFLICT(transaction_id) DO UPDATE SET
       category_id  = excluded.category_id,
       confidence   = excluded.confidence,
@@ -17,7 +17,8 @@ export function upsertTransactionCategorySuggestion(db: Database, suggestion: Ne
       suggested_at = excluded.suggested_at,
       status       = 'pending',
       reviewed_at  = NULL,
-      applied_at   = NULL
+      applied_at   = NULL,
+      reasoning    = excluded.reasoning
   `,
   ).run({
     $transactionId: suggestion.transactionId,
@@ -25,6 +26,7 @@ export function upsertTransactionCategorySuggestion(db: Database, suggestion: Ne
     $confidence: suggestion.confidence,
     $model: suggestion.model,
     $suggestedAt: suggestedAt,
+    $reasoning: suggestion.reasoning ?? null,
   })
 }
 

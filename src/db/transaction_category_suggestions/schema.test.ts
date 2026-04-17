@@ -136,3 +136,33 @@ describe('transaction_category_suggestions valid insert', () => {
     expect(inserted?.confidence).toBe(0.5)
   })
 })
+
+describe('transaction_category_suggestions reasoning column', () => {
+  it('allows null reasoning', () => {
+    insertTransaction(db, baseTransaction)
+    const { id } = db.prepare('SELECT id FROM transactions LIMIT 1').get() as { id: number }
+    insertSuggestion(db, id, VALID_CATEGORY_ID, 0.5)
+
+    const row = db
+      .prepare('SELECT reasoning FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(id) as { reasoning: string | null } | null
+
+    expect(row?.reasoning).toBeNull()
+  })
+
+  it('stores and retrieves a reasoning string', () => {
+    insertTransaction(db, baseTransaction)
+    const { id } = db.prepare('SELECT id FROM transactions LIMIT 1').get() as { id: number }
+    db.prepare(
+      `INSERT INTO transaction_category_suggestions
+        (transaction_id, category_id, confidence, model, suggested_at, reasoning)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    ).run(id, VALID_CATEGORY_ID, 0.5, 'test-model', new Date().toISOString(), 'Matches grocery pattern')
+
+    const row = db
+      .prepare('SELECT reasoning FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(id) as { reasoning: string | null } | null
+
+    expect(row?.reasoning).toBe('Matches grocery pattern')
+  })
+})

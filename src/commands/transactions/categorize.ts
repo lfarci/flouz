@@ -6,6 +6,7 @@ import { categorizeTransaction } from '@/ai/categorize'
 import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import { upsertTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
+import { getCategorizationExamples } from '@/db/transaction_category_suggestions/queries'
 import { getTransactionsMissingCategoryForCategorization } from '@/db/transactions/queries'
 import type { CategorizeTransactionsFilters, Transaction } from '@/types'
 
@@ -71,12 +72,14 @@ async function categorizeTransactions(db: Database, transactions: Transaction[])
     }
 
     try {
-      const result = await categorizeTransaction(transaction, categories)
+      const examples = getCategorizationExamples(db, transaction)
+      const result = await categorizeTransaction(transaction, categories, examples, db)
       upsertTransactionCategorySuggestion(db, {
         transactionId: transaction.id,
         categoryId: result.categoryId,
         confidence: result.confidence,
         model: result.model,
+        reasoning: result.reasoning,
       })
       suggested++
     } catch (error) {

@@ -1,20 +1,38 @@
 import { generateText, Output } from 'ai'
-import type { Category, Transaction } from '@/types'
+import type { Database } from 'bun:sqlite'
+import type { CategorizationExample, Category, Transaction } from '@/types'
+import { getCounterpartyCategoryConsensus } from '@/db/transaction_category_suggestions/queries'
 import { getModel, resolveModelName } from './client'
 import { buildTransactionCategorizationPrompt } from './prompts'
 import { TransactionCategorizationResultSchema } from './schemas'
 
-interface CategorizationResult {
+export const MIN_FAST_PATH_APPROVALS = 3
+
+export interface CategorizationResult {
   categoryId: string
   confidence: number
   model: string
+  reasoning?: string
+}
+
+function buildFastPathResult(categoryId: string): CategorizationResult {
+  return { categoryId, confidence: 1.0, model: 'fast-path' }
 }
 
 export async function categorizeTransaction(
   transaction: Transaction,
   categories: Category[],
+  examples: CategorizationExample[] = [],
+  db?: Database,
 ): Promise<CategorizationResult> {
-  const prompt = buildTransactionCategorizationPrompt(transaction, categories)
+  if (db !== undefined) {
+    const consensus = getCounterpartyCategoryConsensus(db, transaction.counterparty, MIN_FAST_PATH_APPROVALS)
+    if (consensus !== null) {
+      return buildFastPathResult(consensus.categoryId)
+    }
+  }
+
+  const prompt = buildTransactionCategorizationPrompt(transaction, categories, examples)
   const model = await getModel()
 
   const result = await generateText({
@@ -32,5 +50,6 @@ export async function categorizeTransaction(
     categoryId: result.output.categoryId,
     confidence: result.output.confidence,
     model: await resolveModelName(),
+    reasoning: result.output.reasoning,
   }
 }

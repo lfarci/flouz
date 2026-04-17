@@ -6,6 +6,7 @@ export const TransactionCategorizationResultSchema = z.object({
   // UUID membership is validated separately against the known categories list.
   categoryId: z.string().min(1),
   confidence: z.number().min(0).max(1),
+  reasoning: z.string().max(200).optional(),
 })
 
 export type TransactionCategorizationResult = z.infer<typeof TransactionCategorizationResultSchema>
