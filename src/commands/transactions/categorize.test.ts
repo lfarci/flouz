@@ -22,6 +22,7 @@ const categorizeTransactionMock = mock(() =>
     categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
     confidence: 0.9,
     model: 'openai/gpt-4o-mini',
+    reasoning: 'Matches grocery store pattern.',
   }),
 )
 
@@ -40,6 +41,7 @@ const outroMock = mock((_message: string) => {})
 const cancelMock = mock((_message: string) => {})
 const logWarnMock = mock((_message: string) => {})
 const logInfoMock = mock((_message: string) => {})
+const logErrorMock = mock((_message: string) => {})
 const spinnerStartMock = mock((_message: string) => {})
 const spinnerMessageMock = mock((_message: string) => {})
 const spinnerStopMock = mock((_message: string) => {})
@@ -57,7 +59,7 @@ void mock.module('@clack/prompts', () => ({
   log: {
     warn: logWarnMock,
     info: logInfoMock,
-    error: mock((_message: string) => {}),
+    error: logErrorMock,
   },
 }))
 
@@ -99,12 +101,14 @@ beforeEach(() => {
     categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
     confidence: 0.9,
     model: 'openai/gpt-4o-mini',
+    reasoning: 'Matches grocery store pattern.',
   })
   openDatabaseMock.mockReset()
   introMock.mockClear()
   outroMock.mockClear()
   logWarnMock.mockClear()
   logInfoMock.mockClear()
+  logErrorMock.mockClear()
   spinnerStartMock.mockClear()
   spinnerStopMock.mockClear()
   processExitMock.mockClear()
@@ -170,7 +174,21 @@ describe('categorizeAction — with eligible transactions', () => {
     expect(outroMock).toHaveBeenCalled()
   })
 
-  it('shows a warning when the first categorization error occurs', async () => {
+  it('exits with code 1 when a transaction fails to categorize', async () => {
+    const { database, handle } = createInMemoryDatabase()
+    insertTransaction(database, baseTransaction)
+    categorizeTransactionMock.mockRejectedValue(new Error('AI timeout'))
+
+    const summary = await collectCommandOutcome<CategorizeOutcome>(
+      () => runCategorizeCommand(handle, []),
+      () => ({ status: 'resolved' }),
+      (errorCode) => ({ status: 'rejected', errorCode }),
+    )
+
+    expect(summary).toEqual({ status: 'rejected', errorCode: 1 })
+  })
+
+  it('logs the error message when categorization fails', async () => {
     const { database, handle } = createInMemoryDatabase()
     insertTransaction(database, baseTransaction)
     categorizeTransactionMock.mockRejectedValue(new Error('AI timeout'))
@@ -181,9 +199,64 @@ describe('categorizeAction — with eligible transactions', () => {
       () => undefined,
     )
 
-    expect(logWarnMock).toHaveBeenCalled()
-    const message = logWarnMock.mock.calls[0][0]
-    expect(message).toContain('AI timeout')
+    expect(logErrorMock).toHaveBeenCalled()
+    expect(logErrorMock.mock.calls[0][0]).toContain('AI timeout')
+  })
+
+  it('logs recovery guidance with suggestion count when some succeeded before the error', async () => {
+    const { database, handle } = createInMemoryDatabase()
+    insertTransaction(database, { ...baseTransaction, date: '2026-01-15' })
+    insertTransaction(database, { ...baseTransaction, date: '2026-01-16', counterparty: 'Second Shop' })
+
+    categorizeTransactionMock
+      .mockResolvedValueOnce({
+        categoryId: '3c4d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f',
+        confidence: 0.9,
+        model: 'openai/gpt-4o-mini',
+        reasoning: 'Matches grocery store pattern.',
+      })
+      .mockRejectedValueOnce(new Error('AI timeout'))
+
+    await collectCommandOutcome(
+      () => runCategorizeCommand(handle, []),
+      () => undefined,
+      () => undefined,
+    )
+
+    const infoMessage = logInfoMock.mock.calls[0][0]
+    expect(infoMessage).toContain('1 suggestion was created')
+    expect(infoMessage).toContain('flouz transactions suggestions list')
+    expect(infoMessage).toContain('flouz transactions categorize')
+  })
+
+  it('logs guidance without suggestion count when none succeeded before the error', async () => {
+    const { database, handle } = createInMemoryDatabase()
+    insertTransaction(database, baseTransaction)
+    categorizeTransactionMock.mockRejectedValue(new Error('AI timeout'))
+
+    await collectCommandOutcome(
+      () => runCategorizeCommand(handle, []),
+      () => undefined,
+      () => undefined,
+    )
+
+    const infoMessage = logInfoMock.mock.calls[0][0]
+    expect(infoMessage).toContain('No suggestions were created')
+    expect(infoMessage).toContain('flouz transactions categorize')
+  })
+
+  it('recommends running suggestions list after successful categorization', async () => {
+    const { database, handle } = createInMemoryDatabase()
+    insertTransaction(database, baseTransaction)
+
+    await collectCommandOutcome(
+      () => runCategorizeCommand(handle, []),
+      () => undefined,
+      () => undefined,
+    )
+
+    const infoMessage = logInfoMock.mock.calls[0][0]
+    expect(infoMessage).toContain('flouz transactions suggestions list')
   })
 
   it('exits with code 1 when openDatabase throws', async () => {

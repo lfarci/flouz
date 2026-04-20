@@ -1,9 +1,7 @@
-import type { Category, Transaction } from '@/types'
+import type { CategorizationExample, Category, Transaction } from '@/types'
 
 function formatCategoryList(categories: Category[]): string {
-  return categories
-    .map((category) => `- id: ${category.id} | slug: ${category.slug} | name: ${category.name}`)
-    .join('\n')
+  return categories.map((category) => `- slug: ${category.slug} | name: ${category.name}`).join('\n')
 }
 
 function formatTransactionDetails(transaction: Transaction): string {
@@ -18,7 +16,25 @@ function formatTransactionDetails(transaction: Transaction): string {
   return lines.join('\n')
 }
 
-export function buildTransactionCategorizationPrompt(transaction: Transaction, categories: Category[]): string {
+function formatExamples(examples: CategorizationExample[]): string {
+  return examples
+    .map(
+      (example) =>
+        `- Counterparty: ${example.counterparty} | Date: ${example.date} | Amount: ${example.amount} → Category: ${example.categoryName} (${example.categorySlug})`,
+    )
+    .join('\n')
+}
+
+export function buildTransactionCategorizationPrompt(
+  transaction: Transaction,
+  categories: Category[],
+  examples: CategorizationExample[] = [],
+): string {
+  const examplesSection =
+    examples.length > 0
+      ? `## Examples\n\nThese are past transactions this user has already categorized:\n\n${formatExamples(examples)}\n\n`
+      : ''
+
   return `You are a personal finance assistant. Categorize the following bank transaction by selecting the most appropriate category from the list below.
 
 ## Transaction
@@ -29,11 +45,12 @@ ${formatTransactionDetails(transaction)}
 
 ${formatCategoryList(categories)}
 
-## Instructions
+${examplesSection}## Instructions
 
-Return a JSON object with exactly two fields:
-- "categoryId": the UUID of the most appropriate category from the list above
+Return a JSON object with exactly three fields:
+- "categorySlug": the slug of the most appropriate category from the list above
 - "confidence": a number between 0 and 1 indicating how confident you are in the categorization
+- "reasoning": a short sentence (max 200 characters) explaining why this category was chosen
 
-Only return a categoryId that appears in the list above. Do not invent new IDs.`
+Only return a categorySlug that appears in the list above. Do not invent new slugs.`
 }

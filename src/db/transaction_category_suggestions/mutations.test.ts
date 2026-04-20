@@ -99,4 +99,59 @@ describe('upsertTransactionCategorySuggestion', () => {
     expect(row?.confidence).toBe(0.6)
     expect(row?.model).toBe('updated-model')
   })
+
+  it('persists reasoning when provided', () => {
+    upsertTransactionCategorySuggestion(db, {
+      transactionId,
+      categoryId: CATEGORY_ID_A,
+      confidence: 0.8,
+      model: 'gpt-4o-mini',
+      reasoning: 'Matches grocery store pattern',
+    })
+
+    const row = db
+      .prepare('SELECT reasoning FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(transactionId) as { reasoning: string | null } | null
+
+    expect(row?.reasoning).toBe('Matches grocery store pattern')
+  })
+
+  it('stores NULL for reasoning when omitted', () => {
+    upsertTransactionCategorySuggestion(db, {
+      transactionId,
+      categoryId: CATEGORY_ID_A,
+      confidence: 0.8,
+      model: 'gpt-4o-mini',
+    })
+
+    const row = db
+      .prepare('SELECT reasoning FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(transactionId) as { reasoning: string | null } | null
+
+    expect(row?.reasoning).toBeNull()
+  })
+
+  it('overwrites previous reasoning on re-categorization', () => {
+    upsertTransactionCategorySuggestion(db, {
+      transactionId,
+      categoryId: CATEGORY_ID_A,
+      confidence: 0.8,
+      model: 'gpt-4o-mini',
+      reasoning: 'First reasoning',
+    })
+
+    upsertTransactionCategorySuggestion(db, {
+      transactionId,
+      categoryId: CATEGORY_ID_B,
+      confidence: 0.9,
+      model: 'gpt-4o-mini',
+      reasoning: 'Updated reasoning',
+    })
+
+    const row = db
+      .prepare('SELECT reasoning FROM transaction_category_suggestions WHERE transaction_id = ?')
+      .get(transactionId) as { reasoning: string | null } | null
+
+    expect(row?.reasoning).toBe('Updated reasoning')
+  })
 })

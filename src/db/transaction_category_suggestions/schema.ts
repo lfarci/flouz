@@ -10,7 +10,8 @@ export function createTransactionCategorySuggestionsTable(db: Database): void {
       suggested_at   TEXT NOT NULL,
       status         TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','applied')),
       reviewed_at    TEXT,
-      applied_at     TEXT
+      applied_at     TEXT,
+      reasoning      TEXT
     )
   `)
 }
@@ -30,5 +31,8 @@ export function migrateTransactionCategorySuggestionsTable(db: Database): void {
   }
   if (!names.has('applied_at')) {
     db.run('ALTER TABLE transaction_category_suggestions ADD COLUMN applied_at TEXT')
+  }
+  if (!names.has('reasoning')) {
+    db.run('ALTER TABLE transaction_category_suggestions ADD COLUMN reasoning TEXT')
   }
 }

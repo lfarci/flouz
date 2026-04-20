@@ -33,17 +33,21 @@ function formatConfidence(confidence: number): string {
 }
 
 function formatSuggestionsTable(suggestions: SuggestionWithContext[]): string[] {
-  return renderCliTable({
-    columns: [
-      { header: 'ID', width: 6, minWidth: 4, truncate: 6 },
-      { header: 'Date', width: 10, minWidth: 10, truncate: 10 },
-      { header: 'Amount', width: 10, minWidth: 8, alignment: 'right', truncate: 10 },
-      { header: 'Counterparty', width: 26, minWidth: 14, wrapWord: true },
-      { header: 'Category', width: 20, minWidth: 12, wrapWord: true },
-      { header: 'Conf.', width: 6, minWidth: 6, truncate: 6 },
-      { header: 'Status', width: 10, minWidth: 8, truncate: 10 },
-    ],
-    rows: suggestions.map((suggestion) => [
+  const hasAnyReasoning = suggestions.some((suggestion) => suggestion.reasoning !== undefined)
+
+  const columns = [
+    { header: 'ID', width: 6, minWidth: 4, truncate: 6 },
+    { header: 'Date', width: 10, minWidth: 10, truncate: 10 },
+    { header: 'Amount', width: 10, minWidth: 8, alignment: 'right' as const, truncate: 10 },
+    { header: 'Counterparty', width: 26, minWidth: 14, wrapWord: true },
+    { header: 'Category', width: 20, minWidth: 12, wrapWord: true },
+    { header: 'Conf.', width: 6, minWidth: 6, truncate: 6 },
+    { header: 'Status', width: 10, minWidth: 8, truncate: 10 },
+    ...(hasAnyReasoning ? [{ header: 'Reasoning', width: 36, minWidth: 16, wrapWord: true }] : []),
+  ]
+
+  const rows = suggestions.map((suggestion) => {
+    const baseRow = [
       String(suggestion.transactionId),
       suggestion.transactionDate,
       formatAmount(suggestion.amount),
@@ -51,8 +55,12 @@ function formatSuggestionsTable(suggestions: SuggestionWithContext[]): string[] 
       suggestion.categoryName,
       formatConfidence(suggestion.confidence),
       suggestion.status,
-    ]),
+    ]
+    if (hasAnyReasoning) baseRow.push(suggestion.reasoning ?? '')
+    return baseRow
   })
+
+  return renderCliTable({ columns, rows })
 }
 
 async function listAction(options: ListOptions): Promise<void> {

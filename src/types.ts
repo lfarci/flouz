@@ -57,6 +57,7 @@ export interface TransactionCategorySuggestion {
   status: TransactionCategorySuggestionStatus
   reviewedAt?: string
   appliedAt?: string
+  reasoning?: string
 }
 
 export type NewTransactionCategorySuggestion = Omit<
@@ -91,4 +92,20 @@ export interface SuggestionWithContext {
   suggestedAt: string
   reviewedAt?: string
   appliedAt?: string
+  reasoning?: string
+}
+
+export interface CategorizationExample {
+  counterparty: string
+  amount: number
+  date: string
+  categoryId: string
+  categoryName: string
+  categorySlug: string
+}
+
+export interface CounterpartyCategoryConsensus {
+  categoryId: string
+  categoryName: string
+  count: number
 }
