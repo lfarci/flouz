@@ -1,9 +1,7 @@
 import type { CategorizationExample, Category, Transaction } from '@/types'
 
 function formatCategoryList(categories: Category[]): string {
-  return categories
-    .map((category) => `- id: ${category.id} | slug: ${category.slug} | name: ${category.name}`)
-    .join('\n')
+  return categories.map((category) => `- slug: ${category.slug} | name: ${category.name}`).join('\n')
 }
 
 function formatTransactionDetails(transaction: Transaction): string {
@@ -50,9 +48,9 @@ ${formatCategoryList(categories)}
 ${examplesSection}## Instructions
 
 Return a JSON object with exactly three fields:
-- "categoryId": the UUID of the most appropriate category from the list above
+- "categorySlug": the slug of the most appropriate category from the list above
 - "confidence": a number between 0 and 1 indicating how confident you are in the categorization
 - "reasoning": a short sentence (max 200 characters) explaining why this category was chosen
 
-Only return a categoryId that appears in the list above. Do not invent new IDs.`
+Only return a categorySlug that appears in the list above. Do not invent new slugs.`
 }

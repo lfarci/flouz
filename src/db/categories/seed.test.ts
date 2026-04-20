@@ -26,7 +26,8 @@ describe('seedCategories', () => {
         []
       >('SELECT id, parent_id FROM categories WHERE parent_id IS NULL')
       .all()
-    expect(roots.length).toBe(3)
+    const expectedRootCount = CATEGORIES.filter((category) => category.parentId === null).length
+    expect(roots.length).toBe(expectedRootCount)
     for (const root of roots) {
       expect(root.parent_id).toBeNull()
     }

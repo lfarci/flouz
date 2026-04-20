@@ -117,10 +117,24 @@ export const CATEGORIES: Category[] = [
     parentId: 'e7c4a2b1-1f3d-4d9a-8b7c-2a1f5c6d7e8f',
   },
   {
+    id: 'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b',
+    name: 'Online Services',
+    slug: 'online-services',
+    parentId: 'e7c4a2b1-1f3d-4d9a-8b7c-2a1f5c6d7e8f',
+  },
+
+  // L3 under Online Services
+  {
     id: '1b2c3d4e-5f6a-4b7c-8d9e-0f1a2b3c4d5e',
     name: 'Subscriptions',
     slug: 'subscriptions',
-    parentId: 'e7c4a2b1-1f3d-4d9a-8b7c-2a1f5c6d7e8f',
+    parentId: 'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b',
+  },
+  {
+    id: 'f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c',
+    name: 'Web Hosting',
+    slug: 'web-hosting',
+    parentId: 'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b',
   },
 
   // L3 under Transport
@@ -181,5 +195,45 @@ export const CATEGORIES: Category[] = [
     name: 'Bar',
     slug: 'bar',
     parentId: 'c2d3e4f5-6a7b-4c8d-9e0f-1a2b3c4d5e6f',
+  },
+  {
+    id: 'bb5e8f9a-0c1d-4b2e-3f4a-5b6c7d8e9f0a',
+    name: 'Restaurant',
+    slug: 'restaurant',
+    parentId: 'c2d3e4f5-6a7b-4c8d-9e0f-1a2b3c4d5e6f',
+  },
+
+  // Root
+  {
+    id: 'f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c',
+    name: 'Income',
+    slug: 'income',
+    parentId: null,
+  },
+
+  // L2 under Income
+  {
+    id: 'a9b8c7d6-e5f4-4a3b-2c1d-0e9f8a7b6c5d',
+    name: 'Salary',
+    slug: 'salary',
+    parentId: 'f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c',
+  },
+  {
+    id: 'b0c1d2e3-f4a5-4b6c-7d8e-9f0a1b2c3d4e',
+    name: 'Reimbursement',
+    slug: 'reimbursement',
+    parentId: 'f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c',
+  },
+  {
+    id: 'c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f',
+    name: 'Gifts Received',
+    slug: 'gifts-received',
+    parentId: 'f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c',
+  },
+  {
+    id: 'd2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a',
+    name: 'Other Income',
+    slug: 'other-income',
+    parentId: 'f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c',
   },
 ]

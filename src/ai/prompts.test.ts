@@ -41,8 +41,8 @@ describe('buildTransactionCategorizationPrompt', () => {
     it('includes the available categories section', () => {
       const prompt = buildTransactionCategorizationPrompt(fakeTransaction, fakeCategories)
       expect(prompt).toContain('## Available Categories')
-      expect(prompt).toContain('cat-001')
-      expect(prompt).toContain('cat-002')
+      expect(prompt).toContain('groceries')
+      expect(prompt).toContain('transport')
     })
 
     it('includes the Instructions section', () => {

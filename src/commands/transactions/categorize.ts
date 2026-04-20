@@ -21,7 +21,7 @@ interface CategorizeOptions {
 interface CategorizeResult {
   suggested: number
   skipped: number
-  firstError?: string
+  error?: Error
 }
 
 function parseLimit(limit: string | undefined): number | undefined {
@@ -62,16 +62,15 @@ async function categorizeTransactions(db: Database, transactions: Transaction[])
 
   let suggested = 0
   let skipped = 0
-  let firstError: string | undefined
 
-  for (const transaction of transactions) {
-    if (transaction.id === undefined) {
-      skipped++
-      categorizationSpinner.message(`Categorizing ${suggested + skipped} / ${transactions.length}`)
-      continue
-    }
+  try {
+    for (const transaction of transactions) {
+      if (transaction.id === undefined) {
+        skipped++
+        categorizationSpinner.message(`Categorizing ${suggested + skipped} / ${transactions.length}`)
+        continue
+      }
 
-    try {
       const examples = getCategorizationExamples(db, transaction)
       const result = await categorizeTransaction(transaction, categories, examples, db)
       upsertTransactionCategorySuggestion(db, {
@@ -82,16 +81,15 @@ async function categorizeTransactions(db: Database, transactions: Transaction[])
         reasoning: result.reasoning,
       })
       suggested++
-    } catch (error) {
-      skipped++
-      firstError ??= error instanceof Error ? error.message : String(error)
+      categorizationSpinner.message(`Categorizing ${suggested + skipped} / ${transactions.length}`)
     }
-
-    categorizationSpinner.message(`Categorizing ${suggested + skipped} / ${transactions.length}`)
+  } catch (error) {
+    categorizationSpinner.stop(`Categorized ${suggested} / ${transactions.length}`)
+    return { suggested, skipped, error: error instanceof Error ? error : new Error(String(error)) }
   }
 
   categorizationSpinner.stop(`Categorized ${suggested} / ${transactions.length}`)
-  return { suggested, skipped, firstError }
+  return { suggested, skipped }
 }
 
 async function categorizeAction(options: CategorizeOptions): Promise<void> {
@@ -119,16 +117,28 @@ async function categorizeAction(options: CategorizeOptions): Promise<void> {
       return
     }
 
-    const { suggested, firstError } = await categorizeTransactions(database, transactions)
+    const { suggested, error } = await categorizeTransactions(database, transactions)
 
     process.removeListener('SIGINT', onCancel)
     database.close()
 
+    if (error !== undefined) {
+      log.error(`Categorization failed: ${error.message}`)
+      if (suggested > 0) {
+        log.info(
+          `${suggested} suggestion${suggested === 1 ? ' was' : 's were'} created before the error. ` +
+            `Run \`flouz transactions suggestions list\` to review them, then run \`flouz transactions categorize\` again to continue.`,
+        )
+      } else {
+        log.info('No suggestions were created. Fix the issue and run `flouz transactions categorize` again.')
+      }
+      process.exit(1)
+      return
+    }
+
     const selected = transactions.length
     const skipped = selected - suggested
-    if (firstError !== undefined) {
-      log.warn(`Some transactions were skipped. First error: ${firstError}`)
-    }
+    log.info('Run `flouz transactions suggestions list` to review the suggestions.')
     outro(`✓ ${selected} selected — ${suggested} suggested, ${skipped} skipped`)
   } catch (error) {
     process.removeListener('SIGINT', onCancel)

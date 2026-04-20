@@ -12,11 +12,16 @@ export interface CategorizationResult {
   categoryId: string
   confidence: number
   model: string
-  reasoning?: string
+  reasoning: string
 }
 
 function buildFastPathResult(categoryId: string): CategorizationResult {
-  return { categoryId, confidence: 1.0, model: 'fast-path' }
+  return {
+    categoryId,
+    confidence: 1.0,
+    model: 'fast-path',
+    reasoning: 'Counterparty consensus from approved suggestions.',
+  }
 }
 
 export async function categorizeTransaction(
@@ -41,13 +46,14 @@ export async function categorizeTransaction(
     prompt,
   })
 
-  const validCategoryIds = new Set(categories.map((category) => category.id))
-  if (!validCategoryIds.has(result.output.categoryId)) {
-    throw new Error(`AI returned invalid categoryId: ${result.output.categoryId}`)
+  const categoryIdBySlug = new Map(categories.map((category) => [category.slug, category.id]))
+  const categoryId = categoryIdBySlug.get(result.output.categorySlug)
+  if (categoryId === undefined) {
+    throw new Error(`AI returned invalid categorySlug: ${result.output.categorySlug}`)
   }
 
   return {
-    categoryId: result.output.categoryId,
+    categoryId,
     confidence: result.output.confidence,
     model: await resolveModelName(),
     reasoning: result.output.reasoning,
