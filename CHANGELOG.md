@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/lfarci/flouz/compare/v2.2.0...v2.3.0) (2026-04-20)
+
+
+### Features
+
+* improve AI categorization with few-shot examples, fast-path, and reasoning ([#44](https://github.com/lfarci/flouz/issues/44)) ([a37f591](https://github.com/lfarci/flouz/commit/a37f59106581a8717222bd3441460238118e3a2f))
+
 ## [2.2.0](https://github.com/lfarci/flouz/compare/v2.1.0...v2.2.0) (2026-04-16)
 
 ### Features
