@@ -223,7 +223,7 @@ describe('categorizeAction — with eligible transactions', () => {
       () => undefined,
     )
 
-    const infoMessage = logInfoMock.mock.calls[0][0] as string
+    const infoMessage = logInfoMock.mock.calls[0][0]
     expect(infoMessage).toContain('1 suggestion was created')
     expect(infoMessage).toContain('flouz transactions suggestions list')
     expect(infoMessage).toContain('flouz transactions categorize')
@@ -240,7 +240,7 @@ describe('categorizeAction — with eligible transactions', () => {
       () => undefined,
     )
 
-    const infoMessage = logInfoMock.mock.calls[0][0] as string
+    const infoMessage = logInfoMock.mock.calls[0][0]
     expect(infoMessage).toContain('No suggestions were created')
     expect(infoMessage).toContain('flouz transactions categorize')
   })
@@ -255,7 +255,7 @@ describe('categorizeAction — with eligible transactions', () => {
       () => undefined,
     )
 
-    const infoMessage = logInfoMock.mock.calls[0][0] as string
+    const infoMessage = logInfoMock.mock.calls[0][0]
     expect(infoMessage).toContain('flouz transactions suggestions list')
   })
 
