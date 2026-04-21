@@ -4,6 +4,7 @@ import { createApproveCommand } from './approve'
 import { createRejectCommand } from './reject'
 import { createApplyCommand } from './apply'
 import { createFixCommand } from './fix'
+import { createReviewCommand } from './review'
 
 export function createSuggestionsCommand(defaultDb: string): Command {
   return new Command('suggestions')
@@ -13,4 +14,5 @@ export function createSuggestionsCommand(defaultDb: string): Command {
     .addCommand(createRejectCommand(defaultDb))
     .addCommand(createFixCommand(defaultDb))
     .addCommand(createApplyCommand(defaultDb))
+    .addCommand(createReviewCommand(defaultDb))
 }

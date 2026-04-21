@@ -4,6 +4,8 @@ import {
   createCommandTestDatabase,
   createOpenDatabaseMock,
   createProcessExitMock,
+  createProgressMocks,
+  createSpinnerMocks,
   restoreProcessExit,
   setProcessExit,
 } from '@/commands/test-helpers'
@@ -30,35 +32,23 @@ const cancelMock = mock((_message: string) => {})
 const logErrorMock = mock((_message: string) => {})
 const logWarnMock = mock((_message: string) => {})
 const logInfoMock = mock((_message: string) => {})
-const spinnerStartMock = mock((_message: string) => {})
-const spinnerMessageMock = mock((_message: string) => {})
-const spinnerStopMock = mock((_message: string) => {})
-const spinnerMock = mock(() => ({
-  start: spinnerStartMock,
-  message: spinnerMessageMock,
-  stop: spinnerStopMock,
-}))
-const progressStartMock = mock((_message: string) => {})
-const progressAdvanceMock = mock((_amount: number, _message: string) => {})
-const progressStopMock = mock((_message: string) => {})
-const progressErrorMock = mock((_message: string) => {})
-const progressMock = mock(() => ({
-  start: progressStartMock,
-  advance: progressAdvanceMock,
-  stop: progressStopMock,
-  error: progressErrorMock,
-}))
+const { spinnerMock, spinnerStartMock, spinnerStopMock } = createSpinnerMocks()
+const { progressMock, progressStartMock, progressStopMock } = createProgressMocks()
 
 void mock.module('@clack/prompts', () => ({
   intro: introMock,
   outro: outroMock,
   cancel: cancelMock,
+  note: () => {},
+  isCancel: () => false,
+  select: async () => 'quit',
   spinner: spinnerMock,
   progress: progressMock,
   log: {
     error: logErrorMock,
     warn: logWarnMock,
     info: logInfoMock,
+    success: () => {},
   },
 }))
 

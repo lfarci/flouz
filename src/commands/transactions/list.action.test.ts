@@ -29,10 +29,16 @@ const logErrorMock = mock((_message: string) => {})
 const logInfoMock = mock((_message: string) => {})
 
 void mock.module('@clack/prompts', () => ({
+  intro: () => {},
+  outro: () => {},
   cancel: cancelMock,
+  note: () => {},
+  isCancel: () => false,
+  select: async () => 'quit',
   log: {
     error: logErrorMock,
     info: logInfoMock,
+    success: () => {},
   },
 }))
 

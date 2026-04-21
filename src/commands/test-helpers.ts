@@ -2,6 +2,37 @@ import { mock } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import type { Command } from 'commander'
 
+export function createSpinnerMocks() {
+  const spinnerStartMock = mock((_: string) => {})
+  const spinnerMessageMock = mock((_: string) => {})
+  const spinnerStopMock = mock((_: string) => {})
+  return {
+    spinnerMock: mock(() => ({ start: spinnerStartMock, message: spinnerMessageMock, stop: spinnerStopMock })),
+    spinnerStartMock,
+    spinnerMessageMock,
+    spinnerStopMock,
+  }
+}
+
+export function createProgressMocks() {
+  const progressStartMock = mock((_: string) => {})
+  const progressAdvanceMock = mock((_amount: number, _message: string) => {})
+  const progressStopMock = mock((_: string) => {})
+  const progressErrorMock = mock((_: string) => {})
+  return {
+    progressMock: mock(() => ({
+      start: progressStartMock,
+      advance: progressAdvanceMock,
+      stop: progressStopMock,
+      error: progressErrorMock,
+    })),
+    progressStartMock,
+    progressAdvanceMock,
+    progressStopMock,
+    progressErrorMock,
+  }
+}
+
 export class ProcessExitError extends Error {
   constructor(readonly code: number) {
     super(`process.exit(${code})`)

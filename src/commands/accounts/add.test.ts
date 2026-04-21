@@ -5,6 +5,8 @@ import {
   createCommandTestDatabase,
   createOpenDatabaseMock,
   createProcessExitMock,
+  createProgressMocks,
+  createSpinnerMocks,
   getArgumentSetup,
   restoreProcessExit,
   runCommandSilently,
@@ -21,21 +23,18 @@ const errorLogMock = mock(() => {})
 
 const openDatabaseMock = createOpenDatabaseMock()
 
+const { spinnerMock } = createSpinnerMocks()
+const { progressMock } = createProgressMocks()
+
 void mock.module('@clack/prompts', () => ({
   intro: mock((_message: string) => {}),
   outro: mock((_message: string) => {}),
   cancel: mock((_message: string) => {}),
-  spinner: mock(() => ({
-    start: mock((_: string) => {}),
-    message: mock((_: string) => {}),
-    stop: mock((_: string) => {}),
-  })),
-  progress: mock(() => ({
-    start: mock((_: string) => {}),
-    advance: mock(() => {}),
-    stop: mock((_: string) => {}),
-    error: mock((_: string) => {}),
-  })),
+  note: () => {},
+  isCancel: () => false,
+  select: async () => 'quit',
+  spinner: spinnerMock,
+  progress: progressMock,
   log: {
     success: successLogMock,
     error: errorLogMock,

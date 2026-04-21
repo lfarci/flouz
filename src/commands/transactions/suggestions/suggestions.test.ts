@@ -42,11 +42,17 @@ const logWarnMock = mock((_message: string) => {})
 const logErrorMock = mock((_message: string) => {})
 
 void mock.module('@clack/prompts', () => ({
+  intro: () => {},
   outro: outroMock,
+  note: () => {},
+  cancel: () => {},
+  isCancel: () => false,
+  select: async () => 'quit',
   log: {
     info: logInfoMock,
     warn: logWarnMock,
     error: logErrorMock,
+    success: () => {},
   },
 }))
 
@@ -125,7 +131,7 @@ describe('createSuggestionsCommand', () => {
     expect(command.name()).toBe('suggestions')
   })
 
-  it('registers list, approve, reject, fix, apply subcommands', () => {
+  it('registers list, approve, reject, fix, apply, review subcommands', () => {
     const command = createSuggestionsCommand('flouz.db')
     const names = command.commands.map((c) => c.name())
     expect(names).toContain('list')
@@ -133,6 +139,7 @@ describe('createSuggestionsCommand', () => {
     expect(names).toContain('reject')
     expect(names).toContain('fix')
     expect(names).toContain('apply')
+    expect(names).toContain('review')
   })
 })
 

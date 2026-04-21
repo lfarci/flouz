@@ -5,6 +5,7 @@ import {
   createCommandTestDatabase,
   createOpenDatabaseMock,
   createProcessExitMock,
+  createSpinnerMocks,
   restoreProcessExit,
   runCommandSilently,
   setProcessExit,
@@ -42,24 +43,21 @@ const cancelMock = mock((_message: string) => {})
 const logWarnMock = mock((_message: string) => {})
 const logInfoMock = mock((_message: string) => {})
 const logErrorMock = mock((_message: string) => {})
-const spinnerStartMock = mock((_message: string) => {})
-const spinnerMessageMock = mock((_message: string) => {})
-const spinnerStopMock = mock((_message: string) => {})
-const spinnerMock = mock(() => ({
-  start: spinnerStartMock,
-  message: spinnerMessageMock,
-  stop: spinnerStopMock,
-}))
+const { spinnerMock, spinnerStartMock, spinnerStopMock } = createSpinnerMocks()
 
 void mock.module('@clack/prompts', () => ({
   intro: introMock,
   outro: outroMock,
   cancel: cancelMock,
+  note: () => {},
+  isCancel: () => false,
+  select: async () => 'quit',
   spinner: spinnerMock,
   log: {
     warn: logWarnMock,
     info: logInfoMock,
     error: logErrorMock,
+    success: () => {},
   },
 }))
 
