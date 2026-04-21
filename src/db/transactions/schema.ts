@@ -24,5 +24,5 @@ export function createTransactionsTable(db: Database): void {
 }
 
 function createHashIndex(db: Database): void {
-  db.run(`CREATE INDEX IF NOT EXISTS ${HASH_INDEX} ON transactions (hash)`)
+  db.run(`CREATE UNIQUE INDEX IF NOT EXISTS ${HASH_INDEX} ON transactions (hash)`)
 }
