@@ -34,7 +34,7 @@ void mock.module('@/db/schema', () => ({
 }))
 
 const selectResponseQueue: string[] = []
-const selectMock = mock(async () => selectResponseQueue.shift() ?? 'quit')
+const selectMock = mock(() => Promise.resolve(selectResponseQueue.shift() ?? 'quit'))
 
 const introMock = mock((_message: string) => {})
 const outroMock = mock((_message: string) => {})

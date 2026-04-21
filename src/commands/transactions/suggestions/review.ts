@@ -24,7 +24,7 @@ interface ReviewOptions {
 
 type ReviewDecision = 'approve' | 'fix' | 'reject' | 'skip' | 'quit'
 
-type ReviewSummary = {
+interface ReviewSummary {
   approved: number
   fixed: number
   rejected: number
@@ -65,7 +65,7 @@ async function promptDecision(
   })
 
   if (isCancel(decision)) return 'quit'
-  return decision as ReviewDecision
+  return decision
 }
 
 async function applyDecision(
@@ -90,7 +90,7 @@ async function applyDecision(
       options: categories.map((category) => ({ value: category.id, label: category.name, hint: category.slug })),
     })
     if (isCancel(categoryId)) return 'quit'
-    overrideTransactionCategorySuggestion(db, suggestion.transactionId, categoryId as string)
+    overrideTransactionCategorySuggestion(db, suggestion.transactionId, categoryId)
     approveTransactionCategorySuggestion(db, suggestion.transactionId)
     log.success('Fixed and approved')
     return 'fix'

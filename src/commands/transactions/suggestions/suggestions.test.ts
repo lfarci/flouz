@@ -47,7 +47,7 @@ void mock.module('@clack/prompts', () => ({
   note: () => {},
   cancel: () => {},
   isCancel: () => false,
-  select: async () => 'quit',
+  select: () => Promise.resolve('quit'),
   log: {
     info: logInfoMock,
     warn: logWarnMock,
