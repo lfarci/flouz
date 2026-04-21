@@ -2,17 +2,15 @@
 
 ## [2.3.0](https://github.com/lfarci/flouz/compare/v2.2.0...v2.3.0) (2026-04-21)
 
-
 ### Features
 
-* add interactive suggestion review command with shared spinner/progress test helpers ([2c77ebc](https://github.com/lfarci/flouz/commit/2c77ebcb57e2a17c63b0dade93a0d482d4feba1a))
-* improve AI categorization with few-shot examples, fast-path, and reasoning ([#44](https://github.com/lfarci/flouz/issues/44)) ([a37f591](https://github.com/lfarci/flouz/commit/a37f59106581a8717222bd3441460238118e3a2f))
-
+- add interactive suggestion review command with shared spinner/progress test helpers ([2c77ebc](https://github.com/lfarci/flouz/commit/2c77ebcb57e2a17c63b0dade93a0d482d4feba1a))
+- improve AI categorization with few-shot examples, fast-path, and reasoning ([#44](https://github.com/lfarci/flouz/issues/44)) ([a37f591](https://github.com/lfarci/flouz/commit/a37f59106581a8717222bd3441460238118e3a2f))
 
 ### Bug Fixes
 
-* **commands:** satisfy lint rules ([e573941](https://github.com/lfarci/flouz/commit/e573941cfc990a53344d7ae67b57d6a6ea94dd8f))
-* enforce deduplication with INSERT OR IGNORE and UNIQUE index on transaction hash ([8f003fd](https://github.com/lfarci/flouz/commit/8f003fd0e634d18a1b217d1399e23211a55d1c57))
+- **commands:** satisfy lint rules ([e573941](https://github.com/lfarci/flouz/commit/e573941cfc990a53344d7ae67b57d6a6ea94dd8f))
+- enforce deduplication with INSERT OR IGNORE and UNIQUE index on transaction hash ([8f003fd](https://github.com/lfarci/flouz/commit/8f003fd0e634d18a1b217d1399e23211a55d1c57))
 
 ## [2.2.0](https://github.com/lfarci/flouz/compare/v2.1.0...v2.2.0) (2026-04-16)
 
