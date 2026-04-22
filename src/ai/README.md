@@ -4,12 +4,12 @@ AI integration layer — model access, prompt building, and transaction categori
 
 ## Modules
 
-| File | Responsibility |
-| --- | --- |
-| `client.ts` | Creates the AI model instance via `@ai-sdk/openai`; reads token and base URL from config or env vars |
-| `prompts.ts` | Builds the categorization prompt from a transaction, category list, and optional past examples |
-| `schemas.ts` | Zod schema and type for the structured LLM output (`categorySlug`, `confidence`, `reasoning`) |
-| `categorize.ts` | Orchestrates categorization: fast-path (counterparty consensus) then LLM fallback |
+| File            | Responsibility                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------- |
+| `client.ts`     | Creates the AI model instance via `@ai-sdk/openai`; reads token and base URL from config or env vars |
+| `prompts.ts`    | Builds the categorization prompt from a transaction, category list, and optional past examples       |
+| `schemas.ts`    | Zod schema and type for the structured LLM output (`categorySlug`, `confidence`, `reasoning`)        |
+| `categorize.ts` | Orchestrates categorization: fast-path (counterparty consensus) then LLM fallback                    |
 
 ## Fast-path vs LLM
 
@@ -17,10 +17,10 @@ AI integration layer — model access, prompt building, and transaction categori
 
 ## Configuration
 
-| Source | Keys |
-| --- | --- |
-| `Bun.env` | `GITHUB_TOKEN`, `AI_MODEL`, `AI_BASE_URL` |
-| `flouz config` | `githubToken`, `aiModel`, `aiBaseUrl` |
+| Source         | Keys                                      |
+| -------------- | ----------------------------------------- |
+| `Bun.env`      | `GITHUB_TOKEN`, `AI_MODEL`, `AI_BASE_URL` |
+| `flouz config` | `githubToken`, `aiModel`, `aiBaseUrl`     |
 
 Env vars take precedence over stored config. Default model: `openai/gpt-4o-mini` via `https://models.github.ai/inference`.
 
