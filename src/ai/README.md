@@ -13,7 +13,7 @@ AI integration layer — model access, prompt building, and transaction categori
 
 ## Fast-path vs LLM
 
-`categorizeTransaction` checks `transaction_category_suggestions` first. If a counterparty has ≥ 3 approved suggestions all pointing to the same category (`MIN_FAST_PATH_APPROVALS`), that category is returned immediately with `confidence: 1.0` and no API call is made.
+When a `db` is provided, `categorizeTransaction` checks `transaction_category_suggestions` first. If a counterparty has ≥ 3 suggestions with status `approved` or `applied` all pointing to the same category (`MIN_FAST_PATH_APPROVALS`), that category is returned immediately with `confidence: 1.0` and no API call is made; otherwise, it falls back to the LLM.
 
 ## Configuration
 
