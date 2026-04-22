@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/lfarci/flouz/compare/v2.3.0...v2.4.0) (2026-04-22)
+
+### Features
+
+- **transactions:** add interactive comment command ([#53](https://github.com/lfarci/flouz/issues/53)) ([4ddd420](https://github.com/lfarci/flouz/commit/4ddd420afba4616c2c80cefd31bd1b0d4c11717d))
+- **transactions:** add user comment field to transactions ([#51](https://github.com/lfarci/flouz/issues/51)) ([4dfbca0](https://github.com/lfarci/flouz/commit/4dfbca05c08c7544a809d8d9edc7c3c795674e9a))
+
 ## [2.3.0](https://github.com/lfarci/flouz/compare/v2.2.0...v2.3.0) (2026-04-21)
 
 ### Features
