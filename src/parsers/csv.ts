@@ -56,7 +56,7 @@ function parseRow(row: RawRow, sourceFile?: string): ImportedTransaction {
     counterpartyIban: data.counterparty_iban || undefined,
     currency: data.currency,
     accountKey: data.account || undefined,
-    note: data.note || undefined,
+    bankCommunication: data.note || undefined,
     sourceFile,
     importedAt: new Date().toISOString(),
   }

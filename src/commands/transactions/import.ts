@@ -31,7 +31,7 @@ export function resolveImportedTransaction(db: Database, transaction: ImportedTr
     currency: transaction.currency,
     accountId,
     categoryId: transaction.categoryId,
-    note: transaction.note,
+    bankCommunication: transaction.bankCommunication,
     sourceFile: transaction.sourceFile,
     importedAt: transaction.importedAt,
   }

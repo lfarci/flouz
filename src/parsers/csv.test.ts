@@ -29,7 +29,7 @@ describe('parseCsv', () => {
       expect(first.counterpartyIban).toBe('BE00 0000 0000 0001')
       expect(first.currency).toBe('EUR')
       expect(first.accountKey).toBe('checking')
-      expect(first.note).toBe('Invoice 42')
+      expect(first.bankCommunication).toBe('Invoice 42')
     })
 
     it('defaults currency to EUR when column is empty', async () => {
@@ -44,7 +44,7 @@ describe('parseCsv', () => {
       const { transactions } = parseCsv(content)
       const noOptionals = transactions[1]
       expect(noOptionals.counterpartyIban).toBeUndefined()
-      expect(noOptionals.note).toBeUndefined()
+      expect(noOptionals.bankCommunication).toBeUndefined()
     })
 
     it('sets sourceFile on every transaction', async () => {
@@ -88,7 +88,7 @@ describe('parseCsv', () => {
         transactions: [tx],
       } = parseCsv(content)
       expect(tx.counterparty).toBe('PAIEMENT MAESTRO DELHAIZE')
-      expect(tx.note).toBe('PAIEMENT MAESTRO DELHAIZE')
+      expect(tx.bankCommunication).toBe('PAIEMENT MAESTRO DELHAIZE')
     })
 
     it('ignores blank lines between data rows', () => {

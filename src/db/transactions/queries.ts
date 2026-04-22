@@ -12,7 +12,7 @@ function rowToTransaction(row: Record<string, unknown>): Transaction {
     currency: row.currency as string,
     accountId: (row.account_id as number | null) ?? undefined,
     categoryId: (row.category_id as string | null) ?? undefined,
-    note: (row.note as string | null) ?? undefined,
+    bankCommunication: (row.bank_communication as string | null) ?? undefined,
     sourceFile: (row.source_file as string | null) ?? undefined,
     importedAt: row.imported_at as string,
   }
