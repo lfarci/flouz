@@ -26,7 +26,7 @@ export interface Transaction {
   currency: string // default 'EUR'
   accountId?: number
   categoryId?: string
-  note?: string
+  bankCommunication?: string
   sourceFile?: string
   importedAt: string // ISO timestamp
 }

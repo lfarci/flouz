@@ -73,29 +73,29 @@ describe('computeTransactionHash', () => {
     expect(leftHash).not.toBe(rightHash)
   })
 
-  it('changes when note changes', () => {
+  it('changes when bankCommunication changes', () => {
     const leftHash = computeTransactionHash({
       date: '2026-01-15',
       amount: -42.5,
       counterparty: 'ACME Shop',
-      note: 'Invoice 42',
+      bankCommunication: 'Invoice 42',
     })
     const rightHash = computeTransactionHash({
       date: '2026-01-15',
       amount: -42.5,
       counterparty: 'ACME Shop',
-      note: 'Invoice 43',
+      bankCommunication: 'Invoice 43',
     })
 
     expect(leftHash).not.toBe(rightHash)
   })
 
-  it('changes when note is present versus absent', () => {
+  it('changes when bankCommunication is present versus absent', () => {
     const leftHash = computeTransactionHash({
       date: '2026-01-15',
       amount: -42.5,
       counterparty: 'ACME Shop',
-      note: 'Invoice 42',
+      bankCommunication: 'Invoice 42',
     })
     const rightHash = computeTransactionHash({
       date: '2026-01-15',

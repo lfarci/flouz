@@ -49,7 +49,7 @@ describe('formatTransactionTable', () => {
         date: '2026-01-15',
         amount: '-42.50',
         counterparty: 'ACME Shop',
-        note: 'Invoice 42',
+        bankCommunication: 'Invoice 42',
         category: 'groceries',
       },
     ])
@@ -83,20 +83,20 @@ describe('parseOutputFormat', () => {
 })
 
 describe('buildCsv', () => {
-  it('serializes full counterparty and note fields', () => {
+  it('serializes full counterparty and original_name fields', () => {
     expect(
       buildCsv([
         {
           date: '2026-01-15',
           amount: '-42.50',
           counterparty: 'ACME Shop and Bakery',
-          note: 'Monthly, refill',
+          bankCommunication: 'Monthly, refill',
           category: 'groceries',
         },
       ]),
     ).toBe(
       [
-        'date,amount,counterparty,note,category',
+        'date,amount,counterparty,bank_communication,category',
         '2026-01-15,-42.50,ACME Shop and Bakery,"Monthly, refill",groceries',
       ].join('\n'),
     )
@@ -117,7 +117,7 @@ describe('buildJson', () => {
           date: '2026-01-15',
           amount: '-42.50',
           counterparty: 'ACME Shop and Bakery',
-          note: 'Invoice 42 paid in full',
+          bankCommunication: 'Invoice 42 paid in full',
           category: 'groceries',
         },
       ]),
@@ -128,7 +128,7 @@ describe('buildJson', () => {
         '    "date": "2026-01-15",',
         '    "amount": "-42.50",',
         '    "counterparty": "ACME Shop and Bakery",',
-        '    "note": "Invoice 42 paid in full",',
+        '    "bankCommunication": "Invoice 42 paid in full",',
         '    "category": "groceries"',
         '  }',
         ']',

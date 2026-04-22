@@ -30,7 +30,7 @@ interface ListRow {
   date: string
   amount: string
   counterparty: string
-  note: string
+  bankCommunication: string
   category: string
 }
 
@@ -94,7 +94,7 @@ function toListRows(transactions: Transaction[], categorySlugById: Map<string, s
     date: transaction.date,
     amount: formatAmount(transaction.amount),
     counterparty: transaction.counterparty,
-    note: transaction.note ?? '',
+    bankCommunication: transaction.bankCommunication ?? '',
     category: resolveCategorySlug(transaction.categoryId, categorySlugById),
   }))
 }
@@ -116,10 +116,10 @@ export function formatTransactionTable(rows: ListRow[]): string[] {
         truncate: 12,
       },
       { header: 'Counterparty', width: 30, minWidth: 16, wrapWord: true },
-      { header: 'Note', width: 30, minWidth: 14, wrapWord: true },
+      { header: 'Bank Communication', width: 30, minWidth: 14, wrapWord: true },
       { header: 'Category', width: 18, minWidth: 10, wrapWord: true },
     ],
-    rows: rows.map((row) => [row.date, row.amount, row.counterparty, row.note, row.category]),
+    rows: rows.map((row) => [row.date, row.amount, row.counterparty, row.bankCommunication, row.category]),
   })
 }
 
@@ -134,9 +134,9 @@ export function parseOutputFormat(value: string): OutputFormat {
 }
 
 export function buildCsv(rows: ListRow[]): string {
-  const header = 'date,amount,counterparty,note,category'
+  const header = 'date,amount,counterparty,bank_communication,category'
   const dataRows = rows.map((row) =>
-    [row.date, row.amount, row.counterparty, row.note, row.category].map(escapeCsvField).join(','),
+    [row.date, row.amount, row.counterparty, row.bankCommunication, row.category].map(escapeCsvField).join(','),
   )
   return [header, ...dataRows].join('\n')
 }

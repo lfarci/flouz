@@ -71,7 +71,7 @@ describe('getTransactions', () => {
         date: transaction.date,
         amount: transaction.amount,
         counterparty: transaction.counterparty,
-        note: transaction.note,
+        bankCommunication: transaction.bankCommunication,
       }),
     )
   })

@@ -10,8 +10,8 @@ function formatTransactionDetails(transaction: Transaction): string {
     `Amount: ${transaction.amount} ${transaction.currency}`,
     `Counterparty: ${transaction.counterparty}`,
   ]
-  if (transaction.note) {
-    lines.push(`Note: ${transaction.note}`)
+  if (transaction.bankCommunication) {
+    lines.push(`Bank communication: ${transaction.bankCommunication}`)
   }
   return lines.join('\n')
 }

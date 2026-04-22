@@ -6,10 +6,10 @@ export function insertTransaction(db: Database, transaction: NewTransaction): nu
   const statement = db.prepare(`
     INSERT OR IGNORE INTO transactions
       (date, amount, counterparty, hash, counterparty_iban, currency, account_id,
-       category_id, note, source_file, imported_at)
+       category_id, bank_communication, source_file, imported_at)
     VALUES
       ($date, $amount, $counterparty, $hash, $counterpartyIban, $currency, $accountId,
-       $categoryId, $note, $sourceFile, $importedAt)
+       $categoryId, $bankCommunication, $sourceFile, $importedAt)
   `)
   const result = statement.run({
     $date: transaction.date,
@@ -20,7 +20,7 @@ export function insertTransaction(db: Database, transaction: NewTransaction): nu
     $currency: transaction.currency,
     $accountId: transaction.accountId ?? null,
     $categoryId: transaction.categoryId ?? null,
-    $note: transaction.note ?? null,
+    $bankCommunication: transaction.bankCommunication ?? null,
     $sourceFile: transaction.sourceFile ?? null,
     $importedAt: transaction.importedAt,
   })

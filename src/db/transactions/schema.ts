@@ -14,7 +14,7 @@ export function createTransactionsTable(db: Database): void {
       currency           TEXT DEFAULT 'EUR',
       account_id         INTEGER REFERENCES accounts(id),
       category_id        TEXT REFERENCES categories(id),
-      note               TEXT,
+      bank_communication TEXT,
       source_file        TEXT,
       imported_at        TEXT NOT NULL
     )
