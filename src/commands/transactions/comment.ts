@@ -77,7 +77,7 @@ async function promptDecision(transaction: Transaction, index: number, total: nu
 }
 
 async function promptComment(current: string | undefined): Promise<string | symbol> {
-  return text({
+  return await text({
     message: 'Enter comment:',
     initialValue: current ?? '',
     placeholder: 'Leave blank to skip',
@@ -100,7 +100,7 @@ async function applyDecision(
   if (decision === 'set') {
     const input = await promptComment(transaction.comment)
     if (isCancel(input)) return 'quit'
-    const trimmed = (input as string).trim()
+    const trimmed = input.toString().trim()
     if (trimmed === '') return 'skip'
     updateComment(db, transaction.id, trimmed)
     log.success('Comment saved')
