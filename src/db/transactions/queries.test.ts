@@ -12,6 +12,7 @@ import { insertTransaction, updateCategory } from './mutations'
 import { createTransactionsTable } from './schema'
 import {
   countTransactions,
+  getTransactionById,
   getTransactions,
   getTransactionsMissingCategoryForCategorization,
   getUncategorized,
@@ -338,5 +339,24 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
     })
 
     expect(transactions).toHaveLength(2)
+  })
+})
+
+describe('getTransactionById', () => {
+  it('returns the transaction when it exists', () => {
+    insertTransaction(db, fakeTransaction)
+    const [inserted] = getTransactions(db)
+
+    const transaction = getTransactionById(db, inserted.id!)
+
+    expect(transaction).toBeDefined()
+    expect(transaction?.counterparty).toBe(fakeTransaction.counterparty)
+    expect(transaction?.amount).toBe(fakeTransaction.amount)
+  })
+
+  it('returns undefined when no transaction matches the given ID', () => {
+    const transaction = getTransactionById(db, 999)
+
+    expect(transaction).toBeUndefined()
   })
 })

@@ -46,7 +46,7 @@ function loadTransactions(db: Database, id: number | undefined, options: Comment
 
 function formatTransactionNote(transaction: Transaction, index: number, total: number): string {
   const lines = [
-    `[${index}/${total}]  ${transaction.date}  ${formatAmount(transaction.amount)} EUR`,
+    `[${index}/${total}]  ${transaction.date}  ${formatAmount(transaction.amount)} ${transaction.currency}`,
     `Counterparty : ${transaction.counterparty}`,
   ]
   if (transaction.bankCommunication !== undefined) lines.push(`Bank note    : ${transaction.bankCommunication}`)
@@ -148,7 +148,7 @@ async function commentAction(idArg: string | undefined, options: CommentOptions)
     database = openDatabase(dbPath)
 
     const id = idArg !== undefined ? Number.parseInt(idArg, 10) : undefined
-    if (idArg !== undefined && (Number.isNaN(id!) || id! <= 0)) {
+    if (idArg !== undefined && (!/^\d+$/.test(idArg) || !Number.isSafeInteger(id!) || id! <= 0)) {
       process.removeListener('SIGINT', onCancel)
       database.close()
       log.error(`Invalid transaction ID: ${idArg}`)

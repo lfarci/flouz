@@ -216,6 +216,19 @@ describe('comment action — invalid ID argument', () => {
 
     expect(outcome).toEqual({ status: 'rejected', errorCode: 1 })
   })
+
+  it('exits with code 1 when ID is partially numeric (e.g. "42abc")', async () => {
+    const { handle } = createInMemoryDatabase()
+    openDatabaseMock.mockReturnValue(handle)
+
+    const outcome = await collectCommandOutcome<CommentOutcome>(
+      () => runCommandSilently(createCommentCommand('default.db'), ['42abc']),
+      () => ({ status: 'resolved' }),
+      (errorCode) => ({ status: 'rejected', errorCode }),
+    )
+
+    expect(outcome).toEqual({ status: 'rejected', errorCode: 1 })
+  })
 })
 
 describe('comment action — skip', () => {
