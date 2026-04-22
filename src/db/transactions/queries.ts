@@ -15,6 +15,7 @@ function rowToTransaction(row: Record<string, unknown>): Transaction {
     bankCommunication: (row.bank_communication as string | null) ?? undefined,
     sourceFile: (row.source_file as string | null) ?? undefined,
     importedAt: row.imported_at as string,
+    comment: (row.comment as string | null) ?? undefined,
   }
 }
 

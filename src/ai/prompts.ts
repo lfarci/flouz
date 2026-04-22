@@ -13,6 +13,9 @@ function formatTransactionDetails(transaction: Transaction): string {
   if (transaction.bankCommunication) {
     lines.push(`Bank communication: ${transaction.bankCommunication}`)
   }
+  if (transaction.comment) {
+    lines.push(`User comment: ${transaction.comment}`)
+  }
   return lines.join('\n')
 }
 

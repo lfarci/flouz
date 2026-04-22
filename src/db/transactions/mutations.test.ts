@@ -7,7 +7,7 @@ import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { getTransactions } from './queries'
 import { createTransactionsTable } from './schema'
-import { insertTransaction, updateCategory } from './mutations'
+import { insertTransaction, updateCategory, updateComment } from './mutations'
 
 const fakeTransaction: NewTransaction = {
   date: '2026-01-15',
@@ -49,5 +49,24 @@ describe('updateCategory', () => {
     updateCategory(db, transaction.id!, 'food-groceries')
     const [updatedTransaction] = getTransactions(db)
     expect(updatedTransaction.categoryId).toBe('food-groceries')
+  })
+})
+
+describe('updateComment', () => {
+  it('sets the comment on a transaction', () => {
+    insertTransaction(db, fakeTransaction)
+    const [transaction] = getTransactions(db)
+    updateComment(db, transaction.id!, 'groceries run before holiday')
+    const [updatedTransaction] = getTransactions(db)
+    expect(updatedTransaction.comment).toBe('groceries run before holiday')
+  })
+
+  it('clears the comment when passed undefined', () => {
+    insertTransaction(db, fakeTransaction)
+    const [transaction] = getTransactions(db)
+    updateComment(db, transaction.id!, 'some comment')
+    updateComment(db, transaction.id!, undefined)
+    const [updatedTransaction] = getTransactions(db)
+    expect(updatedTransaction.comment).toBeUndefined()
   })
 })

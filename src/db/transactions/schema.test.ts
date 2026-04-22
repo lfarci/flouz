@@ -57,6 +57,16 @@ describe('createTransactionsTable', () => {
     expect(getColumnNames(db)).not.toContain('account')
   })
 
+  it('creates the comment column', () => {
+    const db = new Database(':memory:')
+    createCategoriesTable(db)
+    createAccountsTable(db)
+
+    createTransactionsTable(db)
+
+    expect(getColumnNames(db)).toContain('comment')
+  })
+
   it('creates the hash index', () => {
     const db = new Database(':memory:')
     createCategoriesTable(db)
