@@ -16,7 +16,8 @@ export function createTransactionsTable(db: Database): void {
       category_id        TEXT REFERENCES categories(id),
       bank_communication TEXT,
       source_file        TEXT,
-      imported_at        TEXT NOT NULL
+      imported_at        TEXT NOT NULL,
+      comment            TEXT
     )
   `)
 

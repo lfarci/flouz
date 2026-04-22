@@ -29,9 +29,10 @@ export interface Transaction {
   bankCommunication?: string
   sourceFile?: string
   importedAt: string // ISO timestamp
+  comment?: string
 }
 
-export type NewTransaction = Omit<Transaction, 'id' | 'hash'>
+export type NewTransaction = Omit<Transaction, 'id' | 'hash' | 'comment'>
 
 export type ImportedTransaction = Omit<NewTransaction, 'accountId'> & {
   accountKey?: string

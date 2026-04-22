@@ -51,6 +51,19 @@ describe('buildTransactionCategorizationPrompt', () => {
     })
   })
 
+  describe('with a user comment', () => {
+    it('includes the comment in the transaction section', () => {
+      const transactionWithComment: Transaction = { ...fakeTransaction, comment: 'weekly grocery run' }
+      const prompt = buildTransactionCategorizationPrompt(transactionWithComment, fakeCategories)
+      expect(prompt).toContain('User comment: weekly grocery run')
+    })
+
+    it('does not include a User comment line when comment is absent', () => {
+      const prompt = buildTransactionCategorizationPrompt(fakeTransaction, fakeCategories)
+      expect(prompt).not.toContain('User comment:')
+    })
+  })
+
   describe('reasoning instruction', () => {
     it('includes the reasoning instruction in the Instructions section', () => {
       const prompt = buildTransactionCategorizationPrompt(fakeTransaction, fakeCategories)
