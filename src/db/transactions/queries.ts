@@ -82,6 +82,12 @@ export function getUncategorized(db: Database): Transaction[] {
   return rows.map(rowToTransaction)
 }
 
+export function getTransactionById(db: Database, id: number): Transaction | undefined {
+  const row = db.prepare('SELECT * FROM transactions WHERE id = ?').get(id) as Record<string, unknown> | null
+  if (row === null) return undefined
+  return rowToTransaction(row)
+}
+
 export function hasTransactionsForAccount(db: Database, accountId: number): boolean {
   const row = db.prepare('SELECT 1 AS found FROM transactions WHERE account_id = ? LIMIT 1').get(accountId) as {
     found: number
