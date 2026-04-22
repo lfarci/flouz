@@ -127,6 +127,10 @@ async function annotateTransactions(db: Database, transactions: Transaction[]): 
   return summary
 }
 
+function isInvalidTransactionId(idArg: string, id: number): boolean {
+  return !/^\d+$/.test(idArg) || !Number.isSafeInteger(id) || id <= 0
+}
+
 function formatSummary(summary: CommentSummary, total: number): string {
   const acted = summary.updated + summary.cleared
   return `Reviewed ${acted + summary.skipped}/${total} — ${summary.updated} updated, ${summary.cleared} cleared, ${summary.skipped} skipped`
@@ -148,7 +152,7 @@ async function commentAction(idArg: string | undefined, options: CommentOptions)
     database = openDatabase(dbPath)
 
     const id = idArg !== undefined ? Number.parseInt(idArg, 10) : undefined
-    if (idArg !== undefined && (!/^\d+$/.test(idArg) || !Number.isSafeInteger(id!) || id! <= 0)) {
+    if (idArg !== undefined && isInvalidTransactionId(idArg, id!)) {
       process.removeListener('SIGINT', onCancel)
       database.close()
       log.error(`Invalid transaction ID: ${idArg}`)
