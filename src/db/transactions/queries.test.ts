@@ -14,7 +14,7 @@ import {
   countTransactions,
   getTransactionById,
   getTransactions,
-  getTransactionsMissingCategoryForCategorization,
+  getTransactionsEligibleForCategorization,
   getUncategorized,
   hasTransactionsForAccount,
 } from './queries'
@@ -208,7 +208,7 @@ describe('getTransactions with uncategorized filter', () => {
   })
 })
 
-describe('getTransactionsMissingCategoryForCategorization', () => {
+describe('getTransactionsEligibleForCategorization', () => {
   beforeEach(() => {
     createTransactionCategorySuggestionsTable(db)
   })
@@ -216,14 +216,14 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
   it('returns transactions where category_id IS NULL and no suggestion exists', () => {
     insertTransaction(db, { ...fakeTransaction, counterparty: 'Eligible' })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db)
+    const transactions = getTransactionsEligibleForCategorization(db)
 
     expect(transactions).toHaveLength(1)
     expect(transactions[0].counterparty).toBe('Eligible')
   })
 
   it('returns empty array when no eligible transactions exist', () => {
-    const transactions = getTransactionsMissingCategoryForCategorization(db)
+    const transactions = getTransactionsEligibleForCategorization(db)
 
     expect(transactions).toEqual([])
   })
@@ -233,7 +233,7 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
     const allTransactions = getTransactions(db)
     updateCategory(db, allTransactions[0].id!, CATEGORY_ID)
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db)
+    const transactions = getTransactionsEligibleForCategorization(db)
 
     expect(transactions).toHaveLength(0)
   })
@@ -253,7 +253,7 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
       model: 'test-model',
     })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db)
+    const transactions = getTransactionsEligibleForCategorization(db)
 
     expect(transactions).toHaveLength(0)
   })
@@ -269,7 +269,7 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
       date: '2026-02-01',
     })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db, {
+    const transactions = getTransactionsEligibleForCategorization(db, {
       search: 'delhaize',
     })
 
@@ -289,7 +289,7 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
       counterparty: 'New',
     })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db, {
+    const transactions = getTransactionsEligibleForCategorization(db, {
       from: '2026-01-20',
     })
 
@@ -309,7 +309,7 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
       counterparty: 'New',
     })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db, {
+    const transactions = getTransactionsEligibleForCategorization(db, {
       to: '2026-01-20',
     })
 
@@ -334,11 +334,32 @@ describe('getTransactionsMissingCategoryForCategorization', () => {
       date: '2026-01-30',
     })
 
-    const transactions = getTransactionsMissingCategoryForCategorization(db, {
+    const transactions = getTransactionsEligibleForCategorization(db, {
       limit: 2,
     })
 
     expect(transactions).toHaveLength(2)
+  })
+
+  it('includes categorized transactions when override is true', () => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Categorized' })
+    const allTransactions = getTransactions(db)
+    updateCategory(db, allTransactions[0].id!, CATEGORY_ID)
+
+    const transactions = getTransactionsEligibleForCategorization(db, { override: true })
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].counterparty).toBe('Categorized')
+  })
+
+  it('excludes categorized transactions when override is false', () => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Categorized' })
+    const allTransactions = getTransactions(db)
+    updateCategory(db, allTransactions[0].id!, CATEGORY_ID)
+
+    const transactions = getTransactionsEligibleForCategorization(db, { override: false })
+
+    expect(transactions).toHaveLength(0)
   })
 })
 

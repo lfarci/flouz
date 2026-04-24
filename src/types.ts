@@ -71,6 +71,7 @@ export interface CategorizeTransactionsFilters {
   to?: string
   search?: string
   limit?: number
+  override?: boolean
 }
 
 export interface SuggestionFilters {

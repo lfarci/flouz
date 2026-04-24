@@ -7,7 +7,7 @@ import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import { upsertTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
 import { getCategorizationExamples } from '@/db/transaction_category_suggestions/queries'
-import { getTransactionsMissingCategoryForCategorization } from '@/db/transactions/queries'
+import { getTransactionsEligibleForCategorization } from '@/db/transactions/queries'
 import type { CategorizeTransactionsFilters, Transaction } from '@/types'
 
 interface CategorizeOptions {
@@ -15,6 +15,7 @@ interface CategorizeOptions {
   to?: string
   search?: string
   limit?: string
+  override?: boolean
   db: string
 }
 
@@ -41,12 +42,13 @@ function toCategorizeTransactionsFilters(options: CategorizeOptions): Categorize
     to: options.to,
     search: options.search,
     limit: parseLimit(options.limit),
+    override: options.override,
   }
 }
 
 function loadEligibleTransactions(db: Database, options: CategorizeOptions): Transaction[] {
   const filters = toCategorizeTransactionsFilters(options)
-  return getTransactionsMissingCategoryForCategorization(db, filters)
+  return getTransactionsEligibleForCategorization(db, filters)
 }
 
 async function categorizeTransactions(db: Database, transactions: Transaction[]): Promise<CategorizeResult> {
@@ -150,11 +152,12 @@ async function categorizeAction(options: CategorizeOptions): Promise<void> {
 
 export function createCategorizeCommand(defaultDb: string): Command {
   return new Command('categorize')
-    .description('AI-categorize uncategorized transactions without an existing suggestion')
+    .description('AI-categorize transactions and store suggestions for review')
     .option('-f, --from <date>', 'filter from date (YYYY-MM-DD)')
     .option('-t, --to <date>', 'filter to date (YYYY-MM-DD)')
     .option('-s, --search <text>', 'search counterparty')
     .option('-l, --limit <n>', 'max transactions to process')
+    .option('--override', 'also categorize transactions that already have a category')
     .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(categorizeAction)
 }

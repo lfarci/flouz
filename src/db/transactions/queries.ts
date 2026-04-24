@@ -96,14 +96,12 @@ export function hasTransactionsForAccount(db: Database, accountId: number): bool
   return row !== null
 }
 
-export function getTransactionsMissingCategoryForCategorization(
+export function getTransactionsEligibleForCategorization(
   db: Database,
   filters: CategorizeTransactionsFilters = {},
 ): Transaction[] {
-  const conditions: string[] = [
-    'category_id IS NULL',
-    'id NOT IN (SELECT transaction_id FROM transaction_category_suggestions)',
-  ]
+  const conditions: string[] = ['id NOT IN (SELECT transaction_id FROM transaction_category_suggestions)']
+  if (!filters.override) conditions.unshift('category_id IS NULL')
   const params: SQLQueryBindings[] = []
 
   if (filters.from !== undefined) {
