@@ -101,9 +101,13 @@ export function getTransactionsEligibleForCategorization(
   db: Database,
   filters: CategorizeTransactionsFilters = {},
 ): Transaction[] {
-  const conditions: string[] = ['id NOT IN (SELECT transaction_id FROM transaction_category_suggestions)']
-  if (!filters.override) conditions.unshift('category_id IS NULL')
+  const conditions: string[] = []
   const params: SQLQueryBindings[] = []
+
+  if (!filters.override) {
+    conditions.push('category_id IS NULL')
+    conditions.push('id NOT IN (SELECT transaction_id FROM transaction_category_suggestions)')
+  }
 
   if (filters.from !== undefined) {
     conditions.push('date >= ?')
@@ -118,7 +122,7 @@ export function getTransactionsEligibleForCategorization(
     params.push(`%${filters.search}%`)
   }
 
-  const whereClause = `WHERE ${conditions.join(' AND ')}`
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
   const limitClause = filters.limit !== undefined ? 'LIMIT ?' : ''
 
   if (filters.limit !== undefined) {

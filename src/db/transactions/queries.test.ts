@@ -361,6 +361,43 @@ describe('getTransactionsEligibleForCategorization', () => {
 
     expect(transactions).toHaveLength(0)
   })
+
+  it('includes transactions with existing suggestions when override is true', () => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Already Suggested' })
+    const allTransactions = getTransactions(db)
+    const transactionId = allTransactions[0].id!
+
+    upsertTransactionCategorySuggestion(db, {
+      transactionId,
+      categoryId: CATEGORY_ID,
+      confidence: 0.9,
+      model: 'test-model',
+    })
+
+    const transactions = getTransactionsEligibleForCategorization(db, { override: true })
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].counterparty).toBe('Already Suggested')
+  })
+
+  it('includes transactions that are both categorized and have a suggestion when override is true', () => {
+    insertTransaction(db, { ...fakeTransaction, counterparty: 'Recategorize Me' })
+    const allTransactions = getTransactions(db)
+    const transactionId = allTransactions[0].id!
+
+    updateCategory(db, transactionId, CATEGORY_ID)
+    upsertTransactionCategorySuggestion(db, {
+      transactionId,
+      categoryId: CATEGORY_ID,
+      confidence: 0.9,
+      model: 'test-model',
+    })
+
+    const transactions = getTransactionsEligibleForCategorization(db, { override: true })
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].counterparty).toBe('Recategorize Me')
+  })
 })
 
 describe('getTransactionById', () => {
