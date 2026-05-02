@@ -37,13 +37,13 @@ import → comment → categorize → review suggestions → apply → list
 
 ## Subcommand reference
 
-| File | Commands covered |
-|---|---|
-| `config.md` | `flouz config get/set` |
-| `accounts.md` | `flouz accounts add/list/delete` |
-| `transactions-import.md` | `flouz transactions import` |
-| `transactions-list.md` | `flouz transactions list` |
-| `transactions-comment.md` | `flouz transactions comment` |
-| `transactions-categorize.md` | `flouz transactions categorize` |
-| `transactions-suggestions.md` | `flouz transactions suggestions *` |
-| `transactions-categories.md` | `flouz transactions categories list` |
+| File                          | Commands covered                     |
+| ----------------------------- | ------------------------------------ |
+| `config.md`                   | `flouz config get/set`               |
+| `accounts.md`                 | `flouz accounts add/list/delete`     |
+| `transactions-import.md`      | `flouz transactions import`          |
+| `transactions-list.md`        | `flouz transactions list`            |
+| `transactions-comment.md`     | `flouz transactions comment`         |
+| `transactions-categorize.md`  | `flouz transactions categorize`      |
+| `transactions-suggestions.md` | `flouz transactions suggestions *`   |
+| `transactions-categories.md`  | `flouz transactions categories list` |

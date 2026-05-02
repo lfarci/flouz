@@ -14,14 +14,14 @@ flouz transactions list --output csv > export.csv
 
 Options:
 
-| Option | Description |
-|---|---|
-| `-f, --from` / `-t, --to` | Date range (YYYY-MM-DD) |
-| `-c, --category <slug>` | Category filter — includes descendants |
-| `-s, --search <text>` | Search counterparty |
-| `-l, --limit <n>` | Max results |
-| `--uncategorized` | Only transactions without `category_id` |
-| `-o, --output` | `table` (default) \| `csv` \| `json` |
+| Option                    | Description                             |
+| ------------------------- | --------------------------------------- |
+| `-f, --from` / `-t, --to` | Date range (YYYY-MM-DD)                 |
+| `-c, --category <slug>`   | Category filter — includes descendants  |
+| `-s, --search <text>`     | Search counterparty                     |
+| `-l, --limit <n>`         | Max results                             |
+| `--uncategorized`         | Only transactions without `category_id` |
+| `-o, --output`            | `table` (default) \| `csv` \| `json`    |
 
 `--category` and `--uncategorized` are mutually exclusive.
 
