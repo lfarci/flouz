@@ -4,7 +4,7 @@ import { Command } from 'commander'
 import { isBrokenPipeError, writeStdout } from '@/cli/stdout'
 import { resolve } from 'node:path'
 import { renderCliTable } from '@/cli/table'
-import { getCategories } from '@/db/categories/queries'
+import { collectDescendantIds, getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import { getTransactions } from '@/db/transactions/queries'
 import type { Category, Transaction, TransactionFilters } from '@/types'
@@ -41,11 +41,12 @@ async function ensureDatabaseExists(dbPath: string): Promise<void> {
   )
 }
 
-function resolveCategoryId(db: Database, categorySlug: string | undefined): string | undefined {
+function resolveCategoryIds(db: Database, categorySlug: string | undefined): string[] | undefined {
   if (categorySlug === undefined) return undefined
 
   const categories = getCategories(db)
-  return findCategoryId(categories, categorySlug)
+  const rootId = findCategoryId(categories, categorySlug)
+  return collectDescendantIds(categories, rootId)
 }
 
 export function findCategoryId(categories: Category[], categorySlug: string): string {
@@ -54,11 +55,11 @@ export function findCategoryId(categories: Category[], categorySlug: string): st
   throw new Error(`Unknown category slug: ${categorySlug}`)
 }
 
-function toTransactionFilters(options: ListOptions, categoryId: string | undefined): TransactionFilters {
+function toTransactionFilters(options: ListOptions, categoryIds: string[] | undefined): TransactionFilters {
   return {
     from: options.from,
     to: options.to,
-    categoryId,
+    categoryIds,
     search: options.search,
     limit: parseLimit(options.limit),
     uncategorized: options.uncategorized,
@@ -77,8 +78,8 @@ function parseLimit(limit: string | undefined): number | undefined {
 }
 
 function loadListData(db: Database, options: ListOptions): ListData {
-  const categoryId = resolveCategoryId(db, options.category)
-  const filters = toTransactionFilters(options, categoryId)
+  const categoryIds = resolveCategoryIds(db, options.category)
+  const filters = toTransactionFilters(options, categoryIds)
   return {
     transactions: getTransactions(db, filters),
   }
