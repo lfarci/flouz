@@ -27,9 +27,9 @@ flouz transactions suggestions reject --status approved  # reject already-approv
 flouz transactions suggestions apply
 ```
 
-Common options on all subcommands: `-f, --from`, `-t, --to`, `-s, --search`, `-l, --limit`, `-d, --db`
+Common options on `list`, `review`, `approve`, `reject`, and `apply`: `-f, --from`, `-t, --to`, `-s, --search`, `-l, --limit`, `-d, --db`
 
-`fix` requires `--id <transactionId>` and `--category <slug>`. Cannot fix an already-applied suggestion.
+`fix` is the exception: it supports `--id <transactionId>`, `--category <slug>`, and `-d, --db` only. Cannot fix an already-applied suggestion.
 
 `reject --status` accepts `pending` (default) or `approved`.
 
