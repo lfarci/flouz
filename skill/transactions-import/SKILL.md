@@ -21,9 +21,18 @@ flouz transactions import ~/downloads/bank-exports/
 flouz transactions import ~/downloads/bank-2024-03.csv --db ~/finance/flouz.db
 ```
 
+## Reference
+
+### `flouz transactions import <path>`
+
+| Argument / Option | Description |
+|---|---|
+| `<path>` | Path to a CSV file or a directory of CSV files |
+| `-d, --db <path>` | Override database path |
+
 ## Behaviour
 
-- Accepts a path to a single `.csv` file or a directory; directories are scanned for `*.csv` files (non-recursive)
+- Directories are scanned for `*.csv` files (non-recursive)
 - Deduplication key: `(date, amount, counterparty)` — re-importing the same rows has no effect
 - If the database file does not exist yet, it is created on first import
 - Parse errors (malformed rows) are reported as warnings; valid rows in the same file are still imported
@@ -31,4 +40,4 @@ flouz transactions import ~/downloads/bank-2024-03.csv --db ~/finance/flouz.db
 
 ## After importing
 
-Run `flouz transactions list` to verify the imported data, then proceed with `flouz transactions categorize` to generate AI category suggestions.
+Run `flouz transactions list` to verify the data, then proceed with `flouz transactions categorize` to generate AI category suggestions.

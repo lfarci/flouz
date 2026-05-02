@@ -10,7 +10,7 @@ flouz is a personal finance CLI. It imports Belgian bank CSV exports into a loca
 
 **Categories** — a 3-level hierarchy (root → subcategory → leaf) identified by stable slugs. Use `flouz transactions categories list --tree` to discover them. Filtering by a parent slug includes all descendants.
 
-**Category vs AI suggestion** — `category_id` is user-controlled and written only when the user explicitly applies or approves a suggestion. The AI stores its proposals in a separate `ai_category_id` field and never silently overwrites user choices.
+**Category vs AI suggestion** — `category_id` is user-controlled and written only when the user explicitly applies or approves a suggestion. The AI stores its proposals separately and never silently overwrites user choices.
 
 **Suggestions lifecycle**
 ```
@@ -37,18 +37,9 @@ import → comment → categorize → review suggestions → apply → list
 |---|---|
 | `flouz config` | Manage tool configuration |
 | `flouz accounts` | Manage bank account registrations |
-| `flouz transactions` | Import, annotate, categorize, and query transactions |
+| `flouz transactions import` | Import bank CSV exports |
+| `flouz transactions list` | Query and export transactions |
+| `flouz transactions comment` | Annotate transactions before categorization |
+| `flouz transactions categorize` | Run AI categorization |
 | `flouz transactions suggestions` | Review and apply AI category suggestions |
 | `flouz transactions categories` | Discover available category slugs |
-
-## Further reading
-
-- `skill/reference.md` — complete flag and option reference
-- `skill/config.md` — config command usage and use cases
-- `skill/accounts.md` — accounts command usage and use cases
-- `skill/transactions-import.md` — importing bank CSVs
-- `skill/transactions-list.md` — querying and exporting transactions
-- `skill/transactions-comment.md` — annotating transactions
-- `skill/transactions-categorize.md` — AI categorization
-- `skill/transactions-suggestions.md` — reviewing and applying suggestions
-- `skill/transactions-categories.md` — browsing available categories

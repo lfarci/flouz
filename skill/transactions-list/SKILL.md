@@ -40,18 +40,6 @@ flouz transactions list --output csv --from 2024-01-01 > transactions.csv
 flouz transactions list --from 2024-01-01 --category food --output json --limit 100
 ```
 
-## JSON output
-
-Each record contains:
-
-| Field | Description |
-|---|---|
-| `date` | Transaction date (YYYY-MM-DD) |
-| `amount` | Signed amount as a formatted string (e.g. `-42.50`, `+1200.00`) |
-| `counterparty` | Counterparty name |
-| `bankCommunication` | Bank communication / reference (may be empty) |
-| `category` | Category slug, or `—` if uncategorized |
-
 ## Piping examples
 
 ```sh
@@ -64,8 +52,29 @@ flouz transactions list --output json --category groceries \
   | jq '[.[].amount | ltrimstr("+") | tonumber] | add'
 ```
 
-## Notes
+## Reference
 
-- `--category` and `--uncategorized` cannot be combined
-- Category slugs can be discovered with `flouz transactions categories list`
-- Filtering by a parent category slug includes all its descendants
+### `flouz transactions list`
+
+| Option | Description |
+|---|---|
+| `-f, --from <date>` | Start date filter (YYYY-MM-DD) |
+| `-t, --to <date>` | End date filter (YYYY-MM-DD) |
+| `-c, --category <slug>` | Category slug filter — includes all descendants |
+| `-s, --search <text>` | Search counterparty name |
+| `-l, --limit <n>` | Max results |
+| `--uncategorized` | Only transactions without a manual category |
+| `-o, --output <format>` | `table` (default) \| `csv` \| `json` |
+| `-d, --db <path>` | Override database path |
+
+`--category` and `--uncategorized` are mutually exclusive.
+
+### JSON output fields
+
+| Field | Description |
+|---|---|
+| `date` | Transaction date (YYYY-MM-DD) |
+| `amount` | Signed amount string (e.g. `-42.50`, `+1200.00`) |
+| `counterparty` | Counterparty name |
+| `bankCommunication` | Bank communication / reference (may be empty) |
+| `category` | Category slug, or `—` if uncategorized |

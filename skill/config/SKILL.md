@@ -31,16 +31,17 @@ flouz config set ai-model openai/gpt-4o
 flouz config set ai-base-url https://models.github.ai/inference
 ```
 
-## Config keys
+## Reference
+
+### `flouz config set <key> <value>`
 
 | Key | Default | Description |
 |---|---|---|
-| `db-path` | `~/.config/flouz/flouz.db` | SQLite database file location |
-| `github-token` | _(not set)_ | GitHub personal access token for AI categorization |
+| `db-path` | `~/.config/flouz/flouz.db` | Path to the SQLite database file |
+| `github-token` | _(not set)_ | GitHub personal access token — required for AI categorization |
 | `ai-model` | `openai/gpt-4o-mini` | AI model name |
 | `ai-base-url` | `https://models.github.ai/inference` | AI provider base URL |
 
-## Notes
+### `flouz config get [key]`
 
-- `github-token` is masked in `config get` output (shown as `***`)
-- All commands accept `--db <path>` to override `db-path` for a single invocation
+Omit `key` to print all values. `github-token` is masked as `***` in output.

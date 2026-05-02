@@ -23,15 +23,24 @@ flouz transactions categories list --tree
 Categories are organized in 3 levels:
 
 ```
-root (e.g. necessities)
-  └── subcategory (e.g. necessities.housing)
-        └── leaf (e.g. necessities.housing.rent)
+root                          (e.g. necessities)
+  └── subcategory             (e.g. necessities.housing)
+        └── leaf              (e.g. necessities.housing.rent)
 ```
 
-When filtering by a parent slug (e.g. `--category necessities`), all transactions under any descendant category are included.
+Filtering by a parent slug (e.g. `--category necessities`) includes transactions under all descendant categories.
+
+## Reference
+
+### `flouz transactions categories list`
+
+| Option | Description |
+|---|---|
+| `--tree` | Show categories as a hierarchy tree |
+| `-d, --db <path>` | Override database path |
 
 ## Notes
 
 - Category slugs are stable — they do not change between flouz versions
 - The UUID column in flat output is the internal `category_id` stored on transactions
-- Use `--tree` to get a visual overview; use the flat table when you need to copy exact slug values
+- Use `--tree` for a visual overview; use the flat table when you need to copy exact slug values

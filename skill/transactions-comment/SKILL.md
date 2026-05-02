@@ -1,6 +1,6 @@
 # flouz transactions comment
 
-Interactively adds or edits free-text comments on transactions. Comments are stored on the transaction and are visible to the AI during categorization — adding context before running `categorize` improves suggestion accuracy.
+Interactively adds or edits free-text comments on transactions. Comments are stored on the transaction and visible to the AI during categorization — adding context before running `categorize` improves suggestion accuracy.
 
 ## Use cases
 
@@ -18,7 +18,7 @@ flouz transactions comment
 # Jump directly to a specific transaction
 flouz transactions comment 42
 
-# Review only uncategorized transactions from a date range
+# Review transactions from a date range
 flouz transactions comment --from 2024-01-01 --to 2024-03-31
 
 # Review transactions matching a counterparty search
@@ -34,8 +34,20 @@ flouz transactions comment --search virement --limit 10
 | **Skip** | Moves to the next transaction without changes |
 | **Quit** | Exits the review session |
 
+## Reference
+
+### `flouz transactions comment [id]`
+
+| Argument / Option | Description |
+|---|---|
+| `[id]` | Optional transaction ID to jump to directly |
+| `-f, --from <date>` | Start date filter (YYYY-MM-DD) |
+| `-t, --to <date>` | End date filter (YYYY-MM-DD) |
+| `-s, --search <text>` | Search counterparty name |
+| `-l, --limit <n>` | Max transactions to review |
+| `-d, --db <path>` | Override database path |
+
 ## Notes
 
 - Run this before `flouz transactions categorize` to improve AI suggestion quality
-- Comments are preserved across re-categorization runs
 - Leaving the text input blank during "Add comment" is treated as Skip

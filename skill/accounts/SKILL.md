@@ -23,17 +23,30 @@ flouz accounts list
 flouz accounts delete checking
 ```
 
-## Account fields
+## Reference
 
-| Field | Required | Description |
+### `flouz accounts add <key> <name> <company>`
+
+| Argument / Option | Required | Description |
 |---|---|---|
-| `key` | yes | Short unique identifier — must match the key column in CSV exports |
-| `name` | yes | Human-readable account label |
-| `company` | yes | Bank or institution name |
-| `--description` | no | Optional free-text description |
-| `--iban` | no | Optional IBAN for reference |
+| `<key>` | yes | Unique import key — must match the key column in CSV exports |
+| `<name>` | yes | Human-readable account label |
+| `<company>` | yes | Bank or institution name |
+| `-d, --description <text>` | no | Optional free-text description |
+| `-i, --iban <iban>` | no | Optional IBAN for reference |
+| `--db <path>` | no | Override database path |
 
-## Notes
+### `flouz accounts list`
 
-- The `key` is what flouz matches against during CSV import to link transactions to an account
-- An account with associated transactions cannot be deleted — remove or reassign the transactions first
+| Option | Description |
+|---|---|
+| `--db <path>` | Override database path |
+
+### `flouz accounts delete <key>`
+
+| Argument / Option | Description |
+|---|---|
+| `<key>` | Unique import key of the account to delete |
+| `--db <path>` | Override database path |
+
+An account with associated transactions cannot be deleted.
