@@ -10,6 +10,6 @@ flouz transactions import ~/downloads/exports/        # all *.csv in directory
 Options: `-d, --db <path>`
 
 - Database is created automatically if it does not exist
-- Deduplication key: `(date, amount, counterparty)`
+- Deduplication key: `(date, amount, counterparty, bankCommunication)`
 - Import is transactional per file — a mid-file failure rolls back only that file
 - Parse errors are reported as warnings; valid rows in the same file are still imported
