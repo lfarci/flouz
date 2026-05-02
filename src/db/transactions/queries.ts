@@ -36,9 +36,10 @@ function buildFilterQueryParts(filters: TransactionFilters): FilterQueryParts {
     conditions.push('date <= ?')
     params.push(filters.to)
   }
-  if (filters.categoryId !== undefined) {
-    conditions.push('category_id = ?')
-    params.push(filters.categoryId)
+  if (filters.categoryIds !== undefined && filters.categoryIds.length > 0) {
+    const placeholders = filters.categoryIds.map(() => '?').join(', ')
+    conditions.push(`category_id IN (${placeholders})`)
+    params.push(...filters.categoryIds)
   }
   if (filters.search !== undefined) {
     conditions.push('counterparty LIKE ?')

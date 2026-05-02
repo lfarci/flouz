@@ -41,7 +41,7 @@ export type ImportedTransaction = Omit<NewTransaction, 'accountId'> & {
 export interface TransactionFilters {
   from?: string
   to?: string
-  categoryId?: string
+  categoryIds?: string[]
   search?: string
   limit?: number
   uncategorized?: boolean

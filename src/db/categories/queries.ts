@@ -19,3 +19,12 @@ export function getCategories(db: Database): Category[] {
     parentId: (row.parent_id as string | null) ?? null,
   }))
 }
+
+export function collectDescendantIds(categories: Category[], rootId: string): string[] {
+  const ids = [rootId]
+  const children = categories.filter((category) => category.parentId === rootId)
+  for (const child of children) {
+    ids.push(...collectDescendantIds(categories, child.id))
+  }
+  return ids
+}

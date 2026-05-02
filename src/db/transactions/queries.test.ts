@@ -94,10 +94,10 @@ describe('getTransactions', () => {
     expect(transactions.length).toBe(2)
   })
 
-  it('filters by categoryId', () => {
+  it('filters by categoryIds', () => {
     const allTransactions = getTransactions(db)
     updateCategory(db, allTransactions[0].id!, 'food-groceries')
-    const transactions = getTransactions(db, { categoryId: 'food-groceries' })
+    const transactions = getTransactions(db, { categoryIds: ['food-groceries'] })
     expect(transactions.length).toBe(1)
   })
 
