@@ -1,22 +1,18 @@
+---
+name: flouz
+description: |
+  Use this skill when the user wants to manage personal finances with the flouz CLI.
+  Covers importing Belgian bank CSV exports, AI-assisted transaction categorization,
+  and querying spending data. Trigger on: "import my bank CSV", "categorize transactions",
+  "show my spending", "review AI suggestions", "add a comment to a transaction",
+  "list uncategorized transactions", or any mention of flouz commands.
+  See the subcommand files in this directory for detailed usage per command.
+license: MIT
+---
+
 # flouz
 
-flouz is a personal finance CLI. It imports Belgian bank CSV exports into a local SQLite database and uses AI to categorize transactions.
-
-## Key concepts
-
-**Database** — a single SQLite file (`~/.config/flouz/flouz.db` by default). All commands accept `--db <path>` to override it.
-
-**Accounts** — optional groupings that map a CSV import key to a bank account. Useful when managing multiple accounts.
-
-**Categories** — a 3-level hierarchy (root → subcategory → leaf) identified by stable slugs. Use `flouz transactions categories list --tree` to discover them. Filtering by a parent slug includes all descendants.
-
-**Category vs AI suggestion** — `category_id` is user-controlled and written only when the user explicitly applies or approves a suggestion. The AI stores its proposals separately and never silently overwrites user choices.
-
-**Suggestions lifecycle**
-```
-categorize → [pending] → approve / fix → [approved] → apply → [applied]
-                       → reject → (deleted)
-```
+Personal finance CLI — imports Belgian bank CSVs into SQLite and uses AI to categorize transactions.
 
 ## Core workflow
 
@@ -24,22 +20,30 @@ categorize → [pending] → approve / fix → [approved] → apply → [applied
 import → comment → categorize → review suggestions → apply → list
 ```
 
-1. **Import** — load bank CSVs into the database (duplicates are silently ignored)
-2. **Comment** — optionally annotate transactions before AI sees them (improves accuracy)
-3. **Categorize** — AI generates pending suggestions without touching `category_id`
-4. **Review** — approve, fix, or reject suggestions interactively or in bulk
-5. **Apply** — write approved suggestions to `category_id` on transactions
-6. **List** — query the result with filters and output formats
+1. **import** — load bank CSVs (duplicates ignored automatically)
+2. **comment** — annotate ambiguous transactions before AI sees them
+3. **categorize** — AI generates pending suggestions, never touches `category_id`
+4. **review** — approve, fix, or reject suggestions
+5. **apply** — write approved suggestions to `category_id`
+6. **list** — query transactions with filters and output formats
 
-## Command groups
+## Key concepts
 
-| Command | Purpose |
+- `category_id` is user-controlled — only written by `suggestions apply`
+- `ai_category_id` is the AI proposal — never silently overwrites user choices
+- Suggestions lifecycle: `pending → approved → applied` (or deleted on reject)
+- Categories are a 3-level hierarchy; filtering by a parent slug includes all descendants
+- All commands accept `--db <path>` to override the default database path
+
+## Subcommand reference
+
+| File | Commands covered |
 |---|---|
-| `flouz config` | Manage tool configuration |
-| `flouz accounts` | Manage bank account registrations |
-| `flouz transactions import` | Import bank CSV exports |
-| `flouz transactions list` | Query and export transactions |
-| `flouz transactions comment` | Annotate transactions before categorization |
-| `flouz transactions categorize` | Run AI categorization |
-| `flouz transactions suggestions` | Review and apply AI category suggestions |
-| `flouz transactions categories` | Discover available category slugs |
+| `config.md` | `flouz config get/set` |
+| `accounts.md` | `flouz accounts add/list/delete` |
+| `transactions-import.md` | `flouz transactions import` |
+| `transactions-list.md` | `flouz transactions list` |
+| `transactions-comment.md` | `flouz transactions comment` |
+| `transactions-categorize.md` | `flouz transactions categorize` |
+| `transactions-suggestions.md` | `flouz transactions suggestions *` |
+| `transactions-categories.md` | `flouz transactions categories list` |
