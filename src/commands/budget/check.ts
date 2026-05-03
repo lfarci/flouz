@@ -71,6 +71,11 @@ export function projectedSpending(spent: number, day: number, totalDays: number)
   return (spent / day) * totalDays
 }
 
+function computeSpentPercentage(spent: number, resolvedBudget: number): number {
+  if (resolvedBudget > 0) return (spent / resolvedBudget) * 100
+  return spent > 0 ? 100 : 0
+}
+
 function computeProgress(
   budget: Budget,
   categoryName: string,
@@ -81,7 +86,7 @@ function computeProgress(
   const resolvedBudget = budget.type === 'percent' ? (budget.amount / 100) * income : budget.amount
   const spent = Math.abs(expenses)
   const remaining = resolvedBudget - spent
-  const percentage = resolvedBudget > 0 ? (spent / resolvedBudget) * 100 : (spent > 0 ? 100 : 0)
+  const percentage = computeSpentPercentage(spent, resolvedBudget)
   return { categoryName, budgetAmount: resolvedBudget, spent, remaining, percentage, incomeAvailable }
 }
 
@@ -98,10 +103,7 @@ function renderHeader(month: string, day: number, totalDays: number, totalSpent:
   return `${monthName}  ·  day ${day} of ${totalDays}  ·  ${formatEuro(totalSpent)} spent so far`
 }
 
-function renderProgressRow(
-  progress: CategoryBudgetProgress,
-  elapsedPercentage: number,
-): string {
+function renderProgressRow(progress: CategoryBudgetProgress, elapsedPercentage: number): string {
   const reset = resetCode()
 
   if (!progress.incomeAvailable) {
@@ -141,7 +143,8 @@ function renderRecentTransactions(transactions: Transaction[]): string {
   const header = '\nRECENT TRANSACTIONS (last 7 days)'
   const rows = transactions.slice(0, 10).map((transaction) => {
     const date = new Date(transaction.date).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })
-    const amount = transaction.amount < 0 ? `−${formatEuroDecimal(transaction.amount)}` : `+${formatEuroDecimal(transaction.amount)}`
+    const amount =
+      transaction.amount < 0 ? `−${formatEuroDecimal(transaction.amount)}` : `+${formatEuroDecimal(transaction.amount)}`
     return `${date}  ${amount}  ${transaction.counterparty}`
   })
 

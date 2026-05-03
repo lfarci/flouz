@@ -188,12 +188,12 @@ Track monthly spending against budgets set on **top-level categories only**.
 
 Available top-level categories (slugs):
 
-| Slug             | Description                                        |
-| ---------------- | -------------------------------------------------- |
-| `necessities`    | House, utilities, groceries, transport, health, …  |
-| `savings`        | Savings accounts, investments                      |
-| `discretionary`  | Food & drink, shopping, entertainment, travel, …   |
-| `income`         | Salary, reimbursements, gifts received             |
+| Slug            | Description                                       |
+| --------------- | ------------------------------------------------- |
+| `necessities`   | House, utilities, groceries, transport, health, … |
+| `savings`       | Savings accounts, investments                     |
+| `discretionary` | Food & drink, shopping, entertainment, travel, …  |
+| `income`        | Salary, reimbursements, gifts received            |
 
 Budget checking aggregates all transactions in descendant categories under each top-level parent.
 
@@ -229,6 +229,7 @@ flouz budget check [--month YYYY-MM]
 ```
 
 Displays a dashboard with:
+
 - Progress bars per category (color-coded: green = on track, yellow = over pace, red = over budget)
 - Total budget vs. spending summary
 - Recent transactions (last 7 days)

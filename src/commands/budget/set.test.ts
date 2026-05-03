@@ -90,6 +90,8 @@ describe('findTopLevelCategory', () => {
   })
 
   it('throws when category is not top-level', () => {
-    expect(() => findTopLevelCategory(categories, 'groceries')).toThrow('Budgets can only be set on top-level categories')
+    expect(() => findTopLevelCategory(categories, 'groceries')).toThrow(
+      'Budgets can only be set on top-level categories',
+    )
   })
 })

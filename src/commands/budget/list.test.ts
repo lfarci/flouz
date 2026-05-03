@@ -21,9 +21,7 @@ describe('formatBudgetTable', () => {
   })
 
   it('renders a table with percentage budget rows showing resolved amount', () => {
-    const rows = [
-      { categoryName: 'Necessities', amount: '€2,100.00 (60% of €3,500)' },
-    ]
+    const rows = [{ categoryName: 'Necessities', amount: '€2,100.00 (60% of €3,500)' }]
 
     const result = formatBudgetTable(rows)
 
@@ -33,9 +31,7 @@ describe('formatBudgetTable', () => {
   })
 
   it('renders percentage budget with no income data', () => {
-    const rows = [
-      { categoryName: 'Savings', amount: '€0 (20% — no income data)' },
-    ]
+    const rows = [{ categoryName: 'Savings', amount: '€0 (20% — no income data)' }]
 
     const result = formatBudgetTable(rows)
 
@@ -44,9 +40,7 @@ describe('formatBudgetTable', () => {
   })
 
   it('returns an array of strings', () => {
-    const rows = [
-      { categoryName: 'Discretionary', amount: '€800.00' },
-    ]
+    const rows = [{ categoryName: 'Discretionary', amount: '€800.00' }]
 
     const result = formatBudgetTable(rows)
 

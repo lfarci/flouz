@@ -5,7 +5,14 @@ import { createTransactionsTable } from '@/db/transactions/schema'
 import { createAccountsTable } from '@/db/accounts/schema'
 import { createBudgetsTable, createMonthlyIncomeTable } from './schema'
 import { upsertBudget, upsertMonthlyIncome } from './mutations'
-import { getBudgetsForMonth, getBudgetForCategory, getMonthlyIncome, getIncomeForMonth, previousMonth, resolveMonthlyTotal } from './queries'
+import {
+  getBudgetsForMonth,
+  getBudgetForCategory,
+  getMonthlyIncome,
+  getIncomeForMonth,
+  previousMonth,
+  resolveMonthlyTotal,
+} from './queries'
 
 describe('getBudgetsForMonth', () => {
   let db: Database
@@ -25,9 +32,27 @@ describe('getBudgetsForMonth', () => {
   })
 
   it('returns only rows for the given month', () => {
-    upsertBudget(db, { categoryId: 'cat-1', amount: 2000, type: 'fixed', month: '2026-04', createdAt: '2026-04-01T00:00:00Z' })
-    upsertBudget(db, { categoryId: 'cat-1', amount: 2500, type: 'fixed', month: '2026-05', createdAt: '2026-05-01T00:00:00Z' })
-    upsertBudget(db, { categoryId: 'cat-2', amount: 500, type: 'fixed', month: '2026-05', createdAt: '2026-05-01T00:00:00Z' })
+    upsertBudget(db, {
+      categoryId: 'cat-1',
+      amount: 2000,
+      type: 'fixed',
+      month: '2026-04',
+      createdAt: '2026-04-01T00:00:00Z',
+    })
+    upsertBudget(db, {
+      categoryId: 'cat-1',
+      amount: 2500,
+      type: 'fixed',
+      month: '2026-05',
+      createdAt: '2026-05-01T00:00:00Z',
+    })
+    upsertBudget(db, {
+      categoryId: 'cat-2',
+      amount: 500,
+      type: 'fixed',
+      month: '2026-05',
+      createdAt: '2026-05-01T00:00:00Z',
+    })
 
     const result = getBudgetsForMonth(db, '2026-05')
 
@@ -37,7 +62,13 @@ describe('getBudgetsForMonth', () => {
   })
 
   it('returns budget with correct type field', () => {
-    upsertBudget(db, { categoryId: 'cat-1', amount: 60, type: 'percent', month: '2026-05', createdAt: '2026-05-01T00:00:00Z' })
+    upsertBudget(db, {
+      categoryId: 'cat-1',
+      amount: 60,
+      type: 'percent',
+      month: '2026-05',
+      createdAt: '2026-05-01T00:00:00Z',
+    })
 
     const result = getBudgetsForMonth(db, '2026-05')
 
@@ -63,7 +94,13 @@ describe('getBudgetForCategory', () => {
   })
 
   it('returns the budget when it exists', () => {
-    upsertBudget(db, { categoryId: 'cat-1', amount: 2000, type: 'fixed', month: '2026-05', createdAt: '2026-05-01T00:00:00Z' })
+    upsertBudget(db, {
+      categoryId: 'cat-1',
+      amount: 2000,
+      type: 'fixed',
+      month: '2026-05',
+      createdAt: '2026-05-01T00:00:00Z',
+    })
 
     const result = getBudgetForCategory(db, 'cat-1', '2026-05')
 

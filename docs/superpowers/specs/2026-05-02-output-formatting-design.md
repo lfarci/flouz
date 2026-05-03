@@ -49,30 +49,34 @@ Exports semantic formatting functions and icon constants. All color functions re
 
 **Icon constants:**
 
-| Constant | Value | Usage |
-|----------|-------|-------|
-| `ICON_ACTIVE` | `●` | Approved suggestion |
-| `ICON_PENDING` | `○` | Pending suggestion |
-| `ICON_SUCCESS` | `✓` | Applied, success outro |
-| `ICON_REJECTED` | `✗` | Rejected suggestion |
-| `ICON_EMPTY` | `—` | Missing/null value |
+| Constant        | Value | Usage                  |
+| --------------- | ----- | ---------------------- |
+| `ICON_ACTIVE`   | `●`   | Approved suggestion    |
+| `ICON_PENDING`  | `○`   | Pending suggestion     |
+| `ICON_SUCCESS`  | `✓`   | Applied, success outro |
+| `ICON_REJECTED` | `✗`   | Rejected suggestion    |
+| `ICON_EMPTY`    | `—`   | Missing/null value     |
 
 **Color functions:**
 
 ```typescript
 colorAmount(amount: number, formatted: string): string
 ```
+
 Returns `formatted` wrapped in green (positive) or red (negative).
 
 ```typescript
 colorConfidence(confidence: number, formatted: string): string
 ```
+
 Returns `formatted` wrapped in green (≥0.75), dim (0.50–0.74), or yellow (<0.50).
 
 ```typescript
 formatStatus(status: 'pending' | 'approved' | 'applied'): string
 ```
+
 Returns icon + colored status text:
+
 - `pending` → dim `○ pending`
 - `approved` → green `● approved`
 - `applied` → blue `✓ applied`
@@ -105,11 +109,11 @@ Always uses `log.info(message)`. If `hint` is provided, appends it on the next l
 
 ## Color Semantics
 
-| Data | Positive | Negative/Warning | Neutral |
-|------|----------|-------------------|---------|
-| Amount | green `+42.50` | red `-42.50` | — |
-| Confidence | green `95%` (≥75%) | yellow `40%` (<50%) | dim `65%` (50–74%) |
-| Status | green `● approved` | red `✗ rejected` | dim `○ pending`, blue `✓ applied` |
+| Data       | Positive           | Negative/Warning    | Neutral                           |
+| ---------- | ------------------ | ------------------- | --------------------------------- |
+| Amount     | green `+42.50`     | red `-42.50`        | —                                 |
+| Confidence | green `95%` (≥75%) | yellow `40%` (<50%) | dim `65%` (50–74%)                |
+| Status     | green `● approved` | red `✗ rejected`    | dim `○ pending`, blue `✓ applied` |
 
 ## NO_COLOR Support
 
@@ -135,41 +139,44 @@ program.hook('preAction', (thisCommand) => {
 
 ### Deleted code
 
-| File | What | Why |
-|------|------|-----|
-| `commands/transactions/list.ts:127-130` | Local `formatAmount()` duplicate | Use `cli/format.ts` |
-| `commands/transactions/suggestions/list.ts:31-33` | Local `formatConfidence()` | Move to `cli/format.ts` |
+| File                                              | What                             | Why                     |
+| ------------------------------------------------- | -------------------------------- | ----------------------- |
+| `commands/transactions/list.ts:127-130`           | Local `formatAmount()` duplicate | Use `cli/format.ts`     |
+| `commands/transactions/suggestions/list.ts:31-33` | Local `formatConfidence()`       | Move to `cli/format.ts` |
 
 ### Updated imports and calls
 
-| File | Change |
-|------|--------|
-| `commands/transactions/list.ts` | Import `colorAmount` from theme, `ICON_EMPTY` from theme. Delete local `formatAmount`. Use `colorAmount(t.amount, formatAmount(t.amount))` for table cells. Use `ICON_EMPTY` instead of hardcoded `—`. |
-| `commands/transactions/suggestions/list.ts` | Import `colorConfidence`, `formatStatus` from theme. Import `formatConfidence` from format. Delete local `formatConfidence`. Use theme functions for table cells. |
-| `commands/transactions/suggestions/review.ts` | Import `colorAmount`, `colorConfidence` from theme. Use in note display. Replace inline `Math.round(confidence * 100)%` with `formatConfidence`. |
-| `commands/transactions/comment.ts` | Import `colorAmount` from theme for transaction display. |
-| `commands/transactions/import.ts` | Import `ICON_SUCCESS` from theme. Replace hardcoded `✓` in outro. |
-| `commands/transactions/categorize.ts` | Import `ICON_SUCCESS` from theme. Replace hardcoded `✓` in outro. |
-| `commands/accounts/list.ts` | Import `ICON_EMPTY` from theme. Replace hardcoded `—`. |
-| All commands with empty states (~13 locations) | Import `emptyState` from `cli/empty`. Replace `log.info('No X found.')` with `emptyState('No X found.', 'hint text')`. |
-| `src/index.ts` | Add `--no-color` global option with `preAction` hook. |
+| File                                           | Change                                                                                                                                                                                                 |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `commands/transactions/list.ts`                | Import `colorAmount` from theme, `ICON_EMPTY` from theme. Delete local `formatAmount`. Use `colorAmount(t.amount, formatAmount(t.amount))` for table cells. Use `ICON_EMPTY` instead of hardcoded `—`. |
+| `commands/transactions/suggestions/list.ts`    | Import `colorConfidence`, `formatStatus` from theme. Import `formatConfidence` from format. Delete local `formatConfidence`. Use theme functions for table cells.                                      |
+| `commands/transactions/suggestions/review.ts`  | Import `colorAmount`, `colorConfidence` from theme. Use in note display. Replace inline `Math.round(confidence * 100)%` with `formatConfidence`.                                                       |
+| `commands/transactions/comment.ts`             | Import `colorAmount` from theme for transaction display.                                                                                                                                               |
+| `commands/transactions/import.ts`              | Import `ICON_SUCCESS` from theme. Replace hardcoded `✓` in outro.                                                                                                                                      |
+| `commands/transactions/categorize.ts`          | Import `ICON_SUCCESS` from theme. Replace hardcoded `✓` in outro.                                                                                                                                      |
+| `commands/accounts/list.ts`                    | Import `ICON_EMPTY` from theme. Replace hardcoded `—`.                                                                                                                                                 |
+| All commands with empty states (~13 locations) | Import `emptyState` from `cli/empty`. Replace `log.info('No X found.')` with `emptyState('No X found.', 'hint text')`.                                                                                 |
+| `src/index.ts`                                 | Add `--no-color` global option with `preAction` hook.                                                                                                                                                  |
 
 ## Testing
 
 ### New test files
 
 **`src/cli/theme.test.ts`:**
+
 - `colorAmount` returns green-wrapped text for positive amounts, red for negative
 - `colorConfidence` returns green for ≥0.75, dim for 0.50–0.74, yellow for <0.50
 - `formatStatus` returns correct icon + text for each status
 - All functions return plain text when `NO_COLOR=1`
 
 **`src/cli/format.test.ts`:**
+
 - `formatAmount` returns `+42.50` for positive, `-42.50` for negative, `+0.00` for zero
 - `formatConfidence` returns `95%` for 0.95, `0%` for 0, `100%` for 1.0
 - `truncateWithEllipsis` returns original text when it fits, truncated + `…` when it doesn't, handles empty strings and edge cases
 
 **`src/cli/empty.test.ts`:**
+
 - `emptyState` calls `log.info` with the message
 - When hint is provided, calls `log.info` a second time with hint text
 

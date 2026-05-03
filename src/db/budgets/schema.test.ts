@@ -48,10 +48,14 @@ describe('createBudgetsTable', () => {
     const db = setupDatabase()
     createBudgetsTable(db)
     db.run("INSERT INTO categories (id, name, slug) VALUES ('cat-1', 'Test', 'test')")
-    db.run("INSERT INTO budgets (category_id, amount, month, created_at) VALUES ('cat-1', 100, '2026-05', '2026-05-01T00:00:00Z')")
+    db.run(
+      "INSERT INTO budgets (category_id, amount, month, created_at) VALUES ('cat-1', 100, '2026-05', '2026-05-01T00:00:00Z')",
+    )
 
     expect(() => {
-      db.run("INSERT INTO budgets (category_id, amount, month, created_at) VALUES ('cat-1', 200, '2026-05', '2026-05-01T00:00:00Z')")
+      db.run(
+        "INSERT INTO budgets (category_id, amount, month, created_at) VALUES ('cat-1', 200, '2026-05', '2026-05-01T00:00:00Z')",
+      )
     }).toThrow()
   })
 })

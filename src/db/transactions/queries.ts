@@ -92,13 +92,17 @@ export function getTransactionById(db: Database, id: number): Transaction | unde
 export function sumExpensesForCategories(db: Database, categoryIds: string[], month: string): number {
   if (categoryIds.length === 0) return 0
   const placeholders = categoryIds.map(() => '?').join(', ')
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT COALESCE(SUM(amount), 0) as total
     FROM transactions
     WHERE amount < 0
       AND date LIKE ?
       AND category_id IN (${placeholders})
-  `).get(`${month}-%`, ...categoryIds) as { total: number }
+  `,
+    )
+    .get(`${month}-%`, ...categoryIds) as { total: number }
   return row.total
 }
 

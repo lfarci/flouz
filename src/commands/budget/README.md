@@ -4,13 +4,13 @@ Manage monthly budgets and track spending against them.
 
 ## Subcommands
 
-| Command             | Description                                          |
-| ------------------- | ---------------------------------------------------- |
-| `budget set`        | Set or update a monthly budget for a category        |
-| `budget list`       | List budgets for a given month                       |
-| `budget check`      | Dashboard showing budget progress and pace           |
-| `budget total set`  | Set the monthly income total for percentage budgets  |
-| `budget total show` | Show the stored or detected monthly income total     |
+| Command             | Description                                         |
+| ------------------- | --------------------------------------------------- |
+| `budget set`        | Set or update a monthly budget for a category       |
+| `budget list`       | List budgets for a given month                      |
+| `budget check`      | Dashboard showing budget progress and pace          |
+| `budget total set`  | Set the monthly income total for percentage budgets |
+| `budget total show` | Show the stored or detected monthly income total    |
 
 ## Category Constraints
 
