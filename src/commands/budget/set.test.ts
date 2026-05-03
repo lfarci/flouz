@@ -1,6 +1,20 @@
 import { describe, expect, it } from 'bun:test'
-import { parseBudgetValue, findTopLevelCategory, formatBudgetConfirmation } from './set'
+import {
+  parseBudgetValue,
+  findTopLevelCategory,
+  formatBudgetConfirmation,
+  getTopLevelBudgetCategories,
+  buildDefaultAllocation,
+} from './set'
 import type { Category } from '@/types'
+
+const baseCategories: Category[] = [
+  { id: 'cat-1', name: 'Necessities', slug: 'necessities', parentId: null },
+  { id: 'cat-2', name: 'Savings', slug: 'savings', parentId: null },
+  { id: 'cat-3', name: 'Discretionary', slug: 'discretionary', parentId: null },
+  { id: 'cat-4', name: 'Income', slug: 'income', parentId: null },
+  { id: 'cat-5', name: 'Groceries', slug: 'groceries', parentId: 'cat-1' },
+]
 
 describe('parseBudgetValue', () => {
   it('parses a fixed EUR amount', () => {
@@ -36,23 +50,17 @@ describe('parseBudgetValue', () => {
 })
 
 describe('findTopLevelCategory', () => {
-  const categories: Category[] = [
-    { id: 'cat-1', name: 'Necessities', slug: 'necessities', parentId: null },
-    { id: 'cat-2', name: 'Savings', slug: 'savings', parentId: null },
-    { id: 'cat-3', name: 'Groceries', slug: 'groceries', parentId: 'cat-1' },
-  ]
-
   it('returns the category when it is top-level', () => {
-    const result = findTopLevelCategory(categories, 'necessities')
+    const result = findTopLevelCategory(baseCategories, 'necessities')
     expect(result.id).toBe('cat-1')
   })
 
   it('throws when category is not found', () => {
-    expect(() => findTopLevelCategory(categories, 'unknown')).toThrow('Category not found')
+    expect(() => findTopLevelCategory(baseCategories, 'unknown')).toThrow('Category not found')
   })
 
   it('throws when category is not top-level', () => {
-    expect(() => findTopLevelCategory(categories, 'groceries')).toThrow(
+    expect(() => findTopLevelCategory(baseCategories, 'groceries')).toThrow(
       'Budgets can only be set on top-level categories',
     )
   })
@@ -71,5 +79,66 @@ describe('formatBudgetConfirmation', () => {
     expect(result).toContain('Savings')
     expect(result).toContain('20%')
     expect(result).toContain('2026-05')
+  })
+})
+
+describe('getTopLevelBudgetCategories', () => {
+  it('returns only top-level non-income categories', () => {
+    const result = getTopLevelBudgetCategories(baseCategories)
+    expect(result).toHaveLength(3)
+  })
+
+  it('excludes the income category', () => {
+    const result = getTopLevelBudgetCategories(baseCategories)
+    expect(result.some((category) => category.slug === 'income')).toBe(false)
+  })
+
+  it('excludes subcategories', () => {
+    const result = getTopLevelBudgetCategories(baseCategories)
+    expect(result.some((category) => category.slug === 'groceries')).toBe(false)
+  })
+
+  it('returns empty array when no budget categories exist', () => {
+    const incomeOnly: Category[] = [{ id: 'cat-1', name: 'Income', slug: 'income', parentId: null }]
+    expect(getTopLevelBudgetCategories(incomeOnly)).toHaveLength(0)
+  })
+})
+
+describe('buildDefaultAllocation', () => {
+  const defaults = { necessities: '30%', discretionary: '30%', savings: '20%' }
+
+  it('builds allocation for all three default categories', () => {
+    const result = buildDefaultAllocation(baseCategories, defaults)
+    expect(result).toHaveLength(3)
+  })
+
+  it('uses necessities option for the necessities category', () => {
+    const result = buildDefaultAllocation(baseCategories, defaults)
+    const necessities = result.find((entry) => entry.category.slug === 'necessities')
+    expect(necessities?.parsed).toEqual({ amount: 30, type: 'percent' })
+  })
+
+  it('uses discretionary option for the discretionary category', () => {
+    const result = buildDefaultAllocation(baseCategories, defaults)
+    const discretionary = result.find((entry) => entry.category.slug === 'discretionary')
+    expect(discretionary?.parsed).toEqual({ amount: 30, type: 'percent' })
+  })
+
+  it('uses savings option for the savings category', () => {
+    const result = buildDefaultAllocation(baseCategories, defaults)
+    const savings = result.find((entry) => entry.category.slug === 'savings')
+    expect(savings?.parsed).toEqual({ amount: 20, type: 'percent' })
+  })
+
+  it('respects custom allocation values', () => {
+    const custom = { necessities: '40%', discretionary: '25%', savings: '15%' }
+    const result = buildDefaultAllocation(baseCategories, custom)
+    const necessities = result.find((entry) => entry.category.slug === 'necessities')
+    expect(necessities?.parsed).toEqual({ amount: 40, type: 'percent' })
+  })
+
+  it('throws for invalid allocation values', () => {
+    const invalid = { necessities: '0%', discretionary: '30%', savings: '20%' }
+    expect(() => buildDefaultAllocation(baseCategories, invalid)).toThrow('Invalid percentage')
   })
 })
