@@ -32,6 +32,7 @@ void mock.module('@clack/prompts', () => ({
   note: () => {},
   isCancel: () => false,
   select: () => Promise.resolve('quit'),
+  text: () => Promise.resolve(''),
   spinner: spinnerMock,
   progress: progressMock,
   log: {

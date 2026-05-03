@@ -56,6 +56,7 @@ void mock.module('@clack/prompts', () => ({
     success: logSuccessMock,
   },
   select: selectMock,
+  text: () => Promise.resolve(''),
 }))
 
 const processExitMock = createProcessExitMock()
