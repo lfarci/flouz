@@ -8,7 +8,7 @@ export const ICON_EMPTY = '—'
 
 // picocolors caches NO_COLOR at import time, so the --no-color flag
 // (set via preAction hook) would have no effect. Check at call time instead.
-function colorsEnabled(): boolean {
+export function colorsEnabled(): boolean {
   return process.env.NO_COLOR === undefined
 }
 

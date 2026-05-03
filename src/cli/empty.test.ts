@@ -1,4 +1,4 @@
-import { describe, it, expect, mock } from 'bun:test'
+import { describe, it, expect, mock, afterEach } from 'bun:test'
 import pc from 'picocolors'
 
 const mockInfo = mock()
@@ -25,6 +25,12 @@ void mock.module('@clack/prompts', () => ({
 const { emptyState } = await import('@/cli/empty')
 
 describe('emptyState', () => {
+  const originalNoColor = process.env.NO_COLOR
+
+  afterEach(() => {
+    process.env.NO_COLOR = originalNoColor
+  })
+
   it('calls log.info with the message', () => {
     mockInfo.mockClear()
     emptyState('test message')
@@ -51,5 +57,15 @@ describe('emptyState', () => {
 
     expect(mockInfo).toHaveBeenCalledTimes(1)
     expect(mockInfo).toHaveBeenCalledWith('no hint here')
+  })
+
+  it('renders hint without dim when NO_COLOR is set', () => {
+    process.env.NO_COLOR = '1'
+    mockInfo.mockClear()
+    emptyState('message', 'plain hint')
+
+    expect(mockInfo).toHaveBeenCalledTimes(2)
+    expect(mockInfo).toHaveBeenCalledWith('message')
+    expect(mockInfo).toHaveBeenCalledWith('plain hint')
   })
 })
