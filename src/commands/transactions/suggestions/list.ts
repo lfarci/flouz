@@ -74,9 +74,7 @@ async function listAction(options: ListOptions): Promise<void> {
     database.close()
 
     if (suggestions.length === 0) {
-      const hint =
-        options.status === 'pending' ? 'Run `flouz transactions categorize` to generate suggestions.' : undefined
-      emptyState(`No ${options.status} suggestions found.`, hint)
+      emptyState(`No ${options.status} suggestions found.`)
       return
     }
 
