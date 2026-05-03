@@ -44,15 +44,7 @@ describe('formatTransactionTable', () => {
   })
 
   it('formats a boxed table with aligned columns', () => {
-    const lines = formatTransactionTable([
-      {
-        date: '2026-01-15',
-        amount: '-42.50',
-        counterparty: 'ACME Shop',
-        bankCommunication: 'Invoice 42',
-        category: 'groceries',
-      },
-    ])
+    const lines = formatTransactionTable([['2026-01-15', '-42.50', 'ACME Shop', 'Invoice 42', 'groceries']])
     const renderedTable = lines
       .join(' ')
       .replace(/[│╭╮╰╯├┤┬┴┼─]/g, ' ')
@@ -90,13 +82,13 @@ describe('buildCsv', () => {
           date: '2026-01-15',
           amount: '-42.50',
           counterparty: 'ACME Shop and Bakery',
-          bankCommunication: 'Monthly, refill',
+          note: 'Monthly, refill',
           category: 'groceries',
         },
       ]),
     ).toBe(
       [
-        'date,amount,counterparty,bank_communication,category',
+        'date,amount,counterparty,note,category',
         '2026-01-15,-42.50,ACME Shop and Bakery,"Monthly, refill",groceries',
       ].join('\n'),
     )
@@ -117,7 +109,7 @@ describe('buildJson', () => {
           date: '2026-01-15',
           amount: '-42.50',
           counterparty: 'ACME Shop and Bakery',
-          bankCommunication: 'Invoice 42 paid in full',
+          note: 'Invoice 42 paid in full',
           category: 'groceries',
         },
       ]),
@@ -128,7 +120,7 @@ describe('buildJson', () => {
         '    "date": "2026-01-15",',
         '    "amount": "-42.50",',
         '    "counterparty": "ACME Shop and Bakery",',
-        '    "bankCommunication": "Invoice 42 paid in full",',
+        '    "note": "Invoice 42 paid in full",',
         '    "category": "groceries"',
         '  }',
         ']',

@@ -35,7 +35,7 @@ function applyAction(options: ApplyOptions): void {
     if (selected === 0) {
       emptyState(
         'No approved suggestions are ready to apply.',
-        'Approve suggestions first with `flouz transactions suggestions approve`.',
+        'Review pending suggestions with `flouz transactions suggestions review`.',
       )
       return
     }

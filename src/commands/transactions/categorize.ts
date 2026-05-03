@@ -118,7 +118,7 @@ async function categorizeAction(options: CategorizeOptions): Promise<void> {
       database.close()
       emptyState(
         'No transactions eligible for categorization.',
-        'All transactions already have suggestions. Use --override to re-categorize.',
+        'Import new transactions or use --override to re-categorize.',
       )
       outro('Done')
       return

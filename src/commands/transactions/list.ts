@@ -6,10 +6,11 @@ import { emptyState } from '@/cli/empty'
 import { formatAmount } from '@/cli/format'
 import { colorAmount, ICON_EMPTY } from '@/cli/theme'
 import { resolve } from 'node:path'
-import { renderCliTable } from '@/cli/table'
 import { collectDescendantIds, getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import { getTransactions } from '@/db/transactions/queries'
+import { buildCsv, buildJson, formatTransactionTable } from '@/commands/transactions/format'
+import type { ListRow } from '@/commands/transactions/format'
 import type { Category, Transaction, TransactionFilters } from '@/types'
 
 type OutputFormat = 'table' | 'csv' | 'json'
@@ -27,14 +28,6 @@ interface ListOptions {
 
 interface ListData {
   transactions: Transaction[]
-}
-
-interface ListRow {
-  date: string
-  amount: string
-  counterparty: string
-  bankCommunication: string
-  category: string
 }
 
 async function ensureDatabaseExists(dbPath: string): Promise<void> {
@@ -96,11 +89,21 @@ function createCategorySlugById(db: Database): Map<string, string> {
 function toListRows(transactions: Transaction[], categorySlugById: Map<string, string>): ListRow[] {
   return transactions.map((transaction) => ({
     date: transaction.date,
-    amount: colorAmount(transaction.amount, formatAmount(transaction.amount)),
+    amount: formatAmount(transaction.amount),
     counterparty: transaction.counterparty,
-    bankCommunication: transaction.comment ?? '',
+    note: transaction.comment ?? '',
     category: resolveCategorySlug(transaction.categoryId, categorySlugById),
   }))
+}
+
+function toColoredTableRows(rows: ListRow[], transactions: Transaction[]): string[][] {
+  return rows.map((row, index) => [
+    row.date,
+    colorAmount(transactions[index].amount, row.amount),
+    row.counterparty,
+    row.note,
+    row.category,
+  ])
 }
 
 function resolveCategorySlug(categoryId: string | undefined, categorySlugById: Map<string, string>): string {
@@ -108,50 +111,15 @@ function resolveCategorySlug(categoryId: string | undefined, categorySlugById: M
   return categorySlugById.get(categoryId) ?? categoryId
 }
 
-export function formatTransactionTable(rows: ListRow[]): string[] {
-  return renderCliTable({
-    columns: [
-      { header: 'Date', width: 10, minWidth: 10, truncate: 10 },
-      {
-        header: 'Amount',
-        width: 12,
-        minWidth: 10,
-        alignment: 'right',
-      },
-      { header: 'Counterparty', width: 30, minWidth: 16, wrapWord: true },
-      { header: 'Note', width: 30, minWidth: 14, wrapWord: true },
-      { header: 'Category', width: 18, minWidth: 10, wrapWord: true },
-    ],
-    rows: rows.map((row) => [row.date, row.amount, row.counterparty, row.bankCommunication, row.category]),
-  })
-}
-
 export function parseOutputFormat(value: string): OutputFormat {
   if (value === 'table' || value === 'csv' || value === 'json') return value
   throw new Error(`Invalid output format: ${value}. Use table, csv, or json.`)
 }
 
-export function buildCsv(rows: ListRow[]): string {
-  const header = 'date,amount,counterparty,note,category'
-  const dataRows = rows.map((row) =>
-    [row.date, row.amount, row.counterparty, row.bankCommunication, row.category].map(escapeCsvField).join(','),
-  )
-  return [header, ...dataRows].join('\n')
-}
-
-export function escapeCsvField(value: string): string {
-  if (!/[",\n]/.test(value)) return value
-  return `"${value.replaceAll('"', '""')}"`
-}
-
-export function buildJson(rows: ListRow[]): string {
-  return JSON.stringify(rows, undefined, 2)
-}
-
-function buildOutput(rows: ListRow[], outputFormat: OutputFormat): string {
+function buildOutput(rows: ListRow[], transactions: Transaction[], outputFormat: OutputFormat): string {
   if (outputFormat === 'csv') return buildCsv(rows)
   if (outputFormat === 'json') return buildJson(rows)
-  return formatTransactionTable(rows).join('\n')
+  return formatTransactionTable(toColoredTableRows(rows, transactions)).join('\n')
 }
 
 async function writeOutput(output: string): Promise<void> {
@@ -186,7 +154,7 @@ async function listAction(options: ListOptions): Promise<void> {
       return
     }
 
-    await writeOutput(buildOutput(rows, options.output))
+    await writeOutput(buildOutput(rows, data.transactions, options.output))
   } catch (error) {
     process.removeListener('SIGINT', onCancel)
     database?.close()
