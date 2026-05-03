@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import {
-  parseBudgetValue,
-  findTopLevelCategory,
-  formatBudgetConfirmation,
-} from './set'
+import { parseBudgetValue, findTopLevelCategory, formatBudgetConfirmation } from './set'
 import type { Category } from '@/types'
 
 describe('parseBudgetValue', () => {

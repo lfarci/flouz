@@ -13,8 +13,6 @@ interface SetTotalOptions {
   db: string
 }
 
-
-
 async function setTotalAction(amountValue: string | undefined, options: SetTotalOptions): Promise<void> {
   const month = options.month ?? currentMonth()
   if (!validateMonth(month)) {

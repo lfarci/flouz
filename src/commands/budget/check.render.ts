@@ -84,5 +84,3 @@ export function renderPaceWarning(totalSpent: number, day: number, totalDays: nu
   const warning = projected > totalBudget ? '  ⚠' : ''
   return `\nAt this pace: ~${projectedStr} by end of month  ·  budget is ${budgetStr}${warning}`
 }
-
-

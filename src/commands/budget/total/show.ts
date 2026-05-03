@@ -12,7 +12,6 @@ interface ShowTotalOptions {
   db: string
 }
 
-
 function showTotalAction(options: ShowTotalOptions): void {
   const month = options.month ?? currentMonth()
   if (!validateMonth(month)) {
