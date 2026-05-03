@@ -1,3 +1,9 @@
+---
+name: read-project-context
+description: Onboard to the flouz project by reading documentation, scanning source files, and checking open GitHub issues before writing any code. Use when the user says "understand the project", "read the docs", "project context", "what is this project", or "get up to speed".
+allowed-tools: Bash
+---
+
 # Skill: Read Project Context
 
 ## Activation

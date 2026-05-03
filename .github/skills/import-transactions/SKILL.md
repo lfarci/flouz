@@ -1,3 +1,8 @@
+---
+name: import-transactions
+description: Debug and extend the bank CSV import pipeline — diagnose parse failures, add fixture files, and write targeted tests. Use when the user says "import CSV", "debug import", "parse transactions", or "import transactions".
+---
+
 # Skill: Import Transactions
 
 Activates when the user says: "import CSV", "debug import", "parse transactions", "import transactions"
