@@ -111,3 +111,16 @@ export interface CounterpartyCategoryConsensus {
   categoryName: string
   count: number
 }
+
+export type BudgetType = 'fixed' | 'percent'
+
+export interface Budget {
+  id: number
+  categoryId: string
+  amount: number
+  type: BudgetType
+  month: string
+  createdAt: string
+}
+
+export type NewBudget = Omit<Budget, 'id'>

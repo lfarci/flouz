@@ -1,5 +1,6 @@
 import { type Database, type SQLQueryBindings } from 'bun:sqlite'
 import type { Transaction, TransactionFilters, CategorizeTransactionsFilters } from '@/types'
+import { monthDateRange } from '@/db/date-utils'
 
 function rowToTransaction(row: Record<string, unknown>): Transaction {
   return {
@@ -87,6 +88,25 @@ export function getTransactionById(db: Database, id: number): Transaction | unde
   const row = db.prepare('SELECT * FROM transactions WHERE id = ?').get(id) as Record<string, unknown> | null
   if (row === null) return undefined
   return rowToTransaction(row)
+}
+
+export function sumExpensesForCategories(db: Database, categoryIds: string[], month: string): number {
+  if (categoryIds.length === 0) return 0
+  const placeholders = categoryIds.map(() => '?').join(', ')
+  const { startDate, endDate } = monthDateRange(month)
+  const row = db
+    .prepare(
+      `
+    SELECT COALESCE(SUM(amount), 0) as total
+    FROM transactions
+    WHERE amount < 0
+      AND date >= ?
+      AND date < ?
+      AND category_id IN (${placeholders})
+  `,
+    )
+    .get(startDate, endDate, ...categoryIds) as { total: number }
+  return row.total
 }
 
 export function hasTransactionsForAccount(db: Database, accountId: number): boolean {

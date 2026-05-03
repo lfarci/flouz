@@ -182,6 +182,82 @@ bun run src/index.ts accounts delete checking
 bun run src/index.ts accounts list
 ```
 
+### Budgets
+
+Track monthly spending against budgets set on **top-level categories only**.
+
+Available top-level categories (slugs):
+
+| Slug            | Description                                       |
+| --------------- | ------------------------------------------------- |
+| `necessities`   | House, utilities, groceries, transport, health, … |
+| `savings`       | Savings accounts, investments                     |
+| `discretionary` | Food & drink, shopping, entertainment, travel, …  |
+| `income`        | Salary, reimbursements, gifts received            |
+
+Budget checking aggregates all transactions in descendant categories under each top-level parent.
+
+#### `budget set`
+
+```bash
+flouz budget set <category-slug> <amount|percentage> [--month YYYY-MM]
+```
+
+Sets (or updates) the monthly budget for a top-level category. Defaults to the current month.
+Amounts can be fixed EUR values or percentages of monthly income (suffix with `%`).
+
+```bash
+flouz budget set necessities 2000
+flouz budget set discretionary 800 --month 2026-06
+flouz budget set necessities 60%    # 60% of monthly income
+flouz budget set savings 20%
+```
+
+#### `budget list`
+
+```bash
+flouz budget list [--month YYYY-MM]
+```
+
+Shows all budgets configured for the given month in a table.
+Percentage budgets display the resolved EUR amount alongside the percentage.
+
+#### `budget check`
+
+```bash
+flouz budget check [--month YYYY-MM]
+```
+
+Displays a dashboard with:
+
+- Progress bars per category (color-coded: green = on track, yellow = over pace, red = over budget)
+- Total budget vs. spending summary
+- Recent transactions (last 7 days)
+- Linear pace projection with warning if on track to exceed budget
+
+#### `budget total set`
+
+```bash
+flouz budget total set [amount] [--month YYYY-MM]
+```
+
+Sets the monthly income total used to resolve percentage-based budgets.
+When no amount is given, prompts interactively with auto-detected income from transactions.
+
+```bash
+flouz budget total set 3500
+flouz budget total set --month 2026-06
+flouz budget total set              # interactive with auto-detect
+```
+
+#### `budget total show`
+
+```bash
+flouz budget total show [--month YYYY-MM]
+```
+
+Shows the stored or auto-detected monthly income total for the given month.
+
 ## Tests
 
 ```bash

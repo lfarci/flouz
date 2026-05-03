@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import { formatAmount, formatConfidence, truncateWithEllipsis } from '@/cli/format'
+import { formatAmount, formatConfidence, truncateWithEllipsis, formatEuro, formatEuroDecimal } from '@/cli/format'
 
 describe('formatAmount', () => {
   it('returns +42.50 for positive numbers', () => {
@@ -52,5 +52,33 @@ describe('truncateWithEllipsis', () => {
 
   it('truncates and adds ellipsis when text is one char longer than maxLength', () => {
     expect(truncateWithEllipsis('abcdef', 5)).toBe('abcd…')
+  })
+})
+
+describe('formatEuro', () => {
+  it('formats a whole number with two decimals and thousands separator', () => {
+    expect(formatEuro(1000)).toBe('€1,000.00')
+  })
+
+  it('formats a decimal amount', () => {
+    expect(formatEuro(42.5)).toBe('€42.50')
+  })
+
+  it('formats zero', () => {
+    expect(formatEuro(0)).toBe('€0.00')
+  })
+
+  it('formats negative amounts', () => {
+    expect(formatEuro(-500)).toBe('€-500.00')
+  })
+})
+
+describe('formatEuroDecimal', () => {
+  it('formats a positive amount with two decimals', () => {
+    expect(formatEuroDecimal(42.5)).toBe('€42.50')
+  })
+
+  it('formats a negative amount as absolute value', () => {
+    expect(formatEuroDecimal(-100.99)).toBe('€100.99')
   })
 })

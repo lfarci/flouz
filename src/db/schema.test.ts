@@ -21,6 +21,24 @@ describe('initDb', () => {
     expect(row?.name).toBe('transactions')
   })
 
+  it('creates budgets table', () => {
+    const db = new Database(':memory:')
+    initDb(db)
+    const row = db
+      .query<{ name: string }, []>("SELECT name FROM sqlite_master WHERE type='table' AND name='budgets'")
+      .get()
+    expect(row?.name).toBe('budgets')
+  })
+
+  it('creates monthly_income table', () => {
+    const db = new Database(':memory:')
+    initDb(db)
+    const row = db
+      .query<{ name: string }, []>("SELECT name FROM sqlite_master WHERE type='table' AND name='monthly_income'")
+      .get()
+    expect(row?.name).toBe('monthly_income')
+  })
+
   it('is idempotent (safe to call twice)', () => {
     const db = new Database(':memory:')
     expect(() => {
@@ -40,6 +58,8 @@ describe('openDatabase', () => {
     expect(tables).toContain('categories')
     expect(tables).toContain('transactions')
     expect(tables).toContain('accounts')
+    expect(tables).toContain('budgets')
+    expect(tables).toContain('monthly_income')
     db.close()
   })
 

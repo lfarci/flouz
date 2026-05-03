@@ -12,3 +12,11 @@ export function truncateWithEllipsis(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
   return `${text.slice(0, maxLength - 1)}…`
 }
+
+export function formatEuro(amount: number): string {
+  return `€${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+export function formatEuroDecimal(amount: number): string {
+  return `€${Math.abs(amount).toFixed(2)}`
+}
