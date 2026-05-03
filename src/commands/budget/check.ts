@@ -67,12 +67,12 @@ export function projectedSpending(spent: number, day: number, totalDays: number)
   return (spent / day) * totalDays
 }
 
-function computeSpentPercentage(spent: number, resolvedBudget: number): number {
+export function computeSpentPercentage(spent: number, resolvedBudget: number): number {
   if (resolvedBudget > 0) return (spent / resolvedBudget) * 100
   return spent > 0 ? 100 : 0
 }
 
-function computeProgress(
+export function computeProgress(
   budget: Budget,
   categoryName: string,
   expenses: number,
@@ -86,20 +86,20 @@ function computeProgress(
   return { categoryName, budgetAmount: resolvedBudget, spent, remaining, percentage, incomeAvailable }
 }
 
-function formatEuro(amount: number): string {
+export function formatEuro(amount: number): string {
   return `€${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-function formatEuroDecimal(amount: number): string {
+export function formatEuroDecimal(amount: number): string {
   return `€${Math.abs(amount).toFixed(2)}`
 }
 
-function renderHeader(month: string, day: number, totalDays: number, totalSpent: number): string {
+export function renderHeader(month: string, day: number, totalDays: number, totalSpent: number): string {
   const monthName = new Date(`${month}-01`).toLocaleString('en-US', { month: 'long', year: 'numeric' })
   return `${monthName}  ·  day ${day} of ${totalDays}  ·  ${formatEuro(totalSpent)} spent so far`
 }
 
-function renderProgressRow(progress: CategoryBudgetProgress, elapsedPercentage: number): string {
+export function renderProgressRow(progress: CategoryBudgetProgress, elapsedPercentage: number): string {
   const reset = resetCode()
 
   if (!progress.incomeAvailable) {
@@ -120,7 +120,7 @@ function renderProgressRow(progress: CategoryBudgetProgress, elapsedPercentage: 
   return `${color}${name}${budget}    ${spent}    ${left}    ${bar}  ${percentageLabel.padStart(4)}  ${status}${reset}`
 }
 
-function renderTotalRow(totalBudget: number, totalSpent: number): string {
+export function renderTotalRow(totalBudget: number, totalSpent: number): string {
   const remaining = totalBudget - totalSpent
   const percentage = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0
   const separator = '─'.repeat(62)
@@ -133,7 +133,7 @@ function renderTotalRow(totalBudget: number, totalSpent: number): string {
   return `${separator}\n${name}${budget}    ${spent}    ${left}    ${percentage}% of budget used`
 }
 
-function renderRecentTransactions(transactions: Transaction[]): string {
+export function renderRecentTransactions(transactions: Transaction[]): string {
   if (transactions.length === 0) return ''
 
   const header = '\nRECENT TRANSACTIONS (last 7 days)'
@@ -147,7 +147,7 @@ function renderRecentTransactions(transactions: Transaction[]): string {
   return `${header}\n${rows.join('\n')}`
 }
 
-function renderPaceWarning(totalSpent: number, day: number, totalDays: number, totalBudget: number): string {
+export function renderPaceWarning(totalSpent: number, day: number, totalDays: number, totalBudget: number): string {
   const projected = projectedSpending(totalSpent, day, totalDays)
   const projectedStr = formatEuro(Math.round(projected))
   const budgetStr = formatEuro(totalBudget)

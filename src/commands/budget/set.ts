@@ -59,7 +59,7 @@ export function findTopLevelCategory(categories: Category[], slug: string): Cate
   return category
 }
 
-function formatBudgetConfirmation(name: string, parsed: ParsedBudgetValue, month: string): string {
+export function formatBudgetConfirmation(name: string, parsed: ParsedBudgetValue, month: string): string {
   if (parsed.type === 'percent') {
     return `${name} → ${parsed.amount}% of income / month (${month})`
   }

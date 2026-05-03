@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test'
-import { validateMonth, currentMonth, parseAmount, parseBudgetValue, findTopLevelCategory } from './set'
+import {
+  validateMonth,
+  currentMonth,
+  parseAmount,
+  parseBudgetValue,
+  findTopLevelCategory,
+  formatBudgetConfirmation,
+} from './set'
 import type { Category } from '@/types'
 
 describe('validateMonth', () => {
@@ -93,5 +100,21 @@ describe('findTopLevelCategory', () => {
     expect(() => findTopLevelCategory(categories, 'groceries')).toThrow(
       'Budgets can only be set on top-level categories',
     )
+  })
+})
+
+describe('formatBudgetConfirmation', () => {
+  it('formats a fixed budget confirmation', () => {
+    const result = formatBudgetConfirmation('Necessities', { amount: 2000, type: 'fixed' }, '2026-05')
+    expect(result).toContain('Necessities')
+    expect(result).toContain('€2000.00')
+    expect(result).toContain('2026-05')
+  })
+
+  it('formats a percent budget confirmation', () => {
+    const result = formatBudgetConfirmation('Savings', { amount: 20, type: 'percent' }, '2026-05')
+    expect(result).toContain('Savings')
+    expect(result).toContain('20%')
+    expect(result).toContain('2026-05')
   })
 })

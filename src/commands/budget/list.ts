@@ -18,12 +18,12 @@ interface BudgetRow {
   amount: string
 }
 
-function resolveCategoryName(categoryId: string, categories: Category[]): string {
+export function resolveCategoryName(categoryId: string, categories: Category[]): string {
   const category = categories.find((candidate) => candidate.id === categoryId)
   return category?.name ?? categoryId
 }
 
-function formatBudgetAmount(budget: Budget, income: number): string {
+export function formatBudgetAmount(budget: Budget, income: number): string {
   if (budget.type === 'percent') {
     const resolved = (budget.amount / 100) * income
     if (income === 0) return `€0 (${budget.amount}% — no income data)`
@@ -34,7 +34,7 @@ function formatBudgetAmount(budget: Budget, income: number): string {
   return `€${budget.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-function toBudgetRows(budgets: Budget[], categories: Category[], income: number): BudgetRow[] {
+export function toBudgetRows(budgets: Budget[], categories: Category[], income: number): BudgetRow[] {
   return budgets.map((budget) => ({
     categoryName: resolveCategoryName(budget.categoryId, categories),
     amount: formatBudgetAmount(budget, income),
