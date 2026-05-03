@@ -167,9 +167,8 @@ async function commentAction(idArg: string | undefined, options: CommentOptions)
     if (transactions.length === 0) {
       process.removeListener('SIGINT', onCancel)
       database.close()
-      const message = id !== undefined
-        ? `No transaction found with ID ${id}.`
-        : 'No transactions match the given filters.'
+      const message =
+        id !== undefined ? `No transaction found with ID ${id}.` : 'No transactions match the given filters.'
       emptyState(message, 'Check the transaction ID or adjust your filters.')
       outro('Done')
       return

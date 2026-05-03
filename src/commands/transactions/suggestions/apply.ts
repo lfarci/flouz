@@ -33,7 +33,10 @@ function applyAction(options: ApplyOptions): void {
     database.close()
 
     if (selected === 0) {
-      emptyState('No approved suggestions are ready to apply.', 'Approve suggestions first with `flouz transactions suggestions approve`.')
+      emptyState(
+        'No approved suggestions are ready to apply.',
+        'Approve suggestions first with `flouz transactions suggestions approve`.',
+      )
       return
     }
 

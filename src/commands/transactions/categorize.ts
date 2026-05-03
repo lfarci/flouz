@@ -116,7 +116,10 @@ async function categorizeAction(options: CategorizeOptions): Promise<void> {
     if (transactions.length === 0) {
       process.removeListener('SIGINT', onCancel)
       database.close()
-      emptyState('No transactions eligible for categorization.', 'All transactions already have suggestions. Use --override to re-categorize.')
+      emptyState(
+        'No transactions eligible for categorization.',
+        'All transactions already have suggestions. Use --override to re-categorize.',
+      )
       outro('Done')
       return
     }

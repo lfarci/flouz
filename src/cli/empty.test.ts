@@ -4,7 +4,22 @@ import pc from 'picocolors'
 const mockInfo = mock()
 
 void mock.module('@clack/prompts', () => ({
-  log: { info: mockInfo },
+  cancel: mock(),
+  intro: mock(),
+  isCancel: () => false,
+  log: {
+    info: mockInfo,
+    error: mock(),
+    message: mock(),
+    success: mock(),
+    warn: mock(),
+  },
+  note: mock(),
+  outro: mock(),
+  progress: mock(),
+  select: mock(),
+  spinner: mock(),
+  text: mock(),
 }))
 
 const { emptyState } = await import('@/cli/empty')

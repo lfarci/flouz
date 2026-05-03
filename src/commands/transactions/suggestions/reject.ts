@@ -39,7 +39,10 @@ function rejectAction(options: RejectOptions): void {
 
     if (suggestions.length === 0) {
       database.close()
-      emptyState('No suggestions match the given filters.', 'Check your filters or run `flouz transactions categorize` first.')
+      emptyState(
+        'No suggestions match the given filters.',
+        'Check your filters or run `flouz transactions categorize` first.',
+      )
       return
     }
 

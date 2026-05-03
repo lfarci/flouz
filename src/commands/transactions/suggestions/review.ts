@@ -145,7 +145,10 @@ async function reviewAction(options: ReviewOptions): Promise<void> {
     if (suggestions.length === 0) {
       process.removeListener('SIGINT', onCancel)
       database.close()
-      emptyState('No pending suggestions match the given filters.', 'Run `flouz transactions categorize` to generate suggestions.')
+      emptyState(
+        'No pending suggestions match the given filters.',
+        'Run `flouz transactions categorize` to generate suggestions.',
+      )
       outro('Done')
       return
     }

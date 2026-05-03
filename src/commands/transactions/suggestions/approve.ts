@@ -33,7 +33,10 @@ function approveAction(options: ApproveOptions): void {
 
     if (pending.length === 0) {
       database.close()
-      emptyState('No pending suggestions match the given filters.', 'Run `flouz transactions categorize` to generate suggestions.')
+      emptyState(
+        'No pending suggestions match the given filters.',
+        'Run `flouz transactions categorize` to generate suggestions.',
+      )
       return
     }
 
