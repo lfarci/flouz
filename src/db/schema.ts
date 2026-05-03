@@ -1,5 +1,6 @@
 import { Database } from 'bun:sqlite'
 import { createAccountsTable } from '@/db/accounts/schema'
+import { createBudgetsTable, createMonthlyIncomeTable } from '@/db/budgets/schema'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { createTransactionsTable } from '@/db/transactions/schema'
@@ -22,4 +23,6 @@ export function initDb(db: Database): void {
   createTransactionsTable(db)
   createTransactionCategorySuggestionsTable(db)
   migrateTransactionCategorySuggestionsTable(db)
+  createBudgetsTable(db)
+  createMonthlyIncomeTable(db)
 }
