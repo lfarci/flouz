@@ -47,12 +47,11 @@ export function renderCliTable(config: TableConfig): string[] {
     columnDefault: {
       paddingLeft: 1,
       paddingRight: 1,
-      truncate: 24,
     },
     columns: Object.fromEntries(
       config.columns.map((column, index) => [index, buildColumnConfig(column, columnWidths[index])]),
     ),
-    drawHorizontalLine: (index, size) => index === 0 || index === 1 || index === size,
+    drawHorizontalLine: () => true,
   }
 
   return table(data, tableConfig).trimEnd().split('\n')

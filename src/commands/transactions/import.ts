@@ -1,5 +1,6 @@
 import { Command } from 'commander'
 import { intro, outro, progress, spinner, cancel, log } from '@clack/prompts'
+import { ICON_SUCCESS } from '@/cli/theme'
 import { type Database } from 'bun:sqlite'
 import { resolve, extname, join, basename } from 'node:path'
 import { stat, readdir } from 'node:fs/promises'
@@ -115,7 +116,7 @@ function reportResults(totalImported: number, allErrors: (ParseError & { file: s
     log.warn(`${file} line ${row}: ${message}`)
   }
   const errorSuffix = allErrors.length > 0 ? `, ${allErrors.length} invalid row(s) skipped` : ''
-  outro(`✓ ${totalImported} imported${errorSuffix}`)
+  outro(`${ICON_SUCCESS} ${totalImported} imported${errorSuffix}`)
 }
 
 async function importAction(path: string, options: { db: string }): Promise<void> {

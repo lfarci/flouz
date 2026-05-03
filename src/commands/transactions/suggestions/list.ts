@@ -2,10 +2,12 @@ import { log } from '@clack/prompts'
 import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { emptyState } from '@/cli/empty'
+import { formatAmount, formatConfidence } from '@/cli/format'
+import { colorAmount } from '@/cli/theme'
 import { openDatabase } from '@/db/schema'
 import { getTransactionCategorySuggestions } from '@/db/transaction_category_suggestions/queries'
 import { toBaseFilters } from '@/commands/transactions/parse-options'
-import { formatAmount } from '@/cli/format'
 import type { SuggestionFilters, SuggestionWithContext, TransactionCategorySuggestionStatus } from '@/types'
 import { renderCliTable } from '@/cli/table'
 import { isBrokenPipeError, writeStdout } from '@/cli/stdout'
@@ -28,17 +30,13 @@ function toSuggestionFilters(options: ListOptions): SuggestionFilters {
   return { ...toBaseFilters(options), status: parseStatus(options.status) }
 }
 
-function formatConfidence(confidence: number): string {
-  return `${Math.round(confidence * 100)}%`
-}
-
 function formatSuggestionsTable(suggestions: SuggestionWithContext[]): string[] {
   const hasAnyReasoning = suggestions.some((suggestion) => suggestion.reasoning !== undefined)
 
   const columns = [
     { header: 'ID', width: 6, minWidth: 4, truncate: 6 },
     { header: 'Date', width: 10, minWidth: 10, truncate: 10 },
-    { header: 'Amount', width: 10, minWidth: 8, alignment: 'right' as const, truncate: 10 },
+    { header: 'Amount', width: 10, minWidth: 8, alignment: 'right' as const },
     { header: 'Counterparty', width: 26, minWidth: 14, wrapWord: true },
     { header: 'Category', width: 20, minWidth: 12, wrapWord: true },
     { header: 'Conf.', width: 6, minWidth: 6, truncate: 6 },
@@ -50,7 +48,7 @@ function formatSuggestionsTable(suggestions: SuggestionWithContext[]): string[] 
     const baseRow = [
       String(suggestion.transactionId),
       suggestion.transactionDate,
-      formatAmount(suggestion.amount),
+      colorAmount(suggestion.amount, formatAmount(suggestion.amount)),
       suggestion.counterparty,
       suggestion.categoryName,
       formatConfidence(suggestion.confidence),
@@ -76,7 +74,7 @@ async function listAction(options: ListOptions): Promise<void> {
     database.close()
 
     if (suggestions.length === 0) {
-      log.info(`No ${options.status} suggestions found.`)
+      emptyState(`No ${options.status} suggestions found.`, 'Run `flouz transactions categorize` to generate suggestions.')
       return
     }
 

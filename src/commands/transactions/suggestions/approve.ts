@@ -2,6 +2,7 @@ import { log, outro } from '@clack/prompts'
 import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { emptyState } from '@/cli/empty'
 import { openDatabase } from '@/db/schema'
 import { getTransactionCategorySuggestions } from '@/db/transaction_category_suggestions/queries'
 import { approveTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
@@ -32,7 +33,7 @@ function approveAction(options: ApproveOptions): void {
 
     if (pending.length === 0) {
       database.close()
-      log.info('No pending suggestions match the given filters.')
+      emptyState('No pending suggestions match the given filters.', 'Run `flouz transactions categorize` to generate suggestions.')
       return
     }
 

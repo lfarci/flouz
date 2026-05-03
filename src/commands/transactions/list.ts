@@ -2,6 +2,9 @@ import { cancel, log } from '@clack/prompts'
 import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { isBrokenPipeError, writeStdout } from '@/cli/stdout'
+import { emptyState } from '@/cli/empty'
+import { formatAmount } from '@/cli/format'
+import { colorAmount, ICON_EMPTY } from '@/cli/theme'
 import { resolve } from 'node:path'
 import { renderCliTable } from '@/cli/table'
 import { collectDescendantIds, getCategories } from '@/db/categories/queries'
@@ -93,15 +96,15 @@ function createCategorySlugById(db: Database): Map<string, string> {
 function toListRows(transactions: Transaction[], categorySlugById: Map<string, string>): ListRow[] {
   return transactions.map((transaction) => ({
     date: transaction.date,
-    amount: formatAmount(transaction.amount),
+    amount: colorAmount(transaction.amount, formatAmount(transaction.amount)),
     counterparty: transaction.counterparty,
-    bankCommunication: transaction.bankCommunication ?? '',
+    bankCommunication: transaction.comment ?? '',
     category: resolveCategorySlug(transaction.categoryId, categorySlugById),
   }))
 }
 
 function resolveCategorySlug(categoryId: string | undefined, categorySlugById: Map<string, string>): string {
-  if (categoryId === undefined) return '—'
+  if (categoryId === undefined) return ICON_EMPTY
   return categorySlugById.get(categoryId) ?? categoryId
 }
 
@@ -114,19 +117,13 @@ export function formatTransactionTable(rows: ListRow[]): string[] {
         width: 12,
         minWidth: 10,
         alignment: 'right',
-        truncate: 12,
       },
       { header: 'Counterparty', width: 30, minWidth: 16, wrapWord: true },
-      { header: 'Bank Communication', width: 30, minWidth: 14, wrapWord: true },
+      { header: 'Note', width: 30, minWidth: 14, wrapWord: true },
       { header: 'Category', width: 18, minWidth: 10, wrapWord: true },
     ],
     rows: rows.map((row) => [row.date, row.amount, row.counterparty, row.bankCommunication, row.category]),
   })
-}
-
-function formatAmount(amount: number): string {
-  const sign = amount >= 0 ? '+' : ''
-  return `${sign}${amount.toFixed(2)}`
 }
 
 export function parseOutputFormat(value: string): OutputFormat {
@@ -135,7 +132,7 @@ export function parseOutputFormat(value: string): OutputFormat {
 }
 
 export function buildCsv(rows: ListRow[]): string {
-  const header = 'date,amount,counterparty,bank_communication,category'
+  const header = 'date,amount,counterparty,note,category'
   const dataRows = rows.map((row) =>
     [row.date, row.amount, row.counterparty, row.bankCommunication, row.category].map(escapeCsvField).join(','),
   )
@@ -185,7 +182,7 @@ async function listAction(options: ListOptions): Promise<void> {
     database.close()
     process.removeListener('SIGINT', onCancel)
     if (rows.length === 0 && options.output === 'table') {
-      log.info('No transactions found.')
+      emptyState('No transactions found.', 'Try adjusting your filters or import transactions first.')
       return
     }
 

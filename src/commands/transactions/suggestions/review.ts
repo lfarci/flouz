@@ -2,6 +2,9 @@ import { cancel, intro, isCancel, log, note, outro, select } from '@clack/prompt
 import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { emptyState } from '@/cli/empty'
+import { formatAmount, formatConfidence } from '@/cli/format'
+import { colorAmount, colorConfidence } from '@/cli/theme'
 import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
 import {
@@ -11,7 +14,6 @@ import {
 } from '@/db/transaction_category_suggestions/mutations'
 import { getTransactionCategorySuggestions } from '@/db/transaction_category_suggestions/queries'
 import { toBaseFilters } from '@/commands/transactions/parse-options'
-import { formatAmount } from '@/cli/format'
 import type { Category, SuggestionFilters, SuggestionWithContext } from '@/types'
 
 interface ReviewOptions {
@@ -36,9 +38,9 @@ function toSuggestionFilters(options: ReviewOptions): SuggestionFilters {
 }
 
 function formatSuggestionNote(suggestion: SuggestionWithContext, index: number, total: number): string {
-  const confidence = `${Math.round(suggestion.confidence * 100)}%`
+  const confidence = colorConfidence(suggestion.confidence, formatConfidence(suggestion.confidence))
   const lines = [
-    `[${index}/${total}]  ${suggestion.transactionDate}  ${formatAmount(suggestion.amount)} EUR`,
+    `[${index}/${total}]  ${suggestion.transactionDate}  ${colorAmount(suggestion.amount, formatAmount(suggestion.amount))} EUR`,
     `Counterparty : ${suggestion.counterparty}`,
     `Suggestion   : ${suggestion.categoryName} (${confidence})`,
   ]
@@ -143,7 +145,7 @@ async function reviewAction(options: ReviewOptions): Promise<void> {
     if (suggestions.length === 0) {
       process.removeListener('SIGINT', onCancel)
       database.close()
-      log.info('No pending suggestions match the given filters.')
+      emptyState('No pending suggestions match the given filters.', 'Run `flouz transactions categorize` to generate suggestions.')
       outro('Done')
       return
     }

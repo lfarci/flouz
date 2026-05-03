@@ -2,6 +2,7 @@ import { log, outro } from '@clack/prompts'
 import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { emptyState } from '@/cli/empty'
 import { openDatabase } from '@/db/schema'
 import { applyApprovedCategorySuggestions } from '@/db/transaction_category_suggestions/apply'
 import { toBaseFilters } from '@/commands/transactions/parse-options'
@@ -32,7 +33,7 @@ function applyAction(options: ApplyOptions): void {
     database.close()
 
     if (selected === 0) {
-      log.info('No approved suggestions are ready to apply.')
+      emptyState('No approved suggestions are ready to apply.', 'Approve suggestions first with `flouz transactions suggestions approve`.')
       return
     }
 
