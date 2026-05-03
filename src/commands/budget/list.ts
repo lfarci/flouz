@@ -51,7 +51,7 @@ export function formatBudgetTable(rows: BudgetRow[]): string[] {
   })
 }
 
-function findIncomeCategoryIds(categories: Category[]): string[] {
+export function findIncomeCategoryIds(categories: Category[]): string[] {
   const incomeRoot = categories.find((category) => category.slug === 'income')
   if (incomeRoot === undefined) return []
   return collectDescendantIds(categories, incomeRoot.id)

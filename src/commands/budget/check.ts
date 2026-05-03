@@ -155,7 +155,7 @@ export function renderPaceWarning(totalSpent: number, day: number, totalDays: nu
   return `\nAt this pace: ~${projectedStr} by end of month  ·  budget is ${budgetStr}${warning}`
 }
 
-function isCurrentMonth(month: string): boolean {
+export function isCurrentMonth(month: string): boolean {
   return month === currentMonth()
 }
 

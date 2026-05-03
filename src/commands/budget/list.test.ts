@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { formatBudgetTable, resolveCategoryName, formatBudgetAmount, toBudgetRows } from './list'
+import { formatBudgetTable, resolveCategoryName, formatBudgetAmount, toBudgetRows, findIncomeCategoryIds } from './list'
 import type { Budget, Category } from '@/types'
 
 const categories: Category[] = [
@@ -122,5 +122,21 @@ describe('formatBudgetTable', () => {
     for (const line of result) {
       expect(typeof line).toBe('string')
     }
+  })
+})
+
+describe('findIncomeCategoryIds', () => {
+  it('returns income category IDs when income category exists', () => {
+    const categoriesWithIncome: Category[] = [
+      { id: 'root-income', name: 'Income', slug: 'income', parentId: null },
+      { id: 'salary', name: 'Salary', slug: 'salary', parentId: 'root-income' },
+    ]
+    const result = findIncomeCategoryIds(categoriesWithIncome)
+    expect(result).toContain('root-income')
+    expect(result).toContain('salary')
+  })
+
+  it('returns empty array when no income category exists', () => {
+    expect(findIncomeCategoryIds(categories)).toEqual([])
   })
 })

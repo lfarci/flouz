@@ -16,6 +16,7 @@ import {
   renderTotalRow,
   renderRecentTransactions,
   renderPaceWarning,
+  isCurrentMonth,
 } from './check'
 import { currentMonth } from './set'
 import type { Budget, Transaction } from '@/types'
@@ -346,15 +347,10 @@ describe('renderRecentTransactions', () => {
   it('renders transaction rows with header', () => {
     const transactions: Transaction[] = [
       {
-        id: 1,
         date: '2026-05-01',
         amount: -42.5,
         counterparty: 'ACME Shop',
-        bankCommunication: null,
-        comment: null,
-        categoryId: null,
-        accountId: null,
-        sourceFile: null,
+        currency: 'EUR',
         importedAt: '',
         hash: '',
       },
@@ -367,20 +363,47 @@ describe('renderRecentTransactions', () => {
 
   it('limits to 10 transactions', () => {
     const transactions: Transaction[] = Array.from({ length: 15 }, (_, index) => ({
-      id: index,
       date: '2026-05-01',
       amount: -10,
       counterparty: `Merchant ${index}`,
-      bankCommunication: null,
-      comment: null,
-      categoryId: null,
-      accountId: null,
-      sourceFile: null,
+      currency: 'EUR',
       importedAt: '',
       hash: '',
     }))
     const result = renderRecentTransactions(transactions)
     expect(result).toContain('Merchant 9')
     expect(result).not.toContain('Merchant 10')
+  })
+})
+
+describe('isCurrentMonth', () => {
+  it('returns true for the current month', () => {
+    expect(isCurrentMonth(currentMonth())).toBe(true)
+  })
+
+  it('returns false for a past month', () => {
+    expect(isCurrentMonth('2020-01')).toBe(false)
+  })
+})
+
+describe('selectColor with colors enabled', () => {
+  beforeEach(() => {
+    delete process.env.NO_COLOR
+  })
+
+  afterEach(() => {
+    process.env.NO_COLOR = '1'
+  })
+
+  it('returns red ANSI code when over 100%', () => {
+    expect(selectColor(110, 50)).toBe('\x1b[31m')
+  })
+
+  it('returns yellow ANSI code when ahead of pace', () => {
+    expect(selectColor(60, 40)).toBe('\x1b[33m')
+  })
+
+  it('returns green ANSI code when on track', () => {
+    expect(selectColor(30, 50)).toBe('\x1b[32m')
   })
 })
