@@ -5,6 +5,7 @@ import { openDatabase } from '@/db/schema'
 import { collectDescendantIds, getCategories } from '@/db/categories/queries'
 import { getBudgetsForMonth, resolveMonthlyTotal } from '@/db/budgets/queries'
 import { getTransactions, sumExpensesForCategories } from '@/db/transactions/queries'
+import { colorsEnabled } from '@/cli/theme'
 import type { Budget, Transaction } from '@/types'
 import { currentMonth, validateMonth } from './set'
 
@@ -49,20 +50,15 @@ export function renderProgressBar(percentage: number, width: number): string {
   return '▓'.repeat(filled) + '░'.repeat(empty)
 }
 
-function isColorEnabled(): boolean {
-  if (Bun.env.NO_COLOR !== undefined) return false
-  return process.stdout.isTTY === true
-}
-
 export function selectColor(spentPercentage: number, elapsedPercentage: number): string {
-  if (!isColorEnabled()) return ''
+  if (!colorsEnabled()) return ''
   if (spentPercentage > 100) return '\x1b[31m'
   if (spentPercentage > elapsedPercentage) return '\x1b[33m'
   return '\x1b[32m'
 }
 
 function resetCode(): string {
-  if (!isColorEnabled()) return ''
+  if (!colorsEnabled()) return ''
   return '\x1b[0m'
 }
 

@@ -9,7 +9,8 @@ export function createBudgetsTable(db: Database): void {
       type        TEXT NOT NULL DEFAULT 'fixed' CHECK(type IN ('fixed', 'percent')),
       month       TEXT NOT NULL,
       created_at  TEXT NOT NULL,
-      UNIQUE(category_id, month)
+      UNIQUE(category_id, month),
+      CHECK(type != 'percent' OR amount <= 100)
     )
   `)
 }
