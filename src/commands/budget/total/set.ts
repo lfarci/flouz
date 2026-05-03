@@ -6,7 +6,7 @@ import { findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
 import { getIncomeForMonth } from '@/db/budgets/queries'
 import { upsertMonthlyIncome } from '@/db/budgets/mutations'
 import { formatEuro } from '@/cli/format'
-import { currentMonth, parseAmount, validateMonth } from '@/commands/budget/set'
+import { currentMonth, parseAmount, validateMonth } from '@/commands/budget/month'
 
 interface SetTotalOptions {
   month?: string

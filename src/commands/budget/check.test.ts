@@ -4,20 +4,21 @@ import {
   dayOfMonth,
   resolveElapsedDay,
   monthElapsedPercentage,
-  renderProgressBar,
-  selectColor,
   projectedSpending,
   computeSpentPercentage,
   computeProgress,
+  isCurrentMonth,
+} from './check.compute'
+import {
+  renderProgressBar,
+  selectColor,
   renderHeader,
   renderProgressRow,
   renderTotalRow,
   renderRecentTransactions,
   renderPaceWarning,
-  isCurrentMonth,
-} from './check'
-import { currentMonth } from './set'
-import { formatEuro, formatEuroDecimal } from '@/cli/format'
+} from './check.render'
+import { currentMonth } from './month'
 import type { Budget, Transaction } from '@/types'
 
 describe('daysInMonth', () => {
@@ -206,24 +207,6 @@ describe('computeProgress', () => {
   })
 })
 
-describe('formatEuro', () => {
-  it('formats a whole number with two decimals', () => {
-    expect(formatEuro(1000)).toBe('€1,000.00')
-  })
-
-  it('formats a decimal amount', () => {
-    expect(formatEuro(42.5)).toBe('€42.50')
-  })
-
-  it('formats zero', () => {
-    expect(formatEuro(0)).toBe('€0.00')
-  })
-
-  it('formats negative amounts', () => {
-    expect(formatEuro(-500)).toBe('€-500.00')
-  })
-})
-
 describe('renderHeader', () => {
   it('includes month name, day info, and spending', () => {
     const result = renderHeader('2026-05', 15, 31, 800)
@@ -271,16 +254,6 @@ describe('renderPaceWarning', () => {
   it('does not show warning when under budget', () => {
     const result = renderPaceWarning(200, 10, 30, 1000)
     expect(result).not.toContain('⚠')
-  })
-})
-
-describe('formatEuroDecimal', () => {
-  it('formats a positive amount with two decimals', () => {
-    expect(formatEuroDecimal(42.5)).toBe('€42.50')
-  })
-
-  it('formats a negative amount as absolute value', () => {
-    expect(formatEuroDecimal(-100.99)).toBe('€100.99')
   })
 })
 

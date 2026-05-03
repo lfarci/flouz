@@ -5,7 +5,7 @@ import { openDatabase } from '@/db/schema'
 import { findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
 import { getMonthlyIncome, getIncomeForMonth } from '@/db/budgets/queries'
 import { formatEuro } from '@/cli/format'
-import { currentMonth, validateMonth } from '@/commands/budget/set'
+import { currentMonth, validateMonth } from '@/commands/budget/month'
 
 interface ShowTotalOptions {
   month?: string

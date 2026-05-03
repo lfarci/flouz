@@ -6,160 +6,28 @@ import { openDatabase } from '@/db/schema'
 import { collectDescendantIds, findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
 import { getBudgetsForMonth, resolveMonthlyTotal } from '@/db/budgets/queries'
 import { getTransactions, sumExpensesForCategories } from '@/db/transactions/queries'
-import { colorsEnabled } from '@/cli/theme'
-import { formatEuro, formatEuroDecimal } from '@/cli/format'
 import type { Budget, Category, Transaction } from '@/types'
-import { currentMonth, validateMonth } from './set'
+import { currentMonth, validateMonth } from './month'
+import {
+  computeProgress,
+  daysInMonth,
+  formatLocalDate,
+  isCurrentMonth,
+  monthElapsedPercentage,
+  resolveElapsedDay,
+  type CategoryBudgetProgress,
+} from './check.compute'
+import {
+  renderHeader,
+  renderPaceWarning,
+  renderProgressRow,
+  renderRecentTransactions,
+  renderTotalRow,
+} from './check.render'
 
 interface CheckBudgetOptions {
   month?: string
   db: string
-}
-
-interface CategoryBudgetProgress {
-  categoryName: string
-  budgetAmount: number
-  spent: number
-  remaining: number
-  percentage: number
-  incomeAvailable: boolean
-}
-
-export function daysInMonth(month: string): number {
-  const [year, monthIndex] = month.split('-').map(Number)
-  return new Date(year, monthIndex, 0).getDate()
-}
-
-export function dayOfMonth(date: Date): number {
-  return date.getDate()
-}
-
-export function resolveElapsedDay(month: string): number {
-  const current = currentMonth()
-  if (month < current) return daysInMonth(month)
-  if (month > current) return 0
-  return dayOfMonth(new Date())
-}
-
-export function monthElapsedPercentage(day: number, totalDays: number): number {
-  return (day / totalDays) * 100
-}
-
-export function renderProgressBar(percentage: number, width: number): string {
-  const capped = Math.min(percentage, 100)
-  const filled = Math.round((capped / 100) * width)
-  const empty = width - filled
-  return '▓'.repeat(filled) + '░'.repeat(empty)
-}
-
-export function selectColor(spentPercentage: number, elapsedPercentage: number): string {
-  if (!colorsEnabled()) return ''
-  if (spentPercentage > 100) return '\x1b[31m'
-  if (spentPercentage > elapsedPercentage) return '\x1b[33m'
-  return '\x1b[32m'
-}
-
-function resetCode(): string {
-  if (!colorsEnabled()) return ''
-  return '\x1b[0m'
-}
-
-export function projectedSpending(spent: number, day: number, totalDays: number): number {
-  if (day === 0) return spent
-  return (spent / day) * totalDays
-}
-
-export function computeSpentPercentage(spent: number, resolvedBudget: number): number {
-  if (resolvedBudget > 0) return (spent / resolvedBudget) * 100
-  return spent > 0 ? 100 : 0
-}
-
-export function computeProgress(
-  budget: Budget,
-  categoryName: string,
-  expenses: number,
-  income: number,
-): CategoryBudgetProgress {
-  const incomeAvailable = budget.type !== 'percent' || income > 0
-  const resolvedBudget = budget.type === 'percent' ? (budget.amount / 100) * income : budget.amount
-  const spent = Math.abs(expenses)
-  const remaining = resolvedBudget - spent
-  const percentage = computeSpentPercentage(spent, resolvedBudget)
-  return { categoryName, budgetAmount: resolvedBudget, spent, remaining, percentage, incomeAvailable }
-}
-
-export function renderHeader(month: string, day: number, totalDays: number, totalSpent: number): string {
-  const [year, monthIndex] = month.split('-').map(Number)
-  const monthName = new Date(year, monthIndex - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
-  return `${monthName}  ·  day ${day} of ${totalDays}  ·  ${formatEuro(totalSpent)} spent so far`
-}
-
-export function renderProgressRow(progress: CategoryBudgetProgress, elapsedPercentage: number): string {
-  const reset = resetCode()
-
-  if (!progress.incomeAvailable) {
-    const name = progress.categoryName.padEnd(16)
-    return `${name}   —          ${formatEuro(progress.spent).padStart(8)}     (no income data)`
-  }
-
-  const color = selectColor(progress.percentage, elapsedPercentage)
-  const bar = renderProgressBar(progress.percentage, 10)
-  const percentageLabel = `${Math.round(progress.percentage)}%`
-  const status = progress.percentage <= 100 ? '✓' : '⚠'
-
-  const name = progress.categoryName.padEnd(16)
-  const budget = formatEuro(progress.budgetAmount).padStart(8)
-  const spent = formatEuro(progress.spent).padStart(8)
-  const left = formatEuro(progress.remaining).padStart(8)
-
-  return `${color}${name}${budget}    ${spent}    ${left}    ${bar}  ${percentageLabel.padStart(4)}  ${status}${reset}`
-}
-
-export function renderTotalRow(totalBudget: number, totalSpent: number): string {
-  const remaining = totalBudget - totalSpent
-  const percentage = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0
-  const separator = '─'.repeat(62)
-
-  const name = 'Total'.padEnd(16)
-  const budget = formatEuro(totalBudget).padStart(8)
-  const spent = formatEuro(totalSpent).padStart(8)
-  const left = formatEuro(remaining).padStart(8)
-
-  return `${separator}\n${name}${budget}    ${spent}    ${left}    ${percentage}% of budget used`
-}
-
-export function renderRecentTransactions(transactions: Transaction[]): string {
-  if (transactions.length === 0) return ''
-
-  const header = '\nRECENT TRANSACTIONS (last 7 days)'
-  const rows = transactions.slice(0, 10).map((transaction) => {
-    const [year, month, day] = transaction.date.split('-').map(Number)
-    const date = new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })
-    const amount =
-      transaction.amount < 0 ? `−${formatEuroDecimal(transaction.amount)}` : `+${formatEuroDecimal(transaction.amount)}`
-    return `${date}  ${amount}  ${transaction.counterparty}`
-  })
-
-  return `${header}\n${rows.join('\n')}`
-}
-
-export function renderPaceWarning(totalSpent: number, day: number, totalDays: number, totalBudget: number): string {
-  const projected = projectedSpending(totalSpent, day, totalDays)
-  const projectedStr = formatEuro(Math.round(projected))
-  const budgetStr = formatEuro(totalBudget)
-  const warning = projected > totalBudget ? '  ⚠' : ''
-  return `\nAt this pace: ~${projectedStr} by end of month  ·  budget is ${budgetStr}${warning}`
-}
-
-export function isCurrentMonth(month: string): boolean {
-  return month === currentMonth()
-}
-
-export function formatLocalDate(date: Date): string {
-  const year = date.getFullYear()
-  const monthPart = String(date.getMonth() + 1).padStart(2, '0')
-  const dayPart = String(date.getDate()).padStart(2, '0')
-  return `${year}-${monthPart}-${dayPart}`
 }
 
 function resolveIncomeTotal(database: Database, categories: Category[], budgets: Budget[], month: string): number {

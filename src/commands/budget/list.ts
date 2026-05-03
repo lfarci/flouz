@@ -6,7 +6,7 @@ import { openDatabase } from '@/db/schema'
 import { findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
 import { getBudgetsForMonth, resolveMonthlyTotal } from '@/db/budgets/queries'
 import type { Budget, Category } from '@/types'
-import { currentMonth, validateMonth } from './set'
+import { currentMonth, validateMonth } from './month'
 
 interface ListBudgetOptions {
   month?: string
