@@ -1,5 +1,6 @@
 import { type Database } from 'bun:sqlite'
 import type { Budget, BudgetType } from '@/types'
+import { monthDateRange } from '@/db/date-utils'
 
 const VALID_BUDGET_TYPES = new Set<string>(['fixed', 'percent'])
 
@@ -41,16 +42,6 @@ export function getMonthlyIncome(db: Database, month: string): number | undefine
   const row = db.prepare('SELECT amount FROM monthly_income WHERE month = ?').get(month) as { amount: number } | null
   if (row === null) return undefined
   return row.amount
-}
-
-function monthDateRange(month: string): { startDate: string; endDate: string } {
-  const [year, monthNumber] = month.split('-').map(Number)
-  const nextMonth = monthNumber === 12 ? 1 : monthNumber + 1
-  const nextYear = monthNumber === 12 ? year + 1 : year
-  return {
-    startDate: `${year}-${String(monthNumber).padStart(2, '0')}-01`,
-    endDate: `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`,
-  }
 }
 
 export function getIncomeForMonth(db: Database, incomeCategoryIds: string[], month: string): number {

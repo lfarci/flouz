@@ -1,5 +1,6 @@
 import { type Database, type SQLQueryBindings } from 'bun:sqlite'
 import type { Transaction, TransactionFilters, CategorizeTransactionsFilters } from '@/types'
+import { monthDateRange } from '@/db/date-utils'
 
 function rowToTransaction(row: Record<string, unknown>): Transaction {
   return {
@@ -87,16 +88,6 @@ export function getTransactionById(db: Database, id: number): Transaction | unde
   const row = db.prepare('SELECT * FROM transactions WHERE id = ?').get(id) as Record<string, unknown> | null
   if (row === null) return undefined
   return rowToTransaction(row)
-}
-
-function monthDateRange(month: string): { startDate: string; endDate: string } {
-  const [year, monthNumber] = month.split('-').map(Number)
-  const nextMonth = monthNumber === 12 ? 1 : monthNumber + 1
-  const nextYear = monthNumber === 12 ? year + 1 : year
-  return {
-    startDate: `${year}-${String(monthNumber).padStart(2, '0')}-01`,
-    endDate: `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`,
-  }
 }
 
 export function sumExpensesForCategories(db: Database, categoryIds: string[], month: string): number {

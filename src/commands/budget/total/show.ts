@@ -2,8 +2,9 @@ import { log } from '@clack/prompts'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
-import { collectDescendantIds, getCategories } from '@/db/categories/queries'
+import { findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
 import { getMonthlyIncome, getIncomeForMonth } from '@/db/budgets/queries'
+import { formatEuro } from '@/cli/format'
 import { currentMonth, validateMonth } from '@/commands/budget/set'
 
 interface ShowTotalOptions {
@@ -11,9 +12,6 @@ interface ShowTotalOptions {
   db: string
 }
 
-function formatEuro(amount: number): string {
-  return `€${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
 
 function showTotalAction(options: ShowTotalOptions): void {
   const month = options.month ?? currentMonth()
@@ -26,8 +24,7 @@ function showTotalAction(options: ShowTotalOptions): void {
   try {
     const stored = getMonthlyIncome(database, month)
     const categories = getCategories(database)
-    const incomeRoot = categories.find((category) => category.slug === 'income')
-    const incomeCategoryIds = incomeRoot ? collectDescendantIds(categories, incomeRoot.id) : []
+    const incomeCategoryIds = findIncomeCategoryIds(categories)
     const detected = getIncomeForMonth(database, incomeCategoryIds, month)
 
     if (stored !== undefined) {

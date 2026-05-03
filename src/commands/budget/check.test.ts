@@ -9,8 +9,6 @@ import {
   projectedSpending,
   computeSpentPercentage,
   computeProgress,
-  formatEuro,
-  formatEuroDecimal,
   renderHeader,
   renderProgressRow,
   renderTotalRow,
@@ -19,6 +17,7 @@ import {
   isCurrentMonth,
 } from './check'
 import { currentMonth } from './set'
+import { formatEuro, formatEuroDecimal } from '@/cli/format'
 import type { Budget, Transaction } from '@/types'
 
 describe('daysInMonth', () => {

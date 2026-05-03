@@ -1,12 +1,14 @@
+import { type Database } from 'bun:sqlite'
 import { log } from '@clack/prompts'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
-import { collectDescendantIds, getCategories } from '@/db/categories/queries'
+import { collectDescendantIds, findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
 import { getBudgetsForMonth, resolveMonthlyTotal } from '@/db/budgets/queries'
 import { getTransactions, sumExpensesForCategories } from '@/db/transactions/queries'
 import { colorsEnabled } from '@/cli/theme'
-import type { Budget, Transaction } from '@/types'
+import { formatEuro, formatEuroDecimal } from '@/cli/format'
+import type { Budget, Category, Transaction } from '@/types'
 import { currentMonth, validateMonth } from './set'
 
 interface CheckBudgetOptions {
@@ -86,14 +88,6 @@ export function computeProgress(
   return { categoryName, budgetAmount: resolvedBudget, spent, remaining, percentage, incomeAvailable }
 }
 
-export function formatEuro(amount: number): string {
-  return `€${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
-export function formatEuroDecimal(amount: number): string {
-  return `€${Math.abs(amount).toFixed(2)}`
-}
-
 export function renderHeader(month: string, day: number, totalDays: number, totalSpent: number): string {
   const [year, monthIndex] = month.split('-').map(Number)
   const monthName = new Date(year, monthIndex - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
@@ -161,6 +155,68 @@ export function isCurrentMonth(month: string): boolean {
   return month === currentMonth()
 }
 
+export function formatLocalDate(date: Date): string {
+  const year = date.getFullYear()
+  const monthPart = String(date.getMonth() + 1).padStart(2, '0')
+  const dayPart = String(date.getDate()).padStart(2, '0')
+  return `${year}-${monthPart}-${dayPart}`
+}
+
+function resolveIncomeTotal(database: Database, categories: Category[], budgets: Budget[], month: string): number {
+  const hasPercentBudgets = budgets.some((budget) => budget.type === 'percent')
+  if (!hasPercentBudgets) return 0
+  return resolveMonthlyTotal(database, findIncomeCategoryIds(categories), month)
+}
+
+function computeBudgetProgress(
+  database: Database,
+  budgets: Budget[],
+  categories: Category[],
+  monthlyTotal: number,
+  month: string,
+): CategoryBudgetProgress[] {
+  const rows: CategoryBudgetProgress[] = []
+  for (const budget of budgets) {
+    const category = categories.find((candidate) => candidate.id === budget.categoryId)
+    if (category === undefined) continue
+    const descendantIds = collectDescendantIds(categories, budget.categoryId)
+    const expenses = sumExpensesForCategories(database, descendantIds, month)
+    rows.push(computeProgress(budget, category.name, expenses, monthlyTotal))
+  }
+  return rows
+}
+
+function fetchRecentExpenses(database: Database): Transaction[] {
+  const today = new Date()
+  const sevenDaysAgo = new Date(today)
+  sevenDaysAgo.setDate(today.getDate() - 7)
+  return getTransactions(database, {
+    from: formatLocalDate(sevenDaysAgo),
+    to: formatLocalDate(today),
+  }).filter((transaction) => transaction.amount < 0)
+}
+
+function assembleProgressOutput(
+  month: string,
+  day: number,
+  totalDays: number,
+  elapsed: number,
+  progressRows: CategoryBudgetProgress[],
+  totalBudget: number,
+  totalSpent: number,
+): string[] {
+  const output: string[] = []
+  output.push(renderHeader(month, day, totalDays, totalSpent))
+  output.push('')
+  output.push('BUDGET PROGRESS')
+  output.push('Category        Budget      Spent      Left      Progress')
+  for (const row of progressRows) {
+    output.push(renderProgressRow(row, elapsed))
+  }
+  output.push(renderTotalRow(totalBudget, totalSpent))
+  return output
+}
+
 function checkAction(options: CheckBudgetOptions): void {
   const month = options.month ?? currentMonth()
   if (!validateMonth(month)) {
@@ -180,53 +236,16 @@ function checkAction(options: CheckBudgetOptions): void {
     const day = resolveElapsedDay(month)
     const totalDays = daysInMonth(month)
     const elapsed = monthElapsedPercentage(day, totalDays)
-
-    const incomeRoot = categories.find((candidate) => candidate.slug === 'income')
-    const incomeCategoryIds = incomeRoot ? collectDescendantIds(categories, incomeRoot.id) : []
-    const hasPercentBudgets = budgets.some((budget) => budget.type === 'percent')
-    const monthlyTotal = hasPercentBudgets ? resolveMonthlyTotal(database, incomeCategoryIds, month) : 0
-
-    const progressRows: CategoryBudgetProgress[] = []
-    for (const budget of budgets) {
-      const category = categories.find((candidate) => candidate.id === budget.categoryId)
-      if (category === undefined) continue
-      const descendantIds = collectDescendantIds(categories, budget.categoryId)
-      const expenses = sumExpensesForCategories(database, descendantIds, month)
-      progressRows.push(computeProgress(budget, category.name, expenses, monthlyTotal))
-    }
-
+    const monthlyTotal = resolveIncomeTotal(database, categories, budgets, month)
+    const progressRows = computeBudgetProgress(database, budgets, categories, monthlyTotal, month)
     const totalBudget = progressRows.reduce((sum, row) => sum + row.budgetAmount, 0)
     const totalSpent = progressRows.reduce((sum, row) => sum + row.spent, 0)
 
-    const output: string[] = []
-    output.push(renderHeader(month, day, totalDays, totalSpent))
-    output.push('')
-    output.push('BUDGET PROGRESS')
-    output.push('Category        Budget      Spent      Left      Progress')
-    for (const row of progressRows) {
-      output.push(renderProgressRow(row, elapsed))
-    }
-    output.push(renderTotalRow(totalBudget, totalSpent))
-
+    const output = assembleProgressOutput(month, day, totalDays, elapsed, progressRows, totalBudget, totalSpent)
     if (isCurrentMonth(month)) {
-      const today = new Date()
-      const sevenDaysAgo = new Date(today)
-      sevenDaysAgo.setDate(today.getDate() - 7)
-      const formatLocalDate = (date: Date): string => {
-        const year = date.getFullYear()
-        const monthPart = String(date.getMonth() + 1).padStart(2, '0')
-        const dayPart = String(date.getDate()).padStart(2, '0')
-        return `${year}-${monthPart}-${dayPart}`
-      }
-      const recentTransactions = getTransactions(database, {
-        from: formatLocalDate(sevenDaysAgo),
-        to: formatLocalDate(today),
-      }).filter((transaction) => transaction.amount < 0)
-      output.push(renderRecentTransactions(recentTransactions))
+      output.push(renderRecentTransactions(fetchRecentExpenses(database)))
     }
-
     output.push(renderPaceWarning(totalSpent, day, totalDays, totalBudget))
-
     log.message(output.join('\n'))
   } catch (error) {
     log.error(error instanceof Error ? error.message : String(error))

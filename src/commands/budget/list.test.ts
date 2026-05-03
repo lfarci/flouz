@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { formatBudgetTable, resolveCategoryName, formatBudgetAmount, toBudgetRows, findIncomeCategoryIds } from './list'
+import { formatBudgetTable, resolveCategoryName, formatBudgetAmount, toBudgetRows } from './list'
+import { findIncomeCategoryIds } from '@/db/categories/queries'
 import type { Budget, Category } from '@/types'
 
 const categories: Category[] = [

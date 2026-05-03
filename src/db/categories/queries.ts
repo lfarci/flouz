@@ -28,3 +28,9 @@ export function collectDescendantIds(categories: Category[], rootId: string): st
   }
   return ids
 }
+
+export function findIncomeCategoryIds(categories: Category[]): string[] {
+  const incomeRoot = categories.find((category) => category.slug === 'income')
+  if (incomeRoot === undefined) return []
+  return collectDescendantIds(categories, incomeRoot.id)
+}

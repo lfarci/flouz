@@ -3,7 +3,7 @@ import { Command } from 'commander'
 import { resolve } from 'node:path'
 import { renderCliTable } from '@/cli/table'
 import { openDatabase } from '@/db/schema'
-import { collectDescendantIds, getCategories } from '@/db/categories/queries'
+import { findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
 import { getBudgetsForMonth, resolveMonthlyTotal } from '@/db/budgets/queries'
 import type { Budget, Category } from '@/types'
 import { currentMonth, validateMonth } from './set'
@@ -49,12 +49,6 @@ export function formatBudgetTable(rows: BudgetRow[]): string[] {
     ],
     rows: rows.map((row) => [row.categoryName, row.amount]),
   })
-}
-
-export function findIncomeCategoryIds(categories: Category[]): string[] {
-  const incomeRoot = categories.find((category) => category.slug === 'income')
-  if (incomeRoot === undefined) return []
-  return collectDescendantIds(categories, incomeRoot.id)
 }
 
 function listAction(options: ListBudgetOptions): void {

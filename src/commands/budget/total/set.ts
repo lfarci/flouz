@@ -2,9 +2,10 @@ import { isCancel, log, text } from '@clack/prompts'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
-import { collectDescendantIds, getCategories } from '@/db/categories/queries'
+import { findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
 import { getIncomeForMonth } from '@/db/budgets/queries'
 import { upsertMonthlyIncome } from '@/db/budgets/mutations'
+import { formatEuro } from '@/cli/format'
 import { currentMonth, parseAmount, validateMonth } from '@/commands/budget/set'
 
 interface SetTotalOptions {
@@ -12,16 +13,7 @@ interface SetTotalOptions {
   db: string
 }
 
-function findIncomeCategoryIds(db: ReturnType<typeof openDatabase>): string[] {
-  const categories = getCategories(db)
-  const incomeRoot = categories.find((category) => category.slug === 'income')
-  if (incomeRoot === undefined) return []
-  return collectDescendantIds(categories, incomeRoot.id)
-}
 
-function formatEuro(amount: number): string {
-  return `€${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
 
 async function setTotalAction(amountValue: string | undefined, options: SetTotalOptions): Promise<void> {
   const month = options.month ?? currentMonth()
@@ -32,7 +24,8 @@ async function setTotalAction(amountValue: string | undefined, options: SetTotal
 
   const database = openDatabase(resolve(options.db))
   try {
-    const detectedIncome = getIncomeForMonth(database, findIncomeCategoryIds(database), month)
+    const categories = getCategories(database)
+    const detectedIncome = getIncomeForMonth(database, findIncomeCategoryIds(categories), month)
 
     let amount: number
     if (amountValue !== undefined) {
