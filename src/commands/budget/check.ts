@@ -95,7 +95,8 @@ export function formatEuroDecimal(amount: number): string {
 }
 
 export function renderHeader(month: string, day: number, totalDays: number, totalSpent: number): string {
-  const monthName = new Date(`${month}-01`).toLocaleString('en-US', { month: 'long', year: 'numeric' })
+  const [year, monthIndex] = month.split('-').map(Number)
+  const monthName = new Date(year, monthIndex - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
   return `${monthName}  ·  day ${day} of ${totalDays}  ·  ${formatEuro(totalSpent)} spent so far`
 }
 
@@ -138,7 +139,8 @@ export function renderRecentTransactions(transactions: Transaction[]): string {
 
   const header = '\nRECENT TRANSACTIONS (last 7 days)'
   const rows = transactions.slice(0, 10).map((transaction) => {
-    const date = new Date(transaction.date).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })
+    const [year, month, day] = transaction.date.split('-').map(Number)
+    const date = new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })
     const amount =
       transaction.amount < 0 ? `−${formatEuroDecimal(transaction.amount)}` : `+${formatEuroDecimal(transaction.amount)}`
     return `${date}  ${amount}  ${transaction.counterparty}`
@@ -210,9 +212,15 @@ function checkAction(options: CheckBudgetOptions): void {
       const today = new Date()
       const sevenDaysAgo = new Date(today)
       sevenDaysAgo.setDate(today.getDate() - 7)
+      const formatLocalDate = (date: Date): string => {
+        const year = date.getFullYear()
+        const monthPart = String(date.getMonth() + 1).padStart(2, '0')
+        const dayPart = String(date.getDate()).padStart(2, '0')
+        return `${year}-${monthPart}-${dayPart}`
+      }
       const recentTransactions = getTransactions(database, {
-        from: sevenDaysAgo.toISOString().slice(0, 10),
-        to: today.toISOString().slice(0, 10),
+        from: formatLocalDate(sevenDaysAgo),
+        to: formatLocalDate(today),
       }).filter((transaction) => transaction.amount < 0)
       output.push(renderRecentTransactions(recentTransactions))
     }

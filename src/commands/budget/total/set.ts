@@ -47,9 +47,12 @@ async function setTotalAction(amountValue: string | undefined, options: SetTotal
         defaultValue: defaultValue || undefined,
         validate: (value: string | undefined) => {
           if (value === undefined) return 'Must be a positive number'
-          const parsed = Number.parseFloat(value)
-          if (Number.isNaN(parsed) || parsed <= 0) return 'Must be a positive number'
-          return undefined
+          try {
+            parseAmount(value)
+            return undefined
+          } catch {
+            return 'Must be a positive number'
+          }
         },
       })
 
@@ -58,7 +61,7 @@ async function setTotalAction(amountValue: string | undefined, options: SetTotal
         return
       }
 
-      amount = Number.parseFloat(response)
+      amount = parseAmount(response)
     }
 
     upsertMonthlyIncome(database, month, amount)

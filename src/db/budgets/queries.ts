@@ -43,20 +43,32 @@ export function getMonthlyIncome(db: Database, month: string): number | undefine
   return row.amount
 }
 
+function monthDateRange(month: string): { startDate: string; endDate: string } {
+  const [year, monthNumber] = month.split('-').map(Number)
+  const nextMonth = monthNumber === 12 ? 1 : monthNumber + 1
+  const nextYear = monthNumber === 12 ? year + 1 : year
+  return {
+    startDate: `${year}-${String(monthNumber).padStart(2, '0')}-01`,
+    endDate: `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`,
+  }
+}
+
 export function getIncomeForMonth(db: Database, incomeCategoryIds: string[], month: string): number {
   if (incomeCategoryIds.length === 0) return 0
   const placeholders = incomeCategoryIds.map(() => '?').join(', ')
+  const { startDate, endDate } = monthDateRange(month)
   const row = db
     .prepare(
       `
     SELECT COALESCE(SUM(amount), 0) as total
     FROM transactions
     WHERE amount > 0
-      AND date LIKE ?
+      AND date >= ?
+      AND date < ?
       AND category_id IN (${placeholders})
   `,
     )
-    .get(`${month}-%`, ...incomeCategoryIds) as { total: number }
+    .get(startDate, endDate, ...incomeCategoryIds) as { total: number }
   return row.total
 }
 

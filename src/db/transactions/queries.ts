@@ -89,20 +89,32 @@ export function getTransactionById(db: Database, id: number): Transaction | unde
   return rowToTransaction(row)
 }
 
+function monthDateRange(month: string): { startDate: string; endDate: string } {
+  const [year, monthNumber] = month.split('-').map(Number)
+  const nextMonth = monthNumber === 12 ? 1 : monthNumber + 1
+  const nextYear = monthNumber === 12 ? year + 1 : year
+  return {
+    startDate: `${year}-${String(monthNumber).padStart(2, '0')}-01`,
+    endDate: `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`,
+  }
+}
+
 export function sumExpensesForCategories(db: Database, categoryIds: string[], month: string): number {
   if (categoryIds.length === 0) return 0
   const placeholders = categoryIds.map(() => '?').join(', ')
+  const { startDate, endDate } = monthDateRange(month)
   const row = db
     .prepare(
       `
     SELECT COALESCE(SUM(amount), 0) as total
     FROM transactions
     WHERE amount < 0
-      AND date LIKE ?
+      AND date >= ?
+      AND date < ?
       AND category_id IN (${placeholders})
   `,
     )
-    .get(`${month}-%`, ...categoryIds) as { total: number }
+    .get(startDate, endDate, ...categoryIds) as { total: number }
   return row.total
 }
 

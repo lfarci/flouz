@@ -49,6 +49,11 @@ describe('parseAmount', () => {
   it('throws for non-numeric strings', () => {
     expect(() => parseAmount('abc')).toThrow('Invalid amount')
   })
+
+  it('throws for partially numeric strings', () => {
+    expect(() => parseAmount('2000abc')).toThrow('Invalid amount')
+    expect(() => parseAmount('3500eur')).toThrow('Invalid amount')
+  })
 })
 
 describe('parseBudgetValue', () => {
@@ -77,6 +82,10 @@ describe('parseBudgetValue', () => {
 
   it('throws for invalid percentage strings', () => {
     expect(() => parseBudgetValue('abc%')).toThrow('Invalid percentage')
+  })
+
+  it('throws for partially numeric percentage strings', () => {
+    expect(() => parseBudgetValue('50abc%')).toThrow('Invalid percentage')
   })
 })
 

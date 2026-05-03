@@ -29,9 +29,15 @@ export function currentMonth(): string {
   return `${year}-${month}`
 }
 
+const STRICT_NUMERIC = /^\d+(\.\d+)?$/
+
 export function parseAmount(value: string): number {
-  const amount = Number.parseFloat(value)
-  if (Number.isNaN(amount) || amount <= 0) {
+  const trimmed = value.trim()
+  if (!STRICT_NUMERIC.test(trimmed)) {
+    throw new Error(`Invalid amount: "${value}". Must be a positive number.`)
+  }
+  const amount = Number.parseFloat(trimmed)
+  if (amount <= 0) {
     throw new Error(`Invalid amount: "${value}". Must be a positive number.`)
   }
   return amount
@@ -39,8 +45,12 @@ export function parseAmount(value: string): number {
 
 export function parseBudgetValue(value: string): ParsedBudgetValue {
   if (value.endsWith('%')) {
-    const percentage = Number.parseFloat(value.slice(0, -1))
-    if (Number.isNaN(percentage) || percentage <= 0 || percentage > 100) {
+    const rawPercentage = value.slice(0, -1).trim()
+    if (!STRICT_NUMERIC.test(rawPercentage)) {
+      throw new Error(`Invalid percentage: "${value}". Must be between 1% and 100%.`)
+    }
+    const percentage = Number.parseFloat(rawPercentage)
+    if (percentage <= 0 || percentage > 100) {
       throw new Error(`Invalid percentage: "${value}". Must be between 1% and 100%.`)
     }
     return { amount: percentage, type: 'percent' }
