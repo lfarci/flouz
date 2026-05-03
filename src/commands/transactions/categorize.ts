@@ -2,6 +2,8 @@ import { cancel, intro, log, outro, spinner } from '@clack/prompts'
 import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { emptyState } from '@/cli/empty'
+import { ICON_SUCCESS } from '@/cli/theme'
 import { categorizeTransaction } from '@/ai/categorize'
 import { getCategories } from '@/db/categories/queries'
 import { openDatabase } from '@/db/schema'
@@ -114,7 +116,10 @@ async function categorizeAction(options: CategorizeOptions): Promise<void> {
     if (transactions.length === 0) {
       process.removeListener('SIGINT', onCancel)
       database.close()
-      log.info('No transactions eligible for categorization.')
+      emptyState(
+        'No transactions eligible for categorization.',
+        'Import new transactions or use --override to re-categorize.',
+      )
       outro('Done')
       return
     }
@@ -141,7 +146,7 @@ async function categorizeAction(options: CategorizeOptions): Promise<void> {
     const selected = transactions.length
     const skipped = selected - suggested
     log.info('Run `flouz transactions suggestions list` to review the suggestions.')
-    outro(`✓ ${selected} selected — ${suggested} suggested, ${skipped} skipped`)
+    outro(`${ICON_SUCCESS} ${selected} selected — ${suggested} suggested, ${skipped} skipped`)
   } catch (error) {
     process.removeListener('SIGINT', onCancel)
     database?.close()

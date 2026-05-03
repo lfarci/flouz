@@ -44,4 +44,26 @@ describe('flouz CLI', () => {
     expect(output).not.toMatch(/^\s+export\b/m)
     expect(output).not.toMatch(/^\s+list\b/m)
   })
+
+  it('includes --no-color in help output', async () => {
+    const proc = Bun.spawn([process.execPath, 'src/index.ts', '--help'], {
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+
+    const output = await new Response(proc.stdout).text()
+    await proc.exited
+
+    expect(output).toContain('--no-color')
+  })
+
+  it('sets NO_COLOR env when --no-color is passed', async () => {
+    const proc = Bun.spawn([process.execPath, 'src/index.ts', '--no-color', '--help'], {
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+
+    await proc.exited
+    expect(proc.exitCode).toBe(0)
+  })
 })

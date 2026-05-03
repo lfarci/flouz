@@ -2,6 +2,7 @@ import { log, outro } from '@clack/prompts'
 import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { emptyState } from '@/cli/empty'
 import { openDatabase } from '@/db/schema'
 import { getTransactionCategorySuggestions } from '@/db/transaction_category_suggestions/queries'
 import { deleteTransactionCategorySuggestion } from '@/db/transaction_category_suggestions/mutations'
@@ -38,7 +39,10 @@ function rejectAction(options: RejectOptions): void {
 
     if (suggestions.length === 0) {
       database.close()
-      log.info('No suggestions match the given filters.')
+      emptyState(
+        'No suggestions match the given filters.',
+        'Check your filters or run `flouz transactions categorize` first.',
+      )
       return
     }
 

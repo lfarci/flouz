@@ -2,7 +2,9 @@ import { cancel, intro, isCancel, log, note, outro, select, text } from '@clack/
 import { type Database } from 'bun:sqlite'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { emptyState } from '@/cli/empty'
 import { formatAmount } from '@/cli/format'
+import { colorAmount } from '@/cli/theme'
 import { openDatabase } from '@/db/schema'
 import { getTransactionById, getTransactions } from '@/db/transactions/queries'
 import { updateComment } from '@/db/transactions/mutations'
@@ -46,7 +48,7 @@ function loadTransactions(db: Database, id: number | undefined, options: Comment
 
 function formatTransactionNote(transaction: Transaction, index: number, total: number): string {
   const lines = [
-    `[${index}/${total}]  ${transaction.date}  ${formatAmount(transaction.amount)} ${transaction.currency}`,
+    `[${index}/${total}]  ${transaction.date}  ${colorAmount(transaction.amount, formatAmount(transaction.amount))} ${transaction.currency}`,
     `Counterparty : ${transaction.counterparty}`,
   ]
   if (transaction.bankCommunication !== undefined) lines.push(`Bank note    : ${transaction.bankCommunication}`)
@@ -165,7 +167,9 @@ async function commentAction(idArg: string | undefined, options: CommentOptions)
     if (transactions.length === 0) {
       process.removeListener('SIGINT', onCancel)
       database.close()
-      log.info(id !== undefined ? `No transaction found with ID ${id}.` : 'No transactions match the given filters.')
+      const message =
+        id !== undefined ? `No transaction found with ID ${id}.` : 'No transactions match the given filters.'
+      emptyState(message, 'Check the transaction ID or adjust your filters.')
       outro('Done')
       return
     }
