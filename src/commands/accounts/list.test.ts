@@ -180,17 +180,12 @@ describe('listAccountsAction', () => {
 
     const summary = await collectListCommandOutcome([])
 
-    expect({
-      summary,
-      infoMessages: infoLogMock.mock.calls.map((call) => call[0]),
-      tableLines: messageLogMock.mock.calls.map((call) => call[0]),
-      closeCalls: closeMock.mock.calls.length,
-    }).toEqual({
-      summary: { status: 'resolved' },
-      infoMessages: ['No accounts configured.'],
-      tableLines: [],
-      closeCalls: 1,
-    })
+    expect(summary).toEqual({ status: 'resolved' })
+    expect(infoLogMock.mock.calls.length).toBe(2)
+    expect(infoLogMock.mock.calls[0][0]).toBe('No accounts configured.')
+    expect(infoLogMock.mock.calls[1][0]).toContain('flouz accounts add')
+    expect(messageLogMock.mock.calls.map((call) => call[0])).toEqual([])
+    expect(closeMock.mock.calls.length).toBe(1)
   })
 
   it('prints the formatted accounts table', async () => {

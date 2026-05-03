@@ -1,7 +1,9 @@
 import { log } from '@clack/prompts'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { emptyState } from '@/cli/empty'
 import { renderCliTable } from '@/cli/table'
+import { ICON_EMPTY } from '@/cli/theme'
 import { getAccounts } from '@/db/accounts/queries'
 import { openDatabase } from '@/db/schema'
 import type { Account } from '@/types'
@@ -18,7 +20,7 @@ export function formatAccountsTable(accounts: Account[]): string[] {
       { header: 'Company', width: 20, minWidth: 12, truncate: 20 },
       { header: 'IBAN', width: 22, minWidth: 14, truncate: 22 },
     ],
-    rows: accounts.map((account) => [account.key, account.name, account.company, account.iban ?? '—']),
+    rows: accounts.map((account) => [account.key, account.name, account.company, account.iban ?? ICON_EMPTY]),
   })
 }
 
@@ -28,7 +30,7 @@ function listAccountsAction(options: AccountsCommandOptions): void {
   try {
     const accounts = getAccounts(database)
     if (accounts.length === 0) {
-      log.info('No accounts configured.')
+      emptyState('No accounts configured.', 'Run `flouz accounts add` to create an account.')
       return
     }
 
