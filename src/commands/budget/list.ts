@@ -31,7 +31,7 @@ function formatBudgetAmount(budget: Budget, income: number): string {
     const incomeStr = income.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
     return `€${resolvedStr} (${budget.amount}% of €${incomeStr})`
   }
-  return budget.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return `€${budget.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 function toBudgetRows(budgets: Budget[], categories: Category[], income: number): BudgetRow[] {

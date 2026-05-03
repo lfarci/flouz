@@ -89,6 +89,19 @@ export function getTransactionById(db: Database, id: number): Transaction | unde
   return rowToTransaction(row)
 }
 
+export function sumExpensesForCategories(db: Database, categoryIds: string[], month: string): number {
+  if (categoryIds.length === 0) return 0
+  const placeholders = categoryIds.map(() => '?').join(', ')
+  const row = db.prepare(`
+    SELECT COALESCE(SUM(amount), 0) as total
+    FROM transactions
+    WHERE amount < 0
+      AND date LIKE ?
+      AND category_id IN (${placeholders})
+  `).get(`${month}-%`, ...categoryIds) as { total: number }
+  return row.total
+}
+
 export function hasTransactionsForAccount(db: Database, accountId: number): boolean {
   const row = db.prepare('SELECT 1 AS found FROM transactions WHERE account_id = ? LIMIT 1').get(accountId) as {
     found: number

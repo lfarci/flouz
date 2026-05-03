@@ -6,7 +6,7 @@ The flouz CLI output formatting has several UX issues:
 
 1. **No color differentiation in tables** — amounts, statuses, and confidence levels are plain text, making it hard to scan data at a glance.
 2. **Duplicate formatting logic** — `formatAmount()` is defined in both `src/cli/format.ts` and `src/commands/transactions/list.ts`. Confidence formatting is inline in two places.
-3. **No status indicators** — suggestion statuses (pending/approved/applied/rejected) render as plain text with no visual distinction.
+3. **No status indicators** — suggestion statuses (pending/approved/applied) render as plain text with no visual distinction. Note: rejection deletes the suggestion row rather than storing a "rejected" status.
 4. **Silent truncation** — long text in table cells is cut off without any ellipsis indicator.
 5. **Inconsistent empty states** — some commands use `log.info`, others use `log.warn` for "no results" messages, with varying tone and no follow-up hints.
 6. **No `NO_COLOR` support** — the CLI does not respect the `NO_COLOR` environment variable or offer a `--no-color` flag.
@@ -70,13 +70,14 @@ colorConfidence(confidence: number, formatted: string): string
 Returns `formatted` wrapped in green (≥0.75), dim (0.50–0.74), or yellow (<0.50).
 
 ```typescript
-formatStatus(status: 'pending' | 'approved' | 'applied' | 'rejected'): string
+formatStatus(status: 'pending' | 'approved' | 'applied'): string
 ```
 Returns icon + colored status text:
 - `pending` → dim `○ pending`
 - `approved` → green `● approved`
 - `applied` → blue `✓ applied`
-- `rejected` → red `✗ rejected`
+
+> Note: rejection deletes the suggestion row — there is no persisted "rejected" status.
 
 ### `src/cli/format.ts`
 

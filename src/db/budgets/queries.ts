@@ -1,12 +1,20 @@
 import { type Database } from 'bun:sqlite'
 import type { Budget, BudgetType } from '@/types'
 
+const VALID_BUDGET_TYPES = new Set<string>(['fixed', 'percent'])
+
+function parseBudgetType(value: unknown): BudgetType {
+  const type = typeof value === 'string' ? value : 'fixed'
+  if (!VALID_BUDGET_TYPES.has(type)) return 'fixed'
+  return type as BudgetType
+}
+
 function rowToBudget(row: Record<string, unknown>): Budget {
   return {
     id: row.id as number,
     categoryId: row.category_id as string,
     amount: row.amount as number,
-    type: (row.type as BudgetType) ?? 'fixed',
+    type: parseBudgetType(row.type),
     month: row.month as string,
     createdAt: row.created_at as string,
   }

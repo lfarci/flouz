@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
 import { collectDescendantIds, getCategories } from '@/db/categories/queries'
 import { getBudgetsForMonth, resolveMonthlyTotal } from '@/db/budgets/queries'
-import { getTransactions } from '@/db/transactions/queries'
+import { getTransactions, sumExpensesForCategories } from '@/db/transactions/queries'
 import type { Budget, Transaction } from '@/types'
 import { currentMonth, validateMonth } from './set'
 
@@ -19,6 +19,7 @@ interface CategoryBudgetProgress {
   spent: number
   remaining: number
   percentage: number
+  incomeAvailable: boolean
 }
 
 export function daysInMonth(month: string): number {
@@ -28,6 +29,13 @@ export function daysInMonth(month: string): number {
 
 export function dayOfMonth(date: Date): number {
   return date.getDate()
+}
+
+export function resolveElapsedDay(month: string): number {
+  const current = currentMonth()
+  if (month < current) return daysInMonth(month)
+  if (month > current) return 0
+  return dayOfMonth(new Date())
 }
 
 export function monthElapsedPercentage(day: number, totalDays: number): number {
@@ -41,13 +49,22 @@ export function renderProgressBar(percentage: number, width: number): string {
   return '▓'.repeat(filled) + '░'.repeat(empty)
 }
 
+function isColorEnabled(): boolean {
+  if (Bun.env.NO_COLOR !== undefined) return false
+  return process.stdout.isTTY === true
+}
+
 export function selectColor(spentPercentage: number, elapsedPercentage: number): string {
+  if (!isColorEnabled()) return ''
   if (spentPercentage > 100) return '\x1b[31m'
   if (spentPercentage > elapsedPercentage) return '\x1b[33m'
   return '\x1b[32m'
 }
 
-const RESET = '\x1b[0m'
+function resetCode(): string {
+  if (!isColorEnabled()) return ''
+  return '\x1b[0m'
+}
 
 export function projectedSpending(spent: number, day: number, totalDays: number): number {
   if (day === 0) return spent
@@ -60,11 +77,12 @@ function computeProgress(
   expenses: number,
   income: number,
 ): CategoryBudgetProgress {
+  const incomeAvailable = budget.type !== 'percent' || income > 0
   const resolvedBudget = budget.type === 'percent' ? (budget.amount / 100) * income : budget.amount
   const spent = Math.abs(expenses)
   const remaining = Math.max(0, resolvedBudget - spent)
-  const percentage = resolvedBudget > 0 ? (spent / resolvedBudget) * 100 : 0
-  return { categoryName, budgetAmount: resolvedBudget, spent, remaining, percentage }
+  const percentage = resolvedBudget > 0 ? (spent / resolvedBudget) * 100 : (spent > 0 ? 100 : 0)
+  return { categoryName, budgetAmount: resolvedBudget, spent, remaining, percentage, incomeAvailable }
 }
 
 function formatEuro(amount: number): string {
@@ -84,6 +102,13 @@ function renderProgressRow(
   progress: CategoryBudgetProgress,
   elapsedPercentage: number,
 ): string {
+  const reset = resetCode()
+
+  if (!progress.incomeAvailable) {
+    const name = progress.categoryName.padEnd(16)
+    return `${name}   —          ${formatEuro(progress.spent).padStart(8)}     (no income data)`
+  }
+
   const color = selectColor(progress.percentage, elapsedPercentage)
   const bar = renderProgressBar(progress.percentage, 10)
   const pctStr = `${Math.round(progress.percentage)}%`
@@ -94,7 +119,7 @@ function renderProgressRow(
   const spent = formatEuro(progress.spent).padStart(8)
   const left = formatEuro(progress.remaining).padStart(8)
 
-  return `${color}${name}${budget}    ${spent}    ${left}    ${bar}  ${pctStr.padStart(4)}  ${status}${RESET}`
+  return `${color}${name}${budget}    ${spent}    ${left}    ${bar}  ${pctStr.padStart(4)}  ${status}${reset}`
 }
 
 function renderTotalRow(totalBudget: number, totalSpent: number): string {
@@ -131,21 +156,8 @@ function renderPaceWarning(totalSpent: number, day: number, totalDays: number, t
   return `\nAt this pace: ~${projectedStr} by end of month  ·  budget is ${budgetStr}${warning}`
 }
 
-function sumExpensesForCategories(
-  db: ReturnType<typeof openDatabase>,
-  categoryIds: string[],
-  month: string,
-): number {
-  if (categoryIds.length === 0) return 0
-  const placeholders = categoryIds.map(() => '?').join(', ')
-  const row = db.prepare(`
-    SELECT COALESCE(SUM(amount), 0) as total
-    FROM transactions
-    WHERE amount < 0
-      AND date LIKE ?
-      AND category_id IN (${placeholders})
-  `).get(`${month}-%`, ...categoryIds) as { total: number }
-  return row.total
+function isCurrentMonth(month: string): boolean {
+  return month === currentMonth()
 }
 
 function checkAction(options: CheckBudgetOptions): void {
@@ -164,8 +176,7 @@ function checkAction(options: CheckBudgetOptions): void {
     }
 
     const categories = getCategories(database)
-    const today = new Date()
-    const day = dayOfMonth(today)
+    const day = resolveElapsedDay(month)
     const totalDays = daysInMonth(month)
     const elapsed = monthElapsedPercentage(day, totalDays)
 
@@ -186,13 +197,6 @@ function checkAction(options: CheckBudgetOptions): void {
     const totalBudget = progressRows.reduce((sum, row) => sum + row.budgetAmount, 0)
     const totalSpent = progressRows.reduce((sum, row) => sum + row.spent, 0)
 
-    const sevenDaysAgo = new Date(today)
-    sevenDaysAgo.setDate(today.getDate() - 7)
-    const recentTransactions = getTransactions(database, {
-      from: sevenDaysAgo.toISOString().slice(0, 10),
-      to: today.toISOString().slice(0, 10),
-    }).filter((transaction) => transaction.amount < 0)
-
     const output: string[] = []
     output.push(renderHeader(month, day, totalDays, totalSpent))
     output.push('')
@@ -202,7 +206,18 @@ function checkAction(options: CheckBudgetOptions): void {
       output.push(renderProgressRow(row, elapsed))
     }
     output.push(renderTotalRow(totalBudget, totalSpent))
-    output.push(renderRecentTransactions(recentTransactions))
+
+    if (isCurrentMonth(month)) {
+      const today = new Date()
+      const sevenDaysAgo = new Date(today)
+      sevenDaysAgo.setDate(today.getDate() - 7)
+      const recentTransactions = getTransactions(database, {
+        from: sevenDaysAgo.toISOString().slice(0, 10),
+        to: today.toISOString().slice(0, 10),
+      }).filter((transaction) => transaction.amount < 0)
+      output.push(renderRecentTransactions(recentTransactions))
+    }
+
     output.push(renderPaceWarning(totalSpent, day, totalDays, totalBudget))
 
     log.message(output.join('\n'))

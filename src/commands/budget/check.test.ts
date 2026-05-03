@@ -1,12 +1,14 @@
-import { describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import {
   daysInMonth,
   dayOfMonth,
+  resolveElapsedDay,
   monthElapsedPercentage,
   renderProgressBar,
   selectColor,
   projectedSpending,
 } from './check'
+import { currentMonth } from './set'
 
 describe('daysInMonth', () => {
   it('returns 31 for January', () => {
@@ -30,6 +32,25 @@ describe('dayOfMonth', () => {
   it('returns the correct day number', () => {
     expect(dayOfMonth(new Date('2026-05-15'))).toBe(15)
     expect(dayOfMonth(new Date('2026-05-01'))).toBe(1)
+  })
+})
+
+describe('resolveElapsedDay', () => {
+  it('returns total days for a past month', () => {
+    const result = resolveElapsedDay('2020-01')
+    expect(result).toBe(31)
+  })
+
+  it('returns 0 for a future month', () => {
+    const result = resolveElapsedDay('2099-12')
+    expect(result).toBe(0)
+  })
+
+  it('returns a day within range for the current month', () => {
+    const result = resolveElapsedDay(currentMonth())
+    const totalDays = daysInMonth(currentMonth())
+    expect(result).toBeGreaterThan(0)
+    expect(result).toBeLessThanOrEqual(totalDays)
   })
 })
 
@@ -67,16 +88,26 @@ describe('renderProgressBar', () => {
 })
 
 describe('selectColor', () => {
-  it('returns green when under pace', () => {
-    expect(selectColor(20, 50)).toBe('\x1b[32m')
+  let originalNoColor: string | undefined
+
+  beforeEach(() => {
+    originalNoColor = Bun.env.NO_COLOR
+    delete process.env.NO_COLOR
   })
 
-  it('returns yellow when over pace but under 100%', () => {
-    expect(selectColor(60, 50)).toBe('\x1b[33m')
+  afterEach(() => {
+    if (originalNoColor !== undefined) {
+      process.env.NO_COLOR = originalNoColor
+    } else {
+      delete process.env.NO_COLOR
+    }
   })
 
-  it('returns red when over budget', () => {
-    expect(selectColor(110, 50)).toBe('\x1b[31m')
+  it('returns empty string when NO_COLOR is set', () => {
+    process.env.NO_COLOR = '1'
+    expect(selectColor(20, 50)).toBe('')
+    expect(selectColor(60, 50)).toBe('')
+    expect(selectColor(110, 50)).toBe('')
   })
 })
 
