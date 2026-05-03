@@ -41,6 +41,12 @@ describe('theme', () => {
       const result = colorAmount(100, '100')
       expect(result).toBe('100')
     })
+
+    it('returns plain text when NO_COLOR is empty string', () => {
+      process.env.NO_COLOR = ''
+      const result = colorAmount(100, '100')
+      expect(result).toBe('100')
+    })
   })
 
   describe('colorConfidence', () => {
