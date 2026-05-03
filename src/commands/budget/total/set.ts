@@ -5,7 +5,7 @@ import { openDatabase } from '@/db/schema'
 import { collectDescendantIds, getCategories } from '@/db/categories/queries'
 import { getIncomeForMonth } from '@/db/budgets/queries'
 import { upsertMonthlyIncome } from '@/db/budgets/mutations'
-import { currentMonth, parseAmount, validateMonth } from '../set'
+import { currentMonth, parseAmount, validateMonth } from '@/commands/budget/set'
 
 interface SetTotalOptions {
   month?: string

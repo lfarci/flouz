@@ -92,19 +92,19 @@ describe('selectColor', () => {
 
   beforeEach(() => {
     originalNoColor = Bun.env.NO_COLOR
-    delete process.env.NO_COLOR
+    delete Bun.env.NO_COLOR
   })
 
   afterEach(() => {
     if (originalNoColor !== undefined) {
-      process.env.NO_COLOR = originalNoColor
+      Bun.env.NO_COLOR = originalNoColor
     } else {
-      delete process.env.NO_COLOR
+      delete Bun.env.NO_COLOR
     }
   })
 
   it('returns empty string when NO_COLOR is set', () => {
-    process.env.NO_COLOR = '1'
+    Bun.env.NO_COLOR = '1'
     expect(selectColor(20, 50)).toBe('')
     expect(selectColor(60, 50)).toBe('')
     expect(selectColor(110, 50)).toBe('')

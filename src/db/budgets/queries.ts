@@ -57,9 +57,9 @@ export function getIncomeForMonth(db: Database, incomeCategoryIds: string[], mon
 }
 
 export function previousMonth(month: string): string {
-  const [year, m] = month.split('-').map(Number)
-  if (m === 1) return `${year - 1}-12`
-  return `${year}-${String(m - 1).padStart(2, '0')}`
+  const [year, monthNumber] = month.split('-').map(Number)
+  if (monthNumber === 1) return `${year - 1}-12`
+  return `${year}-${String(monthNumber - 1).padStart(2, '0')}`
 }
 
 export function resolveMonthlyTotal(db: Database, incomeCategoryIds: string[], month: string): number {

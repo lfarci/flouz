@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
 import { collectDescendantIds, getCategories } from '@/db/categories/queries'
 import { getMonthlyIncome, getIncomeForMonth } from '@/db/budgets/queries'
-import { currentMonth, validateMonth } from '../set'
+import { currentMonth, validateMonth } from '@/commands/budget/set'
 
 interface ShowTotalOptions {
   month?: string

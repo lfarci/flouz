@@ -80,13 +80,13 @@ function computeProgress(
   const incomeAvailable = budget.type !== 'percent' || income > 0
   const resolvedBudget = budget.type === 'percent' ? (budget.amount / 100) * income : budget.amount
   const spent = Math.abs(expenses)
-  const remaining = Math.max(0, resolvedBudget - spent)
+  const remaining = resolvedBudget - spent
   const percentage = resolvedBudget > 0 ? (spent / resolvedBudget) * 100 : (spent > 0 ? 100 : 0)
   return { categoryName, budgetAmount: resolvedBudget, spent, remaining, percentage, incomeAvailable }
 }
 
 function formatEuro(amount: number): string {
-  return `€${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+  return `€${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 function formatEuroDecimal(amount: number): string {
@@ -111,7 +111,7 @@ function renderProgressRow(
 
   const color = selectColor(progress.percentage, elapsedPercentage)
   const bar = renderProgressBar(progress.percentage, 10)
-  const pctStr = `${Math.round(progress.percentage)}%`
+  const percentageLabel = `${Math.round(progress.percentage)}%`
   const status = progress.percentage <= 100 ? '✓' : '⚠'
 
   const name = progress.categoryName.padEnd(16)
@@ -119,11 +119,11 @@ function renderProgressRow(
   const spent = formatEuro(progress.spent).padStart(8)
   const left = formatEuro(progress.remaining).padStart(8)
 
-  return `${color}${name}${budget}    ${spent}    ${left}    ${bar}  ${pctStr.padStart(4)}  ${status}${reset}`
+  return `${color}${name}${budget}    ${spent}    ${left}    ${bar}  ${percentageLabel.padStart(4)}  ${status}${reset}`
 }
 
 function renderTotalRow(totalBudget: number, totalSpent: number): string {
-  const remaining = Math.max(0, totalBudget - totalSpent)
+  const remaining = totalBudget - totalSpent
   const percentage = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0
   const separator = '─'.repeat(62)
 
