@@ -1,3 +1,8 @@
+---
+name: add-db-query
+description: Add a typed bun:sqlite query helper using prepared statements with co-located in-memory tests. Use when the user asks to "add a query", "new query helper", or "bun:sqlite query".
+---
+
 # Skill: Add a Database Query
 
 Activates when the user says: "add a query", "new query helper", "bun:sqlite query"

@@ -1,3 +1,9 @@
+---
+name: handle-github-issue
+description: 'End-to-end workflow for picking up a GitHub issue — read the issue, create a branch, implement with TDD, verify checks pass, and open a PR. Use when the user says "work on issue", "implement issue", "handle issue #", "start issue", or "take issue".'
+allowed-tools: Bash
+---
+
 # Skill: Handle GitHub Issue
 
 ## Activation

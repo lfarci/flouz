@@ -1,3 +1,9 @@
+---
+name: add-command
+description: Scaffold a new Commander.js CLI command with action handler, typed options interface, test file, and index.ts registration. Use when the user asks to "add a command", "new CLI command", or "scaffold command".
+allowed-tools: Bash
+---
+
 # Skill: Add a CLI Command
 
 Activates when the user says: "add a command", "new CLI command", "scaffold command"
