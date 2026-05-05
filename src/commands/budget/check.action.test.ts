@@ -10,7 +10,7 @@ import {
   runCommandSilently,
   setProcessExit,
 } from '@/commands/test-helpers'
-import { createBudgetsTable, createMonthlyIncomeTable } from '@/db/budgets/schema'
+import { createBudgetsTable, createMonthlyIncomeSnapshotsTable } from '@/db/budgets/schema'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { createTransactionsTable } from '@/db/transactions/schema'
@@ -64,7 +64,7 @@ function createTestDatabase() {
     createCategoriesTable(database)
     seedCategories(database)
     createBudgetsTable(database)
-    createMonthlyIncomeTable(database)
+    createMonthlyIncomeSnapshotsTable(database)
     createTransactionsTable(database)
   })
 }
@@ -162,7 +162,7 @@ describe('check action', () => {
 
     // Insert income for the month
     database
-      .prepare('INSERT INTO monthly_income (month, amount, created_at) VALUES (?, ?, ?)')
+      .prepare('INSERT INTO monthly_income_snapshots (month, amount, created_at) VALUES (?, ?, ?)')
       .run('2026-01', 5000, new Date().toISOString())
 
     openDatabaseMock.mockReturnValue(handle)

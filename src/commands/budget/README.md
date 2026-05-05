@@ -4,13 +4,13 @@ Manage monthly budgets and track spending against them.
 
 ## Subcommands
 
-| Command             | Description                                         |
-| ------------------- | --------------------------------------------------- |
-| `budget set`        | Set or update a monthly budget for a category       |
-| `budget list`       | List budgets for a given month                      |
-| `budget check`      | Dashboard showing budget progress and pace          |
-| `budget total set`  | Set the monthly income total for percentage budgets |
-| `budget total show` | Show the stored or detected monthly income total    |
+| Command             | Description                                            |
+| ------------------- | ------------------------------------------------------ |
+| `budget set`        | Set or update a monthly budget — interactive or direct |
+| `budget list`       | List budgets for a given month                         |
+| `budget check`      | Dashboard showing budget progress and pace             |
+| `budget total set`  | Set the monthly income total for percentage budgets    |
+| `budget total show` | Show the stored or detected monthly income total       |
 
 ## Category Constraints
 
@@ -35,16 +35,54 @@ Percentage budgets resolve against the monthly income total. The resolution prio
 3. Stored monthly income from the previous month
 4. Auto-detected income from the previous month
 
+## `budget set` modes
+
+### Interactive
+
+Omit either argument to be prompted:
+
+```bash
+flouz budget set             # prompts for category (select) then amount (text)
+flouz budget set necessities # prompts for amount only
+```
+
+The category prompt shows all top-level non-income categories as a select list.
+
+### Direct
+
+Pass both arguments to skip prompts — useful for scripting:
+
+```bash
+flouz budget set necessities 2000
+flouz budget set discretionary 800
+flouz budget set savings 20%
+```
+
+### Default allocation
+
+Apply a preset allocation across necessities, discretionary, and savings in one command:
+
+```bash
+flouz budget set --defaults                          # 50% necessities, 30% discretionary, 20% savings
+flouz budget set --defaults --necessities 40% --discretionary 25% --savings 15%
+flouz budget set --defaults --month 2026-06          # target a specific month
+```
+
+The per-category options (`--necessities`, `--discretionary`, `--savings`) accept the same format as `<amount>`: a EUR amount or a percentage of income. They default to `50%`, `30%`, `20%` respectively.
+
 ## Examples
 
 ```bash
-# Set fixed budgets
-flouz budget set necessities 2000
-flouz budget set discretionary 800
+# Interactive — select category, then enter amount
+flouz budget set
 
-# Set percentage-based budgets
-flouz budget set necessities 60%
+# Direct — fixed and percentage budgets
+flouz budget set necessities 2000
 flouz budget set savings 20%
+
+# Default allocation in one shot
+flouz budget set --defaults
+flouz budget set --defaults --necessities 40% --discretionary 25% --savings 15%
 
 # Set monthly income total
 flouz budget total set 3500

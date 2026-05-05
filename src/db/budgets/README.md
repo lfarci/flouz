@@ -15,7 +15,7 @@ Stores monthly budget targets and income data for spending tracking.
 
 Unique constraint on `(category_id, month)` — one budget per category per month.
 
-### `monthly_income`
+### `monthly_income_snapshots`
 
 - `id`: integer primary key
 - `month`: unique month in `YYYY-MM` format
@@ -26,7 +26,7 @@ Unique constraint on `(category_id, month)` — one budget per category per mont
 
 - `getBudgetsForMonth`: lists all budgets for a given month
 - `getBudgetForCategory`: resolves one budget by category and month
-- `getMonthlyIncome`: returns manually stored income for a month
+- `getMonthlyIncomeSnapshot`: returns manually stored income for a month
 - `getIncomeForMonth`: sums income transactions for a month
 - `resolveMonthlyTotal`: resolves income using fallback chain (stored → detected → previous month)
 - `previousMonth`: computes the preceding `YYYY-MM` string
@@ -34,7 +34,7 @@ Unique constraint on `(category_id, month)` — one budget per category per mont
 ## Mutations
 
 - `upsertBudget`: inserts or updates a budget for a category/month
-- `upsertMonthlyIncome`: inserts or updates the income total for a month
+- `upsertMonthlyIncomeSnapshot`: inserts or updates the income total for a month
 
 ## Seed
 

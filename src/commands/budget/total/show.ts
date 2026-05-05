@@ -3,7 +3,7 @@ import { Command } from 'commander'
 import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
 import { findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
-import { getMonthlyIncome, getIncomeForMonth } from '@/db/budgets/queries'
+import { getMonthlyIncomeSnapshot, getIncomeForMonth } from '@/db/budgets/queries'
 import { formatEuro } from '@/cli/format'
 import { currentMonth, validateMonth } from '@/commands/budget/month'
 
@@ -21,7 +21,7 @@ function showTotalAction(options: ShowTotalOptions): void {
 
   const database = openDatabase(resolve(options.db))
   try {
-    const stored = getMonthlyIncome(database, month)
+    const stored = getMonthlyIncomeSnapshot(database, month)
     const categories = getCategories(database)
     const incomeCategoryIds = findIncomeCategoryIds(categories)
     const detected = getIncomeForMonth(database, incomeCategoryIds, month)

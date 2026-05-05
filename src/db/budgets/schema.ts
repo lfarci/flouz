@@ -15,9 +15,9 @@ export function createBudgetsTable(db: Database): void {
   `)
 }
 
-export function createMonthlyIncomeTable(db: Database): void {
+export function createMonthlyIncomeSnapshotsTable(db: Database): void {
   db.run(`
-    CREATE TABLE IF NOT EXISTS monthly_income (
+    CREATE TABLE IF NOT EXISTS monthly_income_snapshots (
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
       month      TEXT NOT NULL UNIQUE,
       amount     REAL NOT NULL CHECK(amount > 0),

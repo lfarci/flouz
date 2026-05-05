@@ -30,13 +30,16 @@ describe('initDb', () => {
     expect(row?.name).toBe('budgets')
   })
 
-  it('creates monthly_income table', () => {
+  it('creates monthly_income_snapshots table', () => {
     const db = new Database(':memory:')
     initDb(db)
     const row = db
-      .query<{ name: string }, []>("SELECT name FROM sqlite_master WHERE type='table' AND name='monthly_income'")
+      .query<
+        { name: string },
+        []
+      >("SELECT name FROM sqlite_master WHERE type='table' AND name='monthly_income_snapshots'")
       .get()
-    expect(row?.name).toBe('monthly_income')
+    expect(row?.name).toBe('monthly_income_snapshots')
   })
 
   it('is idempotent (safe to call twice)', () => {
@@ -59,7 +62,7 @@ describe('openDatabase', () => {
     expect(tables).toContain('transactions')
     expect(tables).toContain('accounts')
     expect(tables).toContain('budgets')
-    expect(tables).toContain('monthly_income')
+    expect(tables).toContain('monthly_income_snapshots')
     db.close()
   })
 

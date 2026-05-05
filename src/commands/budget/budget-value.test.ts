@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'bun:test'
-import { parseBudgetValue, findTopLevelCategory, formatBudgetConfirmation } from './set'
+import {
+  parseBudgetValue,
+  findTopLevelCategory,
+  formatBudgetConfirmation,
+  getTopLevelBudgetCategories,
+} from './budget-value'
 import type { Category } from '@/types'
+
+const baseCategories: Category[] = [
+  { id: 'cat-1', name: 'Necessities', slug: 'necessities', parentId: null },
+  { id: 'cat-2', name: 'Savings', slug: 'savings', parentId: null },
+  { id: 'cat-3', name: 'Discretionary', slug: 'discretionary', parentId: null },
+  { id: 'cat-4', name: 'Income', slug: 'income', parentId: null },
+  { id: 'cat-5', name: 'Groceries', slug: 'groceries', parentId: 'cat-1' },
+]
 
 describe('parseBudgetValue', () => {
   it('parses a fixed EUR amount', () => {
@@ -33,26 +46,30 @@ describe('parseBudgetValue', () => {
   it('throws for partially numeric percentage strings', () => {
     expect(() => parseBudgetValue('50abc%')).toThrow('Invalid percentage')
   })
+
+  it('trims leading and trailing whitespace from a percentage', () => {
+    const result = parseBudgetValue(' 50% ')
+    expect(result).toEqual({ amount: 50, type: 'percent' })
+  })
+
+  it('trims leading and trailing whitespace from a fixed amount', () => {
+    const result = parseBudgetValue(' 2000 ')
+    expect(result).toEqual({ amount: 2000, type: 'fixed' })
+  })
 })
 
 describe('findTopLevelCategory', () => {
-  const categories: Category[] = [
-    { id: 'cat-1', name: 'Necessities', slug: 'necessities', parentId: null },
-    { id: 'cat-2', name: 'Savings', slug: 'savings', parentId: null },
-    { id: 'cat-3', name: 'Groceries', slug: 'groceries', parentId: 'cat-1' },
-  ]
-
   it('returns the category when it is top-level', () => {
-    const result = findTopLevelCategory(categories, 'necessities')
+    const result = findTopLevelCategory(baseCategories, 'necessities')
     expect(result.id).toBe('cat-1')
   })
 
   it('throws when category is not found', () => {
-    expect(() => findTopLevelCategory(categories, 'unknown')).toThrow('Category not found')
+    expect(() => findTopLevelCategory(baseCategories, 'unknown')).toThrow('Category not found')
   })
 
   it('throws when category is not top-level', () => {
-    expect(() => findTopLevelCategory(categories, 'groceries')).toThrow(
+    expect(() => findTopLevelCategory(baseCategories, 'groceries')).toThrow(
       'Budgets can only be set on top-level categories',
     )
   })
@@ -71,5 +88,27 @@ describe('formatBudgetConfirmation', () => {
     expect(result).toContain('Savings')
     expect(result).toContain('20%')
     expect(result).toContain('2026-05')
+  })
+})
+
+describe('getTopLevelBudgetCategories', () => {
+  it('returns only top-level non-income categories', () => {
+    const result = getTopLevelBudgetCategories(baseCategories)
+    expect(result).toHaveLength(3)
+  })
+
+  it('excludes the income category', () => {
+    const result = getTopLevelBudgetCategories(baseCategories)
+    expect(result.some((category) => category.slug === 'income')).toBe(false)
+  })
+
+  it('excludes subcategories', () => {
+    const result = getTopLevelBudgetCategories(baseCategories)
+    expect(result.some((category) => category.slug === 'groceries')).toBe(false)
+  })
+
+  it('returns empty array when no budget categories exist', () => {
+    const incomeOnly: Category[] = [{ id: 'cat-1', name: 'Income', slug: 'income', parentId: null }]
+    expect(getTopLevelBudgetCategories(incomeOnly)).toHaveLength(0)
   })
 })

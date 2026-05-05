@@ -1,8 +1,8 @@
 import { describe, expect, it, beforeEach } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { createCategoriesTable } from '@/db/categories/schema'
-import { createBudgetsTable, createMonthlyIncomeTable } from './schema'
-import { upsertBudget, upsertMonthlyIncome } from './mutations'
+import { createBudgetsTable, createMonthlyIncomeSnapshotsTable } from './schema'
+import { upsertBudget, upsertMonthlyIncomeSnapshot } from './mutations'
 
 describe('upsertBudget', () => {
   let db: Database
@@ -112,36 +112,42 @@ describe('upsertBudget', () => {
   })
 })
 
-describe('upsertMonthlyIncome', () => {
+describe('upsertMonthlyIncomeSnapshot', () => {
   let db: Database
 
   beforeEach(() => {
     db = new Database(':memory:')
-    createMonthlyIncomeTable(db)
+    createMonthlyIncomeSnapshotsTable(db)
   })
 
   it('inserts a new monthly income row', () => {
-    upsertMonthlyIncome(db, '2026-05', 3500)
+    upsertMonthlyIncomeSnapshot(db, '2026-05', 3500)
 
-    const row = db.prepare('SELECT * FROM monthly_income WHERE month = ?').get('2026-05') as Record<string, unknown>
+    const row = db.prepare('SELECT * FROM monthly_income_snapshots WHERE month = ?').get('2026-05') as Record<
+      string,
+      unknown
+    >
     expect(row.amount).toBe(3500)
     expect(row.month).toBe('2026-05')
   })
 
   it('updates amount for the same month', () => {
-    upsertMonthlyIncome(db, '2026-05', 3500)
-    upsertMonthlyIncome(db, '2026-05', 4000)
+    upsertMonthlyIncomeSnapshot(db, '2026-05', 3500)
+    upsertMonthlyIncomeSnapshot(db, '2026-05', 4000)
 
-    const rows = db.prepare('SELECT * FROM monthly_income WHERE month = ?').all('2026-05') as Record<string, unknown>[]
+    const rows = db.prepare('SELECT * FROM monthly_income_snapshots WHERE month = ?').all('2026-05') as Record<
+      string,
+      unknown
+    >[]
     expect(rows).toHaveLength(1)
     expect(rows[0].amount).toBe(4000)
   })
 
   it('does not affect other months', () => {
-    upsertMonthlyIncome(db, '2026-04', 3200)
-    upsertMonthlyIncome(db, '2026-05', 3500)
+    upsertMonthlyIncomeSnapshot(db, '2026-04', 3200)
+    upsertMonthlyIncomeSnapshot(db, '2026-05', 3500)
 
-    const rows = db.prepare('SELECT * FROM monthly_income ORDER BY month').all() as Record<string, unknown>[]
+    const rows = db.prepare('SELECT * FROM monthly_income_snapshots ORDER BY month').all() as Record<string, unknown>[]
     expect(rows).toHaveLength(2)
     expect(rows[0].amount).toBe(3200)
     expect(rows[1].amount).toBe(3500)
