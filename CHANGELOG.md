@@ -2,22 +2,20 @@
 
 ## [2.4.0](https://github.com/lfarci/flouz/compare/v2.3.0...v2.4.0) (2026-05-05)
 
-
 ### Features
 
-* add agent skill directory for CLI users ([#56](https://github.com/lfarci/flouz/issues/56)) ([c02320d](https://github.com/lfarci/flouz/commit/c02320d0b790e4c46de8326979d3a454180ffcbc))
-* **budget:** add budget command group with percentage-of-income support ([#59](https://github.com/lfarci/flouz/issues/59)) ([f3a88bf](https://github.com/lfarci/flouz/commit/f3a88bf42fe85419ec68bbf71f4f6ade9b835a0a))
-* **budget:** interactive mode and default allocation for budget set ([#61](https://github.com/lfarci/flouz/issues/61)) ([17bc3d3](https://github.com/lfarci/flouz/commit/17bc3d3cf4cb6a8f56cb06a34e3886a50cbfc9df))
-* **cli:** add output formatting with theme, colors, and empty states ([#58](https://github.com/lfarci/flouz/issues/58)) ([2fdf377](https://github.com/lfarci/flouz/commit/2fdf3773f67f587634f55d1056becd124b0af5fb))
-* transactions comment command ([#54](https://github.com/lfarci/flouz/issues/54)) ([fe768c6](https://github.com/lfarci/flouz/commit/fe768c697d1e7fb1759a2cdc3926295e3d47e7cf))
-* **transactions:** add interactive comment command ([#53](https://github.com/lfarci/flouz/issues/53)) ([4ddd420](https://github.com/lfarci/flouz/commit/4ddd420afba4616c2c80cefd31bd1b0d4c11717d))
-* **transactions:** add user comment field to transactions ([#51](https://github.com/lfarci/flouz/issues/51)) ([4dfbca0](https://github.com/lfarci/flouz/commit/4dfbca05c08c7544a809d8d9edc7c3c795674e9a))
-* **transactions:** expand --category filter to include descendant categories ([#55](https://github.com/lfarci/flouz/issues/55)) ([b6953c7](https://github.com/lfarci/flouz/commit/b6953c73517945e6f582be8787d5f48eb26597b7))
-
+- add agent skill directory for CLI users ([#56](https://github.com/lfarci/flouz/issues/56)) ([c02320d](https://github.com/lfarci/flouz/commit/c02320d0b790e4c46de8326979d3a454180ffcbc))
+- **budget:** add budget command group with percentage-of-income support ([#59](https://github.com/lfarci/flouz/issues/59)) ([f3a88bf](https://github.com/lfarci/flouz/commit/f3a88bf42fe85419ec68bbf71f4f6ade9b835a0a))
+- **budget:** interactive mode and default allocation for budget set ([#61](https://github.com/lfarci/flouz/issues/61)) ([17bc3d3](https://github.com/lfarci/flouz/commit/17bc3d3cf4cb6a8f56cb06a34e3886a50cbfc9df))
+- **cli:** add output formatting with theme, colors, and empty states ([#58](https://github.com/lfarci/flouz/issues/58)) ([2fdf377](https://github.com/lfarci/flouz/commit/2fdf3773f67f587634f55d1056becd124b0af5fb))
+- transactions comment command ([#54](https://github.com/lfarci/flouz/issues/54)) ([fe768c6](https://github.com/lfarci/flouz/commit/fe768c697d1e7fb1759a2cdc3926295e3d47e7cf))
+- **transactions:** add interactive comment command ([#53](https://github.com/lfarci/flouz/issues/53)) ([4ddd420](https://github.com/lfarci/flouz/commit/4ddd420afba4616c2c80cefd31bd1b0d4c11717d))
+- **transactions:** add user comment field to transactions ([#51](https://github.com/lfarci/flouz/issues/51)) ([4dfbca0](https://github.com/lfarci/flouz/commit/4dfbca05c08c7544a809d8d9edc7c3c795674e9a))
+- **transactions:** expand --category filter to include descendant categories ([#55](https://github.com/lfarci/flouz/issues/55)) ([b6953c7](https://github.com/lfarci/flouz/commit/b6953c73517945e6f582be8787d5f48eb26597b7))
 
 ### Bug Fixes
 
-* **transactions:** make --override lift suggestion-exists restriction ([#57](https://github.com/lfarci/flouz/issues/57)) ([b020c14](https://github.com/lfarci/flouz/commit/b020c14a2e11bd624ffbea786b5f5ac0134e1f3c))
+- **transactions:** make --override lift suggestion-exists restriction ([#57](https://github.com/lfarci/flouz/issues/57)) ([b020c14](https://github.com/lfarci/flouz/commit/b020c14a2e11bd624ffbea786b5f5ac0134e1f3c))
 
 ## [2.3.0](https://github.com/lfarci/flouz/compare/v2.2.0...v2.3.0) (2026-04-21)
 
