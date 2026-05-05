@@ -63,12 +63,12 @@ flouz budget set savings 20%
 Apply a preset allocation across necessities, discretionary, and savings in one command:
 
 ```bash
-flouz budget set --defaults                          # 30% necessities, 30% discretionary, 20% savings
+flouz budget set --defaults                          # 50% necessities, 30% discretionary, 20% savings
 flouz budget set --defaults --necessities 40% --discretionary 25% --savings 15%
 flouz budget set --defaults --month 2026-06          # target a specific month
 ```
 
-The per-category options (`--necessities`, `--discretionary`, `--savings`) accept the same format as `<amount>`: a EUR amount or a percentage of income. They default to `30%`, `30%`, `20%` respectively.
+The per-category options (`--necessities`, `--discretionary`, `--savings`) accept the same format as `<amount>`: a EUR amount or a percentage of income. They default to `50%`, `30%`, `20%` respectively.
 
 ## Examples
 

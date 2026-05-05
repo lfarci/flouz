@@ -1,12 +1,24 @@
 import { isCancel, log, select, text } from '@clack/prompts'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
-import { type Database } from 'bun:sqlite'
 import { openDatabase } from '@/db/schema'
 import { getCategories } from '@/db/categories/queries'
 import { upsertBudget } from '@/db/budgets/mutations'
-import type { BudgetType, Category } from '@/types'
-import { currentMonth, parseAmount, validateMonth } from './month'
+import type { Category } from '@/types'
+import { currentMonth, validateMonth } from './month'
+import {
+  type ParsedBudgetValue,
+  parseBudgetValue,
+  findTopLevelCategory,
+  getTopLevelBudgetCategories,
+  formatBudgetConfirmation,
+} from './budget-value'
+import {
+  DEFAULT_NECESSITIES,
+  DEFAULT_DISCRETIONARY,
+  DEFAULT_SAVINGS,
+  applyDefaultAllocation,
+} from './budget-defaults'
 
 interface SetBudgetOptions {
   month?: string
@@ -15,92 +27,6 @@ interface SetBudgetOptions {
   necessities: string
   discretionary: string
   savings: string
-}
-
-interface ParsedBudgetValue {
-  amount: number
-  type: BudgetType
-}
-
-const STRICT_NUMERIC = /^\d+(\.\d+)?$/
-
-const DEFAULT_NECESSITIES = '30%'
-const DEFAULT_DISCRETIONARY = '30%'
-const DEFAULT_SAVINGS = '20%'
-
-export function parseBudgetValue(value: string): ParsedBudgetValue {
-  if (value.endsWith('%')) {
-    const rawPercentage = value.slice(0, -1).trim()
-    if (!STRICT_NUMERIC.test(rawPercentage)) {
-      throw new Error(`Invalid percentage: "${value}". Must be between 1% and 100%.`)
-    }
-    const percentage = Number.parseFloat(rawPercentage)
-    if (percentage <= 0 || percentage > 100) {
-      throw new Error(`Invalid percentage: "${value}". Must be between 1% and 100%.`)
-    }
-    return { amount: percentage, type: 'percent' }
-  }
-  return { amount: parseAmount(value), type: 'fixed' }
-}
-
-export function findTopLevelCategory(categories: Category[], slug: string): Category {
-  const category = categories.find((candidate) => candidate.slug === slug)
-  if (category === undefined) {
-    throw new Error(`Category not found: "${slug}"`)
-  }
-  if (category.parentId !== null) {
-    throw new Error('Budgets can only be set on top-level categories')
-  }
-  return category
-}
-
-export function formatBudgetConfirmation(name: string, parsed: ParsedBudgetValue, month: string): string {
-  if (parsed.type === 'percent') {
-    return `${name} → ${parsed.amount}% of income / month (${month})`
-  }
-  return `${name} → €${parsed.amount.toFixed(2)} / month (${month})`
-}
-
-export function getTopLevelBudgetCategories(categories: Category[]): Category[] {
-  return categories.filter((category) => category.parentId === null && category.slug !== 'income')
-}
-
-function resolveDefaultValueForSlug(slug: string, options: SetBudgetOptions): string {
-  if (slug === 'necessities') return options.necessities
-  if (slug === 'discretionary') return options.discretionary
-  if (slug === 'savings') return options.savings
-  throw new Error(`No default configured for category: "${slug}"`)
-}
-
-export function buildDefaultAllocation(
-  categories: Category[],
-  options: Pick<SetBudgetOptions, 'necessities' | 'discretionary' | 'savings'>,
-): Array<{ category: Category; parsed: ParsedBudgetValue }> {
-  const targetSlugs = new Set(['necessities', 'discretionary', 'savings'])
-  const defaultCategories = getTopLevelBudgetCategories(categories).filter((c) => targetSlugs.has(c.slug))
-  return defaultCategories.map((category) => ({
-    category,
-    parsed: parseBudgetValue(resolveDefaultValueForSlug(category.slug, options as SetBudgetOptions)),
-  }))
-}
-
-function applyDefaultAllocation(
-  database: Database,
-  categories: Category[],
-  month: string,
-  options: SetBudgetOptions,
-): void {
-  const allocation = buildDefaultAllocation(categories, options)
-  for (const { category, parsed } of allocation) {
-    upsertBudget(database, {
-      categoryId: category.id,
-      amount: parsed.amount,
-      type: parsed.type,
-      month,
-      createdAt: new Date().toISOString(),
-    })
-    log.success(formatBudgetConfirmation(category.name, parsed, month))
-  }
 }
 
 async function promptCategorySelection(categories: Category[]): Promise<Category | symbol> {
@@ -164,6 +90,11 @@ async function setAction(
     process.exit(1)
   }
 
+  if (options.defaults && (categorySlug !== undefined || amountValue !== undefined)) {
+    log.error('--defaults cannot be combined with positional [category] or [amount] arguments.')
+    process.exit(1)
+  }
+
   const database = openDatabase(resolve(options.db))
   try {
     const categories = getCategories(database)
@@ -176,13 +107,7 @@ async function setAction(
     const category = await resolveCategory(categories, categorySlug)
     if (category === null) return
 
-    let parsed: ParsedBudgetValue | null = null
-    try {
-      parsed = await resolveParsedAmount(amountValue)
-    } catch (error) {
-      log.error(error instanceof Error ? error.message : String(error))
-      process.exit(1)
-    }
+    const parsed = await resolveParsedAmount(amountValue)
     if (parsed === null) return
 
     upsertBudget(database, {
