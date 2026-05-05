@@ -115,6 +115,7 @@ async function setAction(
     log.success(formatBudgetConfirmation(category.name, parsed, month))
   } catch (error) {
     log.error(error instanceof Error ? error.message : String(error))
+    database.close()
     process.exit(1)
   } finally {
     database.close()

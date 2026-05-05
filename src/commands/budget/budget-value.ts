@@ -9,18 +9,19 @@ export interface ParsedBudgetValue {
 const STRICT_NUMERIC = /^\d+(\.\d+)?$/
 
 export function parseBudgetValue(value: string): ParsedBudgetValue {
-  if (value.endsWith('%')) {
-    const rawPercentage = value.slice(0, -1).trim()
+  const trimmed = value.trim()
+  if (trimmed.endsWith('%')) {
+    const rawPercentage = trimmed.slice(0, -1).trim()
     if (!STRICT_NUMERIC.test(rawPercentage)) {
-      throw new Error(`Invalid percentage: "${value}". Must be between 1% and 100%.`)
+      throw new Error(`Invalid percentage: "${trimmed}". Must be between 1% and 100%.`)
     }
     const percentage = Number.parseFloat(rawPercentage)
     if (percentage <= 0 || percentage > 100) {
-      throw new Error(`Invalid percentage: "${value}". Must be between 1% and 100%.`)
+      throw new Error(`Invalid percentage: "${trimmed}". Must be between 1% and 100%.`)
     }
     return { amount: percentage, type: 'percent' }
   }
-  return { amount: parseAmount(value), type: 'fixed' }
+  return { amount: parseAmount(trimmed), type: 'fixed' }
 }
 
 export function findTopLevelCategory(categories: Category[], slug: string): Category {

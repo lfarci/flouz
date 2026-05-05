@@ -46,6 +46,16 @@ describe('parseBudgetValue', () => {
   it('throws for partially numeric percentage strings', () => {
     expect(() => parseBudgetValue('50abc%')).toThrow('Invalid percentage')
   })
+
+  it('trims leading and trailing whitespace from a percentage', () => {
+    const result = parseBudgetValue(' 50% ')
+    expect(result).toEqual({ amount: 50, type: 'percent' })
+  })
+
+  it('trims leading and trailing whitespace from a fixed amount', () => {
+    const result = parseBudgetValue(' 2000 ')
+    expect(result).toEqual({ amount: 2000, type: 'fixed' })
+  })
 })
 
 describe('findTopLevelCategory', () => {
