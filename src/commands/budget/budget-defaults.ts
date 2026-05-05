@@ -26,12 +26,19 @@ function resolveDefaultValueForSlug(slug: string, options: DefaultAllocationOpti
   throw new Error(`No default configured for category: "${slug}"`)
 }
 
+const REQUIRED_DEFAULT_SLUGS = ['necessities', 'discretionary', 'savings'] as const
+
 export function buildDefaultAllocation(
   categories: Category[],
   options: DefaultAllocationOptions,
-): Array<{ category: Category; parsed: ParsedBudgetValue }> {
-  const targetSlugs = new Set(['necessities', 'discretionary', 'savings'])
+): { category: Category; parsed: ParsedBudgetValue }[] {
+  const targetSlugs = new Set<string>(REQUIRED_DEFAULT_SLUGS)
   const targets = getTopLevelBudgetCategories(categories).filter((category) => targetSlugs.has(category.slug))
+  const foundSlugs = new Set(targets.map((category) => category.slug))
+  const missingSlugs = REQUIRED_DEFAULT_SLUGS.filter((slug) => !foundSlugs.has(slug))
+  if (missingSlugs.length > 0) {
+    throw new Error(`Missing required categories for --defaults: ${missingSlugs.join(', ')}`)
+  }
   return targets.map((category) => ({
     category,
     parsed: parseBudgetValue(resolveDefaultValueForSlug(category.slug, options)),

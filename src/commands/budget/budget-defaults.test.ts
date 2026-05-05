@@ -47,4 +47,14 @@ describe('buildDefaultAllocation', () => {
     const invalid = { necessities: '0%', discretionary: '30%', savings: '20%' }
     expect(() => buildDefaultAllocation(baseCategories, invalid)).toThrow('Invalid percentage')
   })
+
+  it('throws when a required category is missing', () => {
+    const incomplete: Category[] = [
+      { id: 'cat-1', name: 'Necessities', slug: 'necessities', parentId: null },
+      { id: 'cat-4', name: 'Income', slug: 'income', parentId: null },
+    ]
+    expect(() => buildDefaultAllocation(incomplete, defaults)).toThrow(
+      'Missing required categories for --defaults: discretionary, savings',
+    )
+  })
 })

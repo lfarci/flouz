@@ -13,12 +13,7 @@ import {
   getTopLevelBudgetCategories,
   formatBudgetConfirmation,
 } from './budget-value'
-import {
-  DEFAULT_NECESSITIES,
-  DEFAULT_DISCRETIONARY,
-  DEFAULT_SAVINGS,
-  applyDefaultAllocation,
-} from './budget-defaults'
+import { DEFAULT_NECESSITIES, DEFAULT_DISCRETIONARY, DEFAULT_SAVINGS, applyDefaultAllocation } from './budget-defaults'
 
 interface SetBudgetOptions {
   month?: string
@@ -30,7 +25,7 @@ interface SetBudgetOptions {
 }
 
 async function promptCategorySelection(categories: Category[]): Promise<Category | symbol> {
-  return select({
+  return await select({
     message: 'Select a category',
     options: getTopLevelBudgetCategories(categories).map((category) => ({
       value: category,
@@ -50,7 +45,7 @@ function validateAmountInput(value: string | undefined): string | undefined {
 }
 
 async function promptBudgetAmount(): Promise<string | symbol> {
-  return text({
+  return await text({
     message: 'Budget amount (e.g. 500 or 30%)',
     placeholder: '0',
     validate: validateAmountInput,
@@ -65,7 +60,7 @@ async function resolveCategory(categories: Category[], slug: string | undefined)
     log.warn('Cancelled.')
     return null
   }
-  return selection as Category
+  return selection
 }
 
 async function resolveParsedAmount(amountValue: string | undefined): Promise<ParsedBudgetValue | null> {
@@ -76,7 +71,7 @@ async function resolveParsedAmount(amountValue: string | undefined): Promise<Par
     log.warn('Cancelled.')
     return null
   }
-  return parseBudgetValue(response as string)
+  return parseBudgetValue(response)
 }
 
 async function setAction(
