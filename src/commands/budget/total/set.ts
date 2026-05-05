@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { openDatabase } from '@/db/schema'
 import { findIncomeCategoryIds, getCategories } from '@/db/categories/queries'
 import { getIncomeForMonth } from '@/db/budgets/queries'
-import { upsertMonthlyIncome } from '@/db/budgets/mutations'
+import { upsertMonthlyIncomeSnapshot } from '@/db/budgets/mutations'
 import { formatEuro } from '@/cli/format'
 import { currentMonth, parseAmount, validateMonth } from '@/commands/budget/month'
 
@@ -55,7 +55,7 @@ async function setTotalAction(amountValue: string | undefined, options: SetTotal
       amount = parseAmount(response)
     }
 
-    upsertMonthlyIncome(database, month, amount)
+    upsertMonthlyIncomeSnapshot(database, month, amount)
     log.success(`Monthly income for ${month} set to ${formatEuro(amount)}`)
   } catch (error) {
     log.error(error instanceof Error ? error.message : String(error))

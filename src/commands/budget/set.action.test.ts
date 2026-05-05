@@ -10,7 +10,7 @@ import {
   runCommandSilently,
   setProcessExit,
 } from '@/commands/test-helpers'
-import { createBudgetsTable, createMonthlyIncomeTable } from '@/db/budgets/schema'
+import { createBudgetsTable, createMonthlyIncomeSnapshotsTable } from '@/db/budgets/schema'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { seedCategories } from '@/db/categories/seed'
 import { getBudgetsForMonth } from '@/db/budgets/queries'
@@ -62,7 +62,7 @@ function createTestDatabase() {
     createCategoriesTable(database)
     seedCategories(database)
     createBudgetsTable(database)
-    createMonthlyIncomeTable(database)
+    createMonthlyIncomeSnapshotsTable(database)
   })
 }
 

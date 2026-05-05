@@ -38,8 +38,10 @@ export function getBudgetForCategory(db: Database, categoryId: string, month: st
   return rowToBudget(row)
 }
 
-export function getMonthlyIncome(db: Database, month: string): number | undefined {
-  const row = db.prepare('SELECT amount FROM monthly_income WHERE month = ?').get(month) as { amount: number } | null
+export function getMonthlyIncomeSnapshot(db: Database, month: string): number | undefined {
+  const row = db.prepare('SELECT amount FROM monthly_income_snapshots WHERE month = ?').get(month) as {
+    amount: number
+  } | null
   if (row === null) return undefined
   return row.amount
 }
@@ -70,13 +72,13 @@ export function previousMonth(month: string): string {
 }
 
 export function resolveMonthlyTotal(db: Database, incomeCategoryIds: string[], month: string): number {
-  const stored = getMonthlyIncome(db, month)
+  const stored = getMonthlyIncomeSnapshot(db, month)
   if (stored !== undefined) return stored
 
   const income = getIncomeForMonth(db, incomeCategoryIds, month)
   if (income > 0) return income
 
-  const previousStored = getMonthlyIncome(db, previousMonth(month))
+  const previousStored = getMonthlyIncomeSnapshot(db, previousMonth(month))
   if (previousStored !== undefined) return previousStored
 
   return getIncomeForMonth(db, incomeCategoryIds, previousMonth(month))

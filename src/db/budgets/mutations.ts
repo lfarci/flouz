@@ -20,10 +20,10 @@ export function upsertBudget(db: Database, budget: NewBudget): void {
   })
 }
 
-export function upsertMonthlyIncome(db: Database, month: string, amount: number): void {
+export function upsertMonthlyIncomeSnapshot(db: Database, month: string, amount: number): void {
   db.prepare(
     `
-    INSERT INTO monthly_income (month, amount, created_at)
+    INSERT INTO monthly_income_snapshots (month, amount, created_at)
     VALUES ($month, $amount, $createdAt)
     ON CONFLICT(month) DO UPDATE SET
       amount = excluded.amount,
