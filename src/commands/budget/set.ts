@@ -13,7 +13,13 @@ import {
   getTopLevelBudgetCategories,
   formatBudgetConfirmation,
 } from './budget-value'
-import { DEFAULT_NECESSITIES, DEFAULT_DISCRETIONARY, DEFAULT_SAVINGS, applyDefaultAllocation } from './budget-defaults'
+import {
+  DEFAULT_NECESSITIES,
+  DEFAULT_DISCRETIONARY,
+  DEFAULT_SAVINGS,
+  type DefaultAllocationOptions,
+  applyDefaultAllocation,
+} from './budget-defaults'
 
 interface SetBudgetOptions {
   month?: string
@@ -23,6 +29,12 @@ interface SetBudgetOptions {
   discretionary: string
   savings: string
 }
+
+type SetBudgetMode = 'direct' | 'defaults' | 'custom-allocation'
+
+const ALLOCATION_OPTION_NAMES = ['necessities', 'discretionary', 'savings'] as const
+
+type AllocationOptionName = (typeof ALLOCATION_OPTION_NAMES)[number]
 
 async function promptCategorySelection(categories: Category[]): Promise<Category | symbol> {
   return await select({
@@ -52,6 +64,59 @@ async function promptBudgetAmount(): Promise<string | symbol> {
   })
 }
 
+function exitWithValidationError(message: string): never {
+  log.error(message)
+  process.exit(1)
+}
+
+function wasAllocationOptionProvided(command: Command, optionName: AllocationOptionName): boolean {
+  const source = command.getOptionValueSource(optionName)
+  return source !== undefined && source !== 'default'
+}
+
+function hasAllocationOverrides(command: Command): boolean {
+  return ALLOCATION_OPTION_NAMES.some((optionName) => wasAllocationOptionProvided(command, optionName))
+}
+
+function resolveBudgetMode(
+  categorySlug: string | undefined,
+  amountValue: string | undefined,
+  options: SetBudgetOptions,
+  command: Command,
+): SetBudgetMode {
+  const hasPositionalArguments = categorySlug !== undefined || amountValue !== undefined
+  const hasCustomAllocationOverrides = hasAllocationOverrides(command)
+
+  if (options.defaults) {
+    if (hasPositionalArguments) {
+      exitWithValidationError('--defaults cannot be combined with positional [category] or [amount] arguments.')
+    }
+    if (hasCustomAllocationOverrides) {
+      exitWithValidationError('--defaults cannot be combined with --necessities, --discretionary, or --savings.')
+    }
+    return 'defaults'
+  }
+
+  if (hasCustomAllocationOverrides) {
+    if (hasPositionalArguments) {
+      exitWithValidationError(
+        '--necessities, --discretionary, and --savings cannot be combined with positional [category] or [amount] arguments.',
+      )
+    }
+    return 'custom-allocation'
+  }
+
+  return 'direct'
+}
+
+function resolveAllocationOptions(options: SetBudgetOptions): DefaultAllocationOptions {
+  return {
+    necessities: options.necessities,
+    discretionary: options.discretionary,
+    savings: options.savings,
+  }
+}
+
 async function resolveCategory(categories: Category[], slug: string | undefined): Promise<Category | null> {
   if (slug !== undefined) return findTopLevelCategory(categories, slug)
 
@@ -78,6 +143,7 @@ async function setAction(
   categorySlug: string | undefined,
   amountValue: string | undefined,
   options: SetBudgetOptions,
+  command: Command,
 ): Promise<void> {
   const month = options.month ?? currentMonth()
   if (!validateMonth(month)) {
@@ -85,17 +151,14 @@ async function setAction(
     process.exit(1)
   }
 
-  if (options.defaults && (categorySlug !== undefined || amountValue !== undefined)) {
-    log.error('--defaults cannot be combined with positional [category] or [amount] arguments.')
-    process.exit(1)
-  }
+  const mode = resolveBudgetMode(categorySlug, amountValue, options, command)
 
   const database = openDatabase(resolve(options.db))
   try {
     const categories = getCategories(database)
 
-    if (options.defaults) {
-      applyDefaultAllocation(database, categories, month, options)
+    if (mode !== 'direct') {
+      applyDefaultAllocation(database, categories, month, resolveAllocationOptions(options))
       return
     }
 
