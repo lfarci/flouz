@@ -7,10 +7,37 @@ import { initDb } from '@/db/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
 import { getTransactions } from '@/db/transactions/queries'
 import { parseCsv } from '@/parsers/csv'
-import { findCsvFiles, resolveImportedTransaction } from './import'
+import { getArgumentSetup } from '@/commands/test-helpers'
+import { createImportCommand, findCsvFiles, resolveImportedTransaction } from './import'
 
 const FIXTURE = `${import.meta.dir}/../../parsers/__fixtures__/minimal.csv`
 const FIXTURES_DIR = `${import.meta.dir}/../../parsers/__fixtures__`
+
+describe('createImportCommand', () => {
+  it('creates the command with name "import"', () => {
+    expect(createImportCommand('flouz.db').name()).toBe('import')
+  })
+
+  it('registers <path> as a required non-variadic positional argument', () => {
+    const argument = getArgumentSetup(createImportCommand('flouz.db'), 0)
+    expect(argument).toMatchObject({ name: 'path', required: true, variadic: false })
+  })
+
+  it('has --from option', () => {
+    const option = createImportCommand('flouz.db').options.find((option) => option.long === '--from')
+    expect(option).toBeDefined()
+  })
+
+  it('has --to option', () => {
+    const option = createImportCommand('flouz.db').options.find((option) => option.long === '--to')
+    expect(option).toBeDefined()
+  })
+
+  it('registers --db option with the supplied default path', () => {
+    const option = createImportCommand('my.db').options.find((option) => option.long === '--db')
+    expect(option?.defaultValue).toBe('my.db')
+  })
+})
 
 async function importAll(db: Database, sourceFile: string): Promise<{ imported: number; errors: number }> {
   const content = await Bun.file(sourceFile).text()

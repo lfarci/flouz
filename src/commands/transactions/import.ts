@@ -22,6 +22,22 @@ interface InsertResult {
   allErrors: (ParseError & { file: string })[]
 }
 
+interface ImportOptions {
+  db: string
+  from?: string
+  to?: string
+}
+
+interface DateFilter {
+  from?: string
+  to?: string
+}
+
+interface FilteredParsedFiles {
+  parsed: ParsedFile[]
+  ignoredByFilter: number
+}
+
 export function resolveImportedTransaction(db: Database, transaction: ImportedTransaction): NewTransaction {
   const accountId = resolveAccountId(db, transaction.accountKey)
   return {
@@ -69,6 +85,57 @@ async function parseAllFiles(files: string[]): Promise<ParsedFile[]> {
   return parsed
 }
 
+function validateDateFilter(options: ImportOptions): DateFilter {
+  validateDateOption('from', options.from)
+  validateDateOption('to', options.to)
+  if (options.from !== undefined && options.to !== undefined && options.from > options.to) {
+    throw new Error(`Invalid date range: --from ${options.from} is after --to ${options.to}.`)
+  }
+
+  return {
+    from: options.from,
+    to: options.to,
+  }
+}
+
+function validateDateOption(optionName: string, value: string | undefined): void {
+  if (value === undefined) return
+  if (isCalendarDate(value)) return
+  throw new Error(`Invalid --${optionName} date: ${value}. Use YYYY-MM-DD.`)
+}
+
+function isCalendarDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+
+  const parsedDate = new Date(`${value}T00:00:00.000Z`)
+  return parsedDate.toISOString().slice(0, 10) === value
+}
+
+function applyDateFilter(parsed: ParsedFile[], filter: DateFilter): FilteredParsedFiles {
+  if (filter.from === undefined && filter.to === undefined) {
+    return { parsed, ignoredByFilter: 0 }
+  }
+
+  let ignoredByFilter = 0
+  const filteredParsed = parsed.map(({ file, transactions, errors }) => {
+    const filteredTransactions = transactions.filter((transaction) => {
+      const shouldImport = isWithinDateFilter(transaction.date, filter)
+      if (!shouldImport) ignoredByFilter++
+      return shouldImport
+    })
+
+    return { file, transactions: filteredTransactions, errors }
+  })
+
+  return { parsed: filteredParsed, ignoredByFilter }
+}
+
+function isWithinDateFilter(date: string, filter: DateFilter): boolean {
+  if (filter.from !== undefined && date < filter.from) return false
+  if (filter.to !== undefined && date > filter.to) return false
+  return true
+}
+
 async function insertAllTransactions(db: Database, parsed: ParsedFile[]): Promise<InsertResult> {
   const totalRows = parsed.reduce((sum, { transactions }) => sum + transactions.length, 0)
   const insertProgress = progress({
@@ -111,16 +178,29 @@ function resolveAccountId(db: Database, accountKey: string | undefined): number 
   throw new Error(`Unknown account key: ${normalizedKey}. Create it first with \`flouz accounts add\`.`)
 }
 
-function reportResults(totalImported: number, allErrors: (ParseError & { file: string })[]): void {
+function reportResults(
+  totalImported: number,
+  allErrors: (ParseError & { file: string })[],
+  ignoredByFilter: number,
+): void {
   for (const { file, row, message } of allErrors) {
     log.warn(`${file} line ${row}: ${message}`)
   }
   const errorSuffix = allErrors.length > 0 ? `, ${allErrors.length} invalid row(s) skipped` : ''
-  outro(`${ICON_SUCCESS} ${totalImported} imported${errorSuffix}`)
+  const filterSuffix = ignoredByFilter > 0 ? `, ${ignoredByFilter} ignored by date filter` : ''
+  outro(`${ICON_SUCCESS} ${totalImported} imported${filterSuffix}${errorSuffix}`)
 }
 
-async function importAction(path: string, options: { db: string }): Promise<void> {
+async function importAction(path: string, options: ImportOptions): Promise<void> {
   intro('flouz transactions import')
+
+  let dateFilter: DateFilter
+  try {
+    dateFilter = validateDateFilter(options)
+  } catch (error) {
+    log.error(error instanceof Error ? error.message : String(error))
+    process.exit(1)
+  }
 
   const files = await resolveCsvFiles(path)
   if (!files) {
@@ -147,10 +227,11 @@ async function importAction(path: string, options: { db: string }): Promise<void
 
   try {
     const parsed = await parseAllFiles(files)
-    const { totalImported, allErrors } = await insertAllTransactions(database, parsed)
+    const filtered = applyDateFilter(parsed, dateFilter)
+    const { totalImported, allErrors } = await insertAllTransactions(database, filtered.parsed)
     process.removeListener('SIGINT', onCancel)
     database.close()
-    reportResults(totalImported, allErrors)
+    reportResults(totalImported, allErrors, filtered.ignoredByFilter)
   } catch (error) {
     process.removeListener('SIGINT', onCancel)
     log.error(error instanceof Error ? error.message : String(error))
@@ -163,6 +244,8 @@ export function createImportCommand(defaultDb: string): Command {
   return new Command('import')
     .description('Import transactions from a CSV file or directory of CSV files')
     .argument('<path>', 'path to CSV file or directory')
+    .option('-f, --from <date>', 'import from date (yyyy-MM-dd)')
+    .option('-t, --to <date>', 'import to date (yyyy-MM-dd)')
     .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(importAction)
 }

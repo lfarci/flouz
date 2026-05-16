@@ -15,6 +15,7 @@ import { createAccountsTable } from '@/db/accounts/schema'
 import { createTransactionsTable } from '@/db/transactions/schema'
 import { createTransactionCategorySuggestionsTable } from '@/db/transaction_category_suggestions/schema'
 import { insertAccount } from '@/db/accounts/mutations'
+import { getTransactions } from '@/db/transactions/queries'
 import type { Command } from 'commander'
 
 const FIXTURE = `${import.meta.dir}/../../parsers/__fixtures__/minimal.csv`
@@ -169,5 +170,67 @@ describe('importAction — successful import from fixture file', () => {
     )
 
     expect(summary).toEqual({ status: 'resolved' })
+  })
+
+  it('imports only transactions inside the inclusive date range and reports ignored rows', async () => {
+    const { database, handle } = createInMemoryDatabase()
+    openDatabaseMock.mockReturnValue(handle)
+
+    const summary = await collectCommandOutcome<ImportOutcome>(
+      async () => {
+        const command = createImportCommand('default.db')
+        command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
+        await command.parseAsync(['--from', '2026-01-16', '--to', '2026-01-18', FIXTURE], { from: 'user' })
+      },
+      () => ({ status: 'resolved' }),
+      (errorCode) => ({ status: 'rejected', errorCode }),
+    )
+
+    const transactions = getTransactions(database)
+    expect({
+      summary,
+      dates: transactions.map((transaction) => transaction.date),
+      message: outroMock.mock.calls[0][0],
+    }).toEqual({
+      summary: { status: 'resolved' },
+      dates: ['2026-01-18', '2026-01-17', '2026-01-16'],
+      message: '✓ 3 imported, 2 ignored by date filter',
+    })
+  })
+})
+
+describe('importAction — invalid date filters', () => {
+  it('logs an error and exits with code 1 for an invalid --from date', async () => {
+    const summary = await collectCommandOutcome<ImportOutcome>(
+      async () => {
+        const command = createImportCommand('default.db')
+        command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
+        await command.parseAsync(['--from', '2026-02-31', FIXTURE], { from: 'user' })
+      },
+      () => ({ status: 'resolved' }),
+      (errorCode) => ({ status: 'rejected', errorCode }),
+    )
+
+    expect({ summary, error: logErrorMock.mock.calls[0][0] }).toEqual({
+      summary: { status: 'rejected', errorCode: 1 },
+      error: 'Invalid --from date: 2026-02-31. Use YYYY-MM-DD.',
+    })
+  })
+
+  it('logs an error and exits with code 1 when --from is after --to', async () => {
+    const summary = await collectCommandOutcome<ImportOutcome>(
+      async () => {
+        const command = createImportCommand('default.db')
+        command.configureOutput({ writeErr: () => {}, writeOut: () => {} })
+        await command.parseAsync(['--from', '2026-01-19', '--to', '2026-01-15', FIXTURE], { from: 'user' })
+      },
+      () => ({ status: 'resolved' }),
+      (errorCode) => ({ status: 'rejected', errorCode }),
+    )
+
+    expect({ summary, error: logErrorMock.mock.calls[0][0] }).toEqual({
+      summary: { status: 'rejected', errorCode: 1 },
+      error: 'Invalid date range: --from 2026-01-19 is after --to 2026-01-15.',
+    })
   })
 })
