@@ -9,13 +9,14 @@ import { openDatabase } from '@/db/schema'
 import { getTransactionById, getTransactions } from '@/db/transactions/queries'
 import { updateComment } from '@/db/transactions/mutations'
 import type { Transaction, TransactionFilters } from '@/types'
-import { toBaseFilters } from '@/commands/transactions/parse-options'
+import { parseLimit, toBaseFilters } from '@/commands/transactions/parse-options'
 
 interface CommentOptions {
   from?: string
   to?: string
   search?: string
   limit?: string
+  resume?: boolean
   db: string
 }
 
@@ -27,8 +28,10 @@ interface CommentSummary {
   skipped: number
 }
 
-function toTransactionFilters(options: CommentOptions): TransactionFilters {
-  return { ...toBaseFilters(options) }
+function toTransactionFilters(options: CommentOptions, includeLimit = true): TransactionFilters {
+  const filters = { ...toBaseFilters(options) }
+  if (!includeLimit) filters.limit = undefined
+  return filters
 }
 
 function loadById(db: Database, id: number): Transaction[] {
@@ -37,13 +40,25 @@ function loadById(db: Database, id: number): Transaction[] {
   return [transaction]
 }
 
-function loadByFilters(db: Database, options: CommentOptions): Transaction[] {
-  return getTransactions(db, toTransactionFilters(options))
+function loadByFilters(db: Database, options: CommentOptions, includeLimit = true): Transaction[] {
+  return getTransactions(db, toTransactionFilters(options, includeLimit))
 }
 
 function loadTransactions(db: Database, id: number | undefined, options: CommentOptions): Transaction[] {
   if (id !== undefined) return loadById(db, id)
   return loadByFilters(db, options)
+}
+
+function resumeFromLastCommented(transactions: Transaction[]): Transaction[] {
+  const lastCommentedIndex = transactions.findLastIndex((transaction) => transaction.comment !== undefined)
+  if (lastCommentedIndex === -1) return transactions
+  return transactions.slice(lastCommentedIndex)
+}
+
+function applyResume(transactions: Transaction[], options: CommentOptions): Transaction[] {
+  const resumed = resumeFromLastCommented(transactions)
+  const limit = parseLimit(options.limit)
+  return limit === undefined ? resumed : resumed.slice(0, limit)
 }
 
 function formatTransactionNote(transaction: Transaction, index: number, total: number): string {
@@ -162,7 +177,11 @@ async function commentAction(idArg: string | undefined, options: CommentOptions)
       return
     }
 
-    const transactions = loadTransactions(database, id, options)
+    const shouldResume = id === undefined && options.resume === true
+    const loadedTransactions = shouldResume
+      ? loadByFilters(database, options, false)
+      : loadTransactions(database, id, options)
+    const transactions = shouldResume ? applyResume(loadedTransactions, options) : loadedTransactions
 
     if (transactions.length === 0) {
       process.removeListener('SIGINT', onCancel)
@@ -197,6 +216,7 @@ export function createCommentCommand(defaultDb: string): Command {
     .option('-t, --to <date>', 'filter to date (YYYY-MM-DD)')
     .option('-s, --search <text>', 'search counterparty')
     .option('-l, --limit <n>', 'max transactions to review')
+    .option('--resume', 'start at the last commented transaction matching the filters')
     .option('-d, --db <path>', 'SQLite database path', defaultDb)
     .action(commentAction)
 }

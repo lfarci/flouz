@@ -25,6 +25,9 @@ flouz — AI-powered personal finance CLI for bank transactions
     ├── categorize — AI-categorize uncategorized transactions
     │   Options: -f/--from <date>, -t/--to <date>, -s/--search <text>,
     │            -l/--limit <n>, -d/--db <path>
+    ├── comment [id] — Interactively add or edit transaction comments
+    │   Options: -f/--from <date>, -t/--to <date>, -s/--search <text>,
+    │            -l/--limit <n>, --resume, -d/--db <path>
     ├── categories — Manage transaction categories
     │   └── list — List available transaction categories
     │       Options: --tree, -d/--db <path>

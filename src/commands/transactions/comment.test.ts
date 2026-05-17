@@ -82,6 +82,10 @@ function getComment(database: Database, id: number): string | null {
   return row?.comment ?? null
 }
 
+function setComment(database: Database, id: number, comment: string): void {
+  database.prepare('UPDATE transactions SET comment = ? WHERE id = ?').run(comment, id)
+}
+
 async function runCommentCommand(database: Database, args: string[]): Promise<void> {
   openDatabaseMock.mockReturnValue(database)
   await runCommandSilently(createCommentCommand('default.db'), args)
@@ -142,6 +146,11 @@ describe('createCommentCommand', () => {
 
   it('has --limit option', () => {
     const option = createCommentCommand('flouz.db').options.find((option) => option.long === '--limit')
+    expect(option).toBeDefined()
+  })
+
+  it('has --resume option', () => {
+    const option = createCommentCommand('flouz.db').options.find((option) => option.long === '--resume')
     expect(option).toBeDefined()
   })
 
@@ -361,6 +370,62 @@ describe('comment action — filters', () => {
     expect({ comment1: getComment(database, id1), comment2: getComment(database, id2) }).toEqual({
       comment1: 'Matched',
       comment2: null,
+    })
+  })
+})
+
+describe('comment action — resume', () => {
+  it('starts at the last commented transaction in review order', async () => {
+    const { database, handle } = createInMemoryDatabase()
+    insertTransaction(database, { ...baseTransaction, date: '2026-01-03', counterparty: 'Newest Shop' })
+    const newestId = getLastId(database)
+    insertTransaction(database, { ...baseTransaction, date: '2026-01-02', counterparty: 'Resume Shop' })
+    const resumeId = getLastId(database)
+    setComment(database, resumeId, 'last pass')
+    insertTransaction(database, { ...baseTransaction, date: '2026-01-01', counterparty: 'Oldest Shop' })
+    const oldestId = getLastId(database)
+    selectResponseQueue.push('set', 'set')
+    textResponseQueue.push('updated resume point', 'older transaction')
+
+    await runCommentCommand(handle, ['--resume'])
+
+    expect({
+      newest: getComment(database, newestId),
+      resume: getComment(database, resumeId),
+      oldest: getComment(database, oldestId),
+    }).toEqual({
+      newest: null,
+      resume: 'updated resume point',
+      oldest: 'older transaction',
+    })
+  })
+
+  it('applies --limit after finding the resume point', async () => {
+    const { database, handle } = createInMemoryDatabase()
+    insertTransaction(database, { ...baseTransaction, date: '2026-01-05', counterparty: 'Newest Shop' })
+    const newestId = getLastId(database)
+    insertTransaction(database, { ...baseTransaction, date: '2026-01-04', counterparty: 'Resume Shop' })
+    const resumeId = getLastId(database)
+    setComment(database, resumeId, 'last pass')
+    insertTransaction(database, { ...baseTransaction, date: '2026-01-03', counterparty: 'First Older Shop' })
+    const firstOlderId = getLastId(database)
+    insertTransaction(database, { ...baseTransaction, date: '2026-01-02', counterparty: 'Second Older Shop' })
+    const secondOlderId = getLastId(database)
+    selectResponseQueue.push('set', 'set')
+    textResponseQueue.push('updated resume point', 'first older')
+
+    await runCommentCommand(handle, ['--resume', '--limit', '2'])
+
+    expect({
+      newest: getComment(database, newestId),
+      resume: getComment(database, resumeId),
+      firstOlder: getComment(database, firstOlderId),
+      secondOlder: getComment(database, secondOlderId),
+    }).toEqual({
+      newest: null,
+      resume: 'updated resume point',
+      firstOlder: 'first older',
+      secondOlder: null,
     })
   })
 })

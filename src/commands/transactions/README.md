@@ -6,6 +6,7 @@ The `transactions` command groups the main workflows for working with stored tra
 
 - `import` reads CSV data and inserts valid rows into the database
 - `list` prints stored transactions as a table, CSV, or JSON
+- `comment` interactively adds notes that can help categorization
 - `categorize` runs AI categorization on uncategorized transactions and stores suggestions
 - `suggestions` reviews, approves, rejects, and applies AI-generated suggestions
 
@@ -41,6 +42,23 @@ flouz transactions list [options]
 | `-d, --db <path>`       | SQLite database path                                        |
 
 `--category` and `--uncategorized` are mutually exclusive.
+
+### `comment`
+
+Interactively adds or edits free-text comments on transactions before categorization.
+
+```bash
+flouz transactions comment [id] [options]
+```
+
+| Option                | Description                                           |
+| --------------------- | ----------------------------------------------------- |
+| `-f, --from <date>`   | Review only transactions from this date (YYYY-MM-DD)  |
+| `-t, --to <date>`     | Review only transactions up to this date (YYYY-MM-DD) |
+| `-s, --search <text>` | Filter by counterparty name                           |
+| `-l, --limit <n>`     | Max transactions to review                            |
+| `--resume`            | Start at the last commented transaction               |
+| `-d, --db <path>`     | SQLite database path                                  |
 
 ### `categorize`
 
