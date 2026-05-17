@@ -75,8 +75,14 @@ describe('findTopLevelCategory', () => {
     )
   })
 
-  it('throws when category is a non-budget root', () => {
+  it('throws when transfers category is a non-budget root', () => {
     expect(() => findTopLevelCategory(baseCategories, 'transfers')).toThrow(
+      'Budgets can only be set on spending and saving categories',
+    )
+  })
+
+  it('throws when income category is a non-budget root', () => {
+    expect(() => findTopLevelCategory(baseCategories, 'income')).toThrow(
       'Budgets can only be set on spending and saving categories',
     )
   })
