@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/lfarci/flouz/compare/v2.4.0...v2.5.0) (2026-05-17)
+
+
+### Features
+
+* **transactions:** resume comment workflow ([#63](https://github.com/lfarci/flouz/issues/63)) ([ebfd63d](https://github.com/lfarci/flouz/commit/ebfd63d797d9f6fc5b3a98f8c5f3a15daec24855))
+
 ## [2.4.0](https://github.com/lfarci/flouz/compare/v2.3.0...v2.4.0) (2026-05-05)
 
 ### Features
