@@ -73,20 +73,25 @@ Root (L1)
 ├── Savings
 │   ├── Emergency Fund
 │   └── Investments
-└── Discretionary
-    ├── Food & Drink
-    │   ├── Restaurants
-    │   └── Coffee
-    └── Entertainment
-        ├── Streaming
-        └── Events
+├── Discretionary
+│   ├── Food & Drink
+│   │   ├── Restaurants
+│   │   └── Coffee
+│   └── Entertainment
+│       ├── Streaming
+│       └── Events
+├── Transfers
+│   └── Internal Transfer
+└── Income
+    ├── Salary
+    └── Reimbursement
 ```
 
-- **L1 roots**: `Necessities`, `Savings`, `Discretionary` — `parent_id IS NULL`
-- **L2 nodes**: broad sub-groups — `parent_id` points to an L1 row
-- **L3 leaves**: specific categories used on transactions — `parent_id` points to an L2 row
+- **L1 roots**: `Necessities`, `Savings`, `Discretionary`, `Transfers`, `Income` — `parent_id IS NULL`
+- **L2 nodes**: broad sub-groups or leaf categories — `parent_id` points to an L1 row
+- **L3 leaves**: specific categories nested under an L2 group — `parent_id` points to an L2 row
 
-Transactions are assigned to **L3 leaves** only.
+Transactions are assigned to **leaf categories** only.
 
 ## Key Rules
 

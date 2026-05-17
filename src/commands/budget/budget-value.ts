@@ -7,6 +7,7 @@ export interface ParsedBudgetValue {
 }
 
 const STRICT_NUMERIC = /^\d+(\.\d+)?$/
+const NON_BUDGET_ROOT_SLUGS = new Set(['income', 'transfers'])
 
 export function parseBudgetValue(value: string): ParsedBudgetValue {
   const trimmed = value.trim()
@@ -32,11 +33,14 @@ export function findTopLevelCategory(categories: Category[], slug: string): Cate
   if (category.parentId !== null) {
     throw new Error('Budgets can only be set on top-level categories')
   }
+  if (NON_BUDGET_ROOT_SLUGS.has(category.slug)) {
+    throw new Error('Budgets can only be set on spending and saving categories')
+  }
   return category
 }
 
 export function getTopLevelBudgetCategories(categories: Category[]): Category[] {
-  return categories.filter((category) => category.parentId === null && category.slug !== 'income')
+  return categories.filter((category) => category.parentId === null && !NON_BUDGET_ROOT_SLUGS.has(category.slug))
 }
 
 export function formatBudgetConfirmation(name: string, parsed: ParsedBudgetValue, month: string): string {
