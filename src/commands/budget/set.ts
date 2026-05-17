@@ -188,10 +188,7 @@ async function setAction(
 export function createSetBudgetCommand(defaultDb: string): Command {
   return new Command('set')
     .description('Set a monthly budget for a budgetable top-level category')
-    .argument(
-      '[category]',
-      'budgetable category slug (e.g. necessities, discretionary, savings) — prompts if omitted',
-    )
+    .argument('[category]', 'budgetable category slug (e.g. necessities, discretionary, savings) — prompts if omitted')
     .argument('[amount]', 'budget amount in EUR (e.g. 2000) or percentage of income (e.g. 60%) — prompts if omitted')
     .option('-m, --month <YYYY-MM>', 'target month (defaults to current)')
     .option('-d, --db <path>', 'SQLite database path', defaultDb)
