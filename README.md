@@ -184,16 +184,17 @@ bun run src/index.ts accounts list
 
 ### Budgets
 
-Track monthly spending against budgets set on **top-level categories only**.
+Track monthly spending against budgets set on budgetable top-level categories.
 
-Available top-level categories (slugs):
+Available budget categories (slugs):
 
 | Slug            | Description                                       |
 | --------------- | ------------------------------------------------- |
 | `necessities`   | House, utilities, groceries, transport, health, … |
 | `savings`       | Savings accounts, investments                     |
 | `discretionary` | Food & drink, shopping, entertainment, travel, …  |
-| `income`        | Salary, reimbursements, gifts received            |
+
+`income` and `transfers` are category roots for classification and reporting, but they are excluded from budget setup.
 
 Budget checking aggregates all transactions in descendant categories under each top-level parent.
 

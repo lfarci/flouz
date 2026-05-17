@@ -20,6 +20,12 @@ export const CATEGORIES: Category[] = [
     slug: 'discretionary',
     parentId: null,
   },
+  {
+    id: '3f9e4c2a-6b7d-4a8f-9c1e-2d3f4a5b6c7d',
+    name: 'Transfers',
+    slug: 'transfers',
+    parentId: null,
+  },
 
   // L2 under Necessities
   {
@@ -201,6 +207,20 @@ export const CATEGORIES: Category[] = [
     name: 'Restaurant',
     slug: 'restaurant',
     parentId: 'c2d3e4f5-6a7b-4c8d-9e0f-1a2b3c4d5e6f',
+  },
+  {
+    id: 'cc6f9a0b-1d2e-4c3f-8a9b-0c1d2e3f4a5b',
+    name: 'Coffee',
+    slug: 'coffee',
+    parentId: 'c2d3e4f5-6a7b-4c8d-9e0f-1a2b3c4d5e6f',
+  },
+
+  // L2 under Transfers
+  {
+    id: '4a0f5d3b-7c8e-4b90-a1d2-3e4f5a6b7c8d',
+    name: 'Internal Transfer',
+    slug: 'internal-transfer',
+    parentId: '3f9e4c2a-6b7d-4a8f-9c1e-2d3f4a5b6c7d',
   },
 
   // Root

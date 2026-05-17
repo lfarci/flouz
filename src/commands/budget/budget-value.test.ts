@@ -13,6 +13,7 @@ const baseCategories: Category[] = [
   { id: 'cat-3', name: 'Discretionary', slug: 'discretionary', parentId: null },
   { id: 'cat-4', name: 'Income', slug: 'income', parentId: null },
   { id: 'cat-5', name: 'Groceries', slug: 'groceries', parentId: 'cat-1' },
+  { id: 'cat-6', name: 'Transfers', slug: 'transfers', parentId: null },
 ]
 
 describe('parseBudgetValue', () => {
@@ -73,6 +74,12 @@ describe('findTopLevelCategory', () => {
       'Budgets can only be set on top-level categories',
     )
   })
+
+  it('throws when category is a non-budget root', () => {
+    expect(() => findTopLevelCategory(baseCategories, 'transfers')).toThrow(
+      'Budgets can only be set on spending and saving categories',
+    )
+  })
 })
 
 describe('formatBudgetConfirmation', () => {
@@ -92,7 +99,7 @@ describe('formatBudgetConfirmation', () => {
 })
 
 describe('getTopLevelBudgetCategories', () => {
-  it('returns only top-level non-income categories', () => {
+  it('returns only top-level budget categories', () => {
     const result = getTopLevelBudgetCategories(baseCategories)
     expect(result).toHaveLength(3)
   })
@@ -102,13 +109,21 @@ describe('getTopLevelBudgetCategories', () => {
     expect(result.some((category) => category.slug === 'income')).toBe(false)
   })
 
+  it('excludes the transfers category', () => {
+    const result = getTopLevelBudgetCategories(baseCategories)
+    expect(result.some((category) => category.slug === 'transfers')).toBe(false)
+  })
+
   it('excludes subcategories', () => {
     const result = getTopLevelBudgetCategories(baseCategories)
     expect(result.some((category) => category.slug === 'groceries')).toBe(false)
   })
 
   it('returns empty array when no budget categories exist', () => {
-    const incomeOnly: Category[] = [{ id: 'cat-1', name: 'Income', slug: 'income', parentId: null }]
-    expect(getTopLevelBudgetCategories(incomeOnly)).toHaveLength(0)
+    const nonBudgetCategories: Category[] = [
+      { id: 'cat-1', name: 'Income', slug: 'income', parentId: null },
+      { id: 'cat-2', name: 'Transfers', slug: 'transfers', parentId: null },
+    ]
+    expect(getTopLevelBudgetCategories(nonBudgetCategories)).toHaveLength(0)
   })
 })

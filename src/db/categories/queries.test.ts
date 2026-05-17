@@ -50,6 +50,15 @@ describe('collectDescendantIds', () => {
     expect(ids).toContain(restaurant.id)
   })
 
+  it('includes transfer children', () => {
+    const transfers = CATEGORIES.find((category) => category.slug === 'transfers')!
+    const internalTransfer = CATEGORIES.find((category) => category.slug === 'internal-transfer')!
+
+    const ids = collectDescendantIds(CATEGORIES, transfers.id)
+
+    expect(ids).toContain(internalTransfer.id)
+  })
+
   it('does not include unrelated categories', () => {
     const savings = CATEGORIES.find((category) => category.slug === 'savings')!
     const groceries = CATEGORIES.find((category) => category.slug === 'groceries')!

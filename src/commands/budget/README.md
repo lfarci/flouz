@@ -14,12 +14,13 @@ Manage monthly budgets and track spending against them.
 
 ## Category Constraints
 
-Budgets can **only** be set on top-level categories (those with `parentId: null`):
+Budgets can **only** be set on budgetable top-level categories:
 
 - `necessities` — House, Utilities, Groceries, Transport, Health, Insurance, Fees & Taxes, Cash & ATM
 - `savings` — Savings Account, Investments
 - `discretionary` — Food & Drink, Shopping, Entertainment, Travel, Gifts & Charity, Online Services
-- `income` — Salary, Reimbursement, Gifts Received, Other Income
+
+`income` and `transfers` are category roots for classification and reporting, but they are excluded from budget setup.
 
 When checking budget progress, spending is aggregated across all descendant categories under each top-level parent.
 
@@ -46,7 +47,7 @@ flouz budget set             # prompts for category (select) then amount (text)
 flouz budget set necessities # prompts for amount only
 ```
 
-The category prompt shows all top-level non-income categories as a select list.
+The category prompt shows all budgetable top-level categories as a select list.
 
 ### Direct
 

@@ -329,6 +329,14 @@ describe('set action', () => {
     expect(outcome).toEqual({ status: 'rejected', errorCode: 1 })
   })
 
+  it('exits with code 1 for transfers budget slug', async () => {
+    const { handle } = createTestDatabase()
+    openDatabaseMock.mockReturnValue(handle)
+
+    const outcome = await collectSetOutcome(['transfers', '2000', '--month', '2026-03'])
+    expect(outcome).toEqual({ status: 'rejected', errorCode: 1 })
+  })
+
   it('propagates error when openDatabase throws', async () => {
     openDatabaseMock.mockImplementation(() => {
       throw new Error('DB error')
