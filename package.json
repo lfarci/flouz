@@ -31,7 +31,11 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
-    "build": "bun build src/index.ts --outfile dist/flouz --target bun"
+    "build": "bun build src/index.ts --outfile dist/flouz --target bun",
+    "docs:generate": "bun scripts/generate-command-docs.ts",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "bun run docs:generate && vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
     "@eslint/js": "9",
@@ -44,7 +48,8 @@
     "globals": "17.5.0",
     "prettier": "3.8.3",
     "typescript": "^5.9.3",
-    "typescript-eslint": "8.58.2"
+    "typescript-eslint": "8.58.2",
+    "vitepress": "1.6.4"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.47",

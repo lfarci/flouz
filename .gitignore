@@ -4,3 +4,6 @@ dist/
 *.db
 *.csv
 !src/**/__fixtures__/*.csv
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+docs/commands/*.md
