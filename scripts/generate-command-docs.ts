@@ -35,13 +35,13 @@ function extractCommandInfo(cmd: Command, parentName = ''): CommandInfo {
   const name = cmd.name()
   const fullName = parentName ? `${parentName} ${name}` : name
 
-  const args: ArgumentInfo[] = (cmd as unknown as { registeredArguments: Array<{ name: () => string; description: string; required: boolean }> }).registeredArguments.map(
-    (arg) => ({
-      name: arg.name(),
-      description: arg.description,
-      required: arg.required,
-    }),
-  )
+  const args: ArgumentInfo[] = (
+    cmd as unknown as { registeredArguments: Array<{ name: () => string; description: string; required: boolean }> }
+  ).registeredArguments.map((arg) => ({
+    name: arg.name(),
+    description: arg.description,
+    required: arg.required,
+  }))
 
   const options: OptionInfo[] = cmd.options
     .filter((opt) => opt.long !== '--version' && opt.long !== '--help')
@@ -51,9 +51,7 @@ function extractCommandInfo(cmd: Command, parentName = ''): CommandInfo {
       defaultValue: opt.defaultValue != null ? sanitizeDefault(String(opt.defaultValue)) : undefined,
     }))
 
-  const subcommands: CommandInfo[] = cmd.commands.map((sub) =>
-    extractCommandInfo(sub as Command, fullName),
-  )
+  const subcommands: CommandInfo[] = cmd.commands.map((sub) => extractCommandInfo(sub as Command, fullName))
 
   return {
     name,
@@ -97,9 +95,7 @@ function renderCommand(cmd: CommandInfo, depth: number): string {
     lines.push('| Argument | Required | Description |')
     lines.push('| --- | --- | --- |')
     for (const arg of cmd.arguments) {
-      lines.push(
-        `| \`${arg.name}\` | ${arg.required ? 'Yes' : 'No'} | ${arg.description || '—'} |`,
-      )
+      lines.push(`| \`${arg.name}\` | ${arg.required ? 'Yes' : 'No'} | ${arg.description || '—'} |`)
     }
     lines.push('')
   }
