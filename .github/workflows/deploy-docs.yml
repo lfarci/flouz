@@ -7,6 +7,8 @@ on:
       - 'docs/**'
       - 'src/commands/**'
       - 'scripts/generate-command-docs.ts'
+      - 'package.json'
+      - 'bun.lock'
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
