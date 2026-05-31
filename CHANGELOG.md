@@ -2,16 +2,14 @@
 
 ## [2.5.0](https://github.com/lfarci/flouz/compare/v2.4.0...v2.5.0) (2026-05-31)
 
-
 ### Features
 
-* add VitePress docs site with auto-generated command reference ([#66](https://github.com/lfarci/flouz/issues/66)) ([dc59a0e](https://github.com/lfarci/flouz/commit/dc59a0e7e206eefd8034958492209014a00edaff))
-* **transactions:** resume comment workflow ([#63](https://github.com/lfarci/flouz/issues/63)) ([ebfd63d](https://github.com/lfarci/flouz/commit/ebfd63d797d9f6fc5b3a98f8c5f3a15daec24855))
-
+- add VitePress docs site with auto-generated command reference ([#66](https://github.com/lfarci/flouz/issues/66)) ([dc59a0e](https://github.com/lfarci/flouz/commit/dc59a0e7e206eefd8034958492209014a00edaff))
+- **transactions:** resume comment workflow ([#63](https://github.com/lfarci/flouz/issues/63)) ([ebfd63d](https://github.com/lfarci/flouz/commit/ebfd63d797d9f6fc5b3a98f8c5f3a15daec24855))
 
 ### Bug Fixes
 
-* format generate-command-docs script ([#67](https://github.com/lfarci/flouz/issues/67)) ([8b4ffd3](https://github.com/lfarci/flouz/commit/8b4ffd3728980ed3c3d79485d1677df2c0db6938))
+- format generate-command-docs script ([#67](https://github.com/lfarci/flouz/issues/67)) ([8b4ffd3](https://github.com/lfarci/flouz/commit/8b4ffd3728980ed3c3d79485d1677df2c0db6938))
 
 ## [2.4.0](https://github.com/lfarci/flouz/compare/v2.3.0...v2.4.0) (2026-05-05)
 
