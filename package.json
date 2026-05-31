@@ -1,5 +1,5 @@
 {
-  "name": "flouz",
+  "name": "@lfarci/flouz",
   "version": "2.4.0",
   "description": "AI-powered personal finance CLI for analyzing bank transactions",
   "license": "MIT",
@@ -17,10 +17,12 @@
   ],
   "module": "src/index.ts",
   "type": "module",
-  "private": true,
   "bin": {
-    "flouz": "./src/index.ts"
+    "flouz": "dist/flouz"
   },
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
@@ -31,7 +33,8 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
-    "build": "bun build src/index.ts --outfile dist/flouz --target bun"
+    "build": "bun build src/index.ts --outfile dist/flouz --target bun",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@eslint/js": "9",
