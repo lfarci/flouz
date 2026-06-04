@@ -15,6 +15,8 @@ import {
 import { insertAccount } from '@/db/accounts/mutations'
 import { countAccounts, getAccountByKey } from '@/db/accounts/queries'
 import { createAccountsTable } from '@/db/accounts/schema'
+import { upsertAccountBalanceSnapshot } from '@/db/account_balance_snapshots/mutations'
+import { createAccountBalanceSnapshotsTable } from '@/db/account_balance_snapshots/schema'
 import { createCategoriesTable } from '@/db/categories/schema'
 import { createTransactionsTable } from '@/db/transactions/schema'
 import { insertTransaction } from '@/db/transactions/mutations'
@@ -78,6 +80,7 @@ function createInMemoryDatabase() {
   return createCommandTestDatabase((database) => {
     createCategoriesTable(database)
     createAccountsTable(database)
+    createAccountBalanceSnapshotsTable(database)
     createTransactionsTable(database)
   })
 }
@@ -267,6 +270,44 @@ describe('deleteAccountAction', () => {
         accountCount: 0,
       },
       successMessages: ['Deleted account checking'],
+      closeCalls: 1,
+    })
+  })
+
+  it('rejects deleting an account with balance snapshots', async () => {
+    const { database, handle, closeMock } = createInMemoryDatabase()
+    openDatabaseMock.mockReturnValue(handle)
+    const accountId = insertAccount(database, {
+      key: 'checking',
+      company: 'Provider One',
+      name: 'Main account',
+    })
+    upsertAccountBalanceSnapshot(database, {
+      accountId,
+      date: '2026-06-04',
+      amount: 1250,
+      currency: 'EUR',
+    })
+
+    const summary = await collectDeleteCommandOutcome(database, ['checking'], 'checking')
+
+    expect({
+      summary,
+      errorMessages: getLoggedMessages(errorLogMock),
+      closeCalls: closeMock.mock.calls.length,
+    }).toEqual({
+      summary: {
+        status: 'rejected',
+        errorCode: 1,
+        account: {
+          id: 1,
+          key: 'checking',
+          company: 'Provider One',
+          name: 'Main account',
+        },
+        accountCount: 1,
+      },
+      errorMessages: ['Cannot delete account checking: it has balance snapshots.'],
       closeCalls: 1,
     })
   })

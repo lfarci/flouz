@@ -37,7 +37,19 @@ erDiagram
         string imported_at
     }
 
+    ACCOUNT_BALANCE_SNAPSHOTS {
+        int id PK
+        int account_id FK
+        string date
+        float amount
+        string currency
+        string note
+        string created_at
+        string updated_at
+    }
+
     ACCOUNTS ||--o{ TRANSACTIONS : account_id
+    ACCOUNTS ||--o{ ACCOUNT_BALANCE_SNAPSHOTS : account_id
     CATEGORIES ||--o{ CATEGORIES : parent_of
     CATEGORIES ||--o{ TRANSACTIONS : category_id
 ```

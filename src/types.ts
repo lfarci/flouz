@@ -124,3 +124,41 @@ export interface Budget {
 }
 
 export type NewBudget = Omit<Budget, 'id'>
+
+export type AccountBalanceSnapshot = {
+  id: number
+  accountId: number
+  date: string
+  amount: number
+  currency: string
+  note?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type NewAccountBalanceSnapshot = Omit<AccountBalanceSnapshot, 'id' | 'createdAt' | 'updatedAt'>
+
+export type BalanceSnapshotFilters = {
+  accountId?: number
+  from?: string
+  to?: string
+}
+
+export type BalanceDerivationDirection = 'exact' | 'forward' | 'reverse'
+
+export type DerivedAccountBalance = {
+  accountId: number
+  date: string
+  amount: number
+  currency: string
+  snapshotDate: string
+  direction: BalanceDerivationDirection
+}
+
+export type BalanceHistoryFilters = {
+  accountId: number
+  from: string
+  to: string
+}
+
+export type BalanceHistoryPoint = DerivedAccountBalance
