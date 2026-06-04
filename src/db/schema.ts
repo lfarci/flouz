@@ -1,4 +1,5 @@
 import { Database } from 'bun:sqlite'
+import { createAccountBalanceSnapshotsTable } from '@/db/account_balance_snapshots/schema'
 import { createAccountsTable } from '@/db/accounts/schema'
 import { createBudgetsTable, createMonthlyIncomeSnapshotsTable } from '@/db/budgets/schema'
 import { createCategoriesTable } from '@/db/categories/schema'
@@ -20,6 +21,7 @@ export function initDb(db: Database): void {
   db.run('PRAGMA foreign_keys = ON')
   createCategoriesTable(db)
   createAccountsTable(db)
+  createAccountBalanceSnapshotsTable(db)
   createTransactionsTable(db)
   createTransactionCategorySuggestionsTable(db)
   migrateTransactionCategorySuggestionsTable(db)

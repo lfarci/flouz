@@ -7,6 +7,6 @@ describe('createAccountsCommand', () => {
     const command = await createAccountsCommand()
     const subcommandNames = command.commands.map((subcommand) => subcommand.name())
 
-    expect(subcommandNames).toEqual(['add', 'delete', 'list'])
+    expect(subcommandNames).toEqual(['add', 'snapshot', 'balance', 'history', 'delete', 'list'])
   })
 })

@@ -117,6 +117,27 @@ export function hasTransactionsForAccount(db: Database, accountId: number): bool
   return row !== null
 }
 
+export function sumTransactionsForAccountAfterDateThroughDate(
+  db: Database,
+  accountId: number,
+  afterDate: string,
+  throughDate: string,
+): number {
+  const row = db
+    .prepare(
+      `
+      SELECT COALESCE(SUM(amount), 0) AS total
+      FROM transactions
+      WHERE account_id = ?
+        AND date > ?
+        AND date <= ?
+    `,
+    )
+    .get(accountId, afterDate, throughDate) as { total: number }
+
+  return row.total
+}
+
 export function getTransactionsEligibleForCategorization(
   db: Database,
   filters: CategorizeTransactionsFilters = {},

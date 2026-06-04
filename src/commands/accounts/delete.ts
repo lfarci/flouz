@@ -1,6 +1,7 @@
 import { log } from '@clack/prompts'
 import { Command } from 'commander'
 import { resolve } from 'node:path'
+import { hasBalanceSnapshotsForAccount } from '@/db/account_balance_snapshots/queries'
 import { deleteAccountByKey } from '@/db/accounts/mutations'
 import { getAccountByKey } from '@/db/accounts/queries'
 import { openDatabase } from '@/db/schema'
@@ -33,6 +34,10 @@ function deleteAccountAction(key: string, options: DeleteAccountOptions): void {
 
     if (hasTransactionsForAccount(database, account.id)) {
       throw new Error(`Cannot delete account ${normalizedKey}: it is referenced by transactions.`)
+    }
+
+    if (hasBalanceSnapshotsForAccount(database, account.id)) {
+      throw new Error(`Cannot delete account ${normalizedKey}: it has balance snapshots.`)
     }
 
     deleteAccountByKey(database, normalizedKey)

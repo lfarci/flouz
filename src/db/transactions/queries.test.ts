@@ -17,6 +17,7 @@ import {
   getTransactionsEligibleForCategorization,
   getUncategorized,
   hasTransactionsForAccount,
+  sumTransactionsForAccountAfterDateThroughDate,
 } from './queries'
 
 const fakeTransaction: NewTransaction = {
@@ -157,6 +158,30 @@ describe('hasTransactionsForAccount', () => {
       key: 'checking',
       company: 'Belfius',
       name: 'Main account',
+    })
+
+    describe('sumTransactionsForAccountAfterDateThroughDate', () => {
+      it('sums signed transactions for one account in an exclusive-inclusive date range', () => {
+        const accountId = insertAccount(db, {
+          key: 'checking',
+          company: 'Belfius',
+          name: 'Main account',
+        })
+        const otherAccountId = insertAccount(db, {
+          key: 'savings',
+          company: 'Belfius',
+          name: 'Savings account',
+        })
+
+        insertTransaction(db, { ...fakeTransaction, date: '2026-06-01', amount: -100, accountId })
+        insertTransaction(db, { ...fakeTransaction, date: '2026-06-02', amount: -25, accountId })
+        insertTransaction(db, { ...fakeTransaction, date: '2026-06-03', amount: 50, accountId })
+        insertTransaction(db, { ...fakeTransaction, date: '2026-06-03', amount: -500, accountId: otherAccountId })
+
+        const total = sumTransactionsForAccountAfterDateThroughDate(db, accountId, '2026-06-01', '2026-06-03')
+
+        expect(total).toBe(25)
+      })
     })
 
     expect(hasTransactionsForAccount(db, accountId)).toBe(false)
