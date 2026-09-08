@@ -52,9 +52,9 @@
     "vitepress": "1.6.4"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.47",
+    "@ai-sdk/openai": "^3.0.109",
     "@clack/prompts": "^1.1.0",
-    "ai": "^6.0.134",
+    "ai": "^6.0.277",
     "commander": "^14.0.3",
     "csv-parse": "^6.2.1",
     "picocolors": "1.1.1",
